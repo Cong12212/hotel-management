@@ -1,3 +1,3 @@
-# \[NMCNPM - Final\] Hotel Manager
+# HotelManager
 
-Dummy text
+A web-based hotel management app built as the finals' project for the Introduction to Software Development class.
