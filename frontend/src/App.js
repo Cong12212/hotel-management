@@ -8,7 +8,7 @@ import BookingList from './page/roomBook/BookingList'
 import RoomCheckout from './page/roomBook/RoomCheckout'
 import RoomStatus from './page/roomBook/RoomStatus'
 import RoomType from './page/roomSetting/RoomType'
-import RoomList from './page/roomSetting/RoomList'
+import RoomList from './page/roomBook/RoomList'
 function App() {
 
   return (

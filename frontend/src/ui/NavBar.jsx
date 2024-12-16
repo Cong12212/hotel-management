@@ -38,30 +38,37 @@ const NavBar = () => {
             ]
         },
         {
-            title: 'Room Book',
+            title: 'Room',
             icon: '/room.svg',
             subItems: [
                 {
                     id: 1,
+                    title: 'Room List',
+                    ref: '/rooms'
+                },
+                {
+                    id: 2,
                     title: 'Booking List',
                     ref: '/bookings'
                 },
                 {
-                    id: 2,
+                    id: 3,
                     title: 'Room Checkout',
                     ref: '/room-checkout'
                 },
                 {
-                    id: 3,
+                    id: 4,
                     title: 'Room Status',
                     ref: '/room-status'
                 },
+            
             ]
         },
         {
-            title: 'Room Settings',
+            title: 'Settings',
             icon: '/room-setting.svg',
             subItems: [
+               
                 {
                     id: 1,
                     title: 'Room Type',
@@ -69,9 +76,9 @@ const NavBar = () => {
                 },
                 {
                     id: 2,
-                    title: 'Room List',
-                    ref: '/rooms'
-                },
+                    title: 'Customer type',
+                    ref: '/customertypes'
+                }
             ]
         },
 
