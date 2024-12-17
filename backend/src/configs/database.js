@@ -2,10 +2,13 @@ const mongoose = require('mongoose');
 const Role = require('../models/Role');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const dotenv = require('dotenv')
+
+dotenv.config({path:'../../.env'})
 
 const connectDB = async () => {
     try {
-        await mongoose.connect(process.env.MONGODB_URI);
+        await mongoose.connect(process.env.MONGODB_URI.replace('<db_password>',process.env.DB_PASSWORD));
         console.log('MongoDB connected successfully');
         await initializeSystem();
     } catch (error) {
