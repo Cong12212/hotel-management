@@ -3,7 +3,7 @@ import Header from './Header'
 import NavBar from './NavBar'
 const AppLayout = ()=>{
     return (
-        <div className=" flex gap-12 h-screen font-dm-sans bg-gradient-to-b from-gray-50 to-custom-gray">
+        <div className=" flex gap-12 font-dm-sans bg-gradient-to-b from-gray-50 to-custom-gray">
             <NavBar />
             <div className="flex-1 flex flex-col ">
                 <Header />

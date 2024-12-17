@@ -9,8 +9,25 @@ import RoomCheckout from './page/roomBook/RoomCheckout'
 import RoomStatus from './page/roomBook/RoomStatus'
 import RoomType from './page/roomSetting/RoomType'
 import RoomList from './page/roomSetting/RoomList'
+import Login from './page/userManagement/Login'
+import Signup from './page/userManagement/SignUp'
+import ForgotPassword from './page/userManagement/ForgotPassword'
 function App() {
+  /*
+  const isAuthenticated = localStorage.getItem('isAuthenticated');
 
+  if (!isAuthenticated) {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/" element={<Signup />} />
+          <Route path="/" element={<ForgotPassword />} />
+        </Routes>
+      </BrowserRouter>
+    );
+  }
+  */
   return (
     <>
       <NavBarItemProvider>
