@@ -1,7 +1,11 @@
 const RoomType = require('../models/RoomType');
 const Room = require('../models/Room');
 
-// Get all room types
+/**
+ * API endpoint : /api/rooms
+ * required Role : admin,manager,receptionist
+ * 
+ */
 exports.getAllRoomTypes = async (req, res) => {
     try {
         const roomTypes = await RoomType.find().sort('name');
@@ -20,7 +24,10 @@ exports.getAllRoomTypes = async (req, res) => {
     }
 };
 
-// Get single room type
+/**
+ * API endpoint : /api/rooms
+ * required Role : admin,manager,receptionist 
+ */
 exports.getRoomType = async (req, res) => {
     try {
         const roomType = await RoomType.findById(req.params.id);
@@ -45,7 +52,11 @@ exports.getRoomType = async (req, res) => {
     }
 };
 
-// Create room type
+/**
+ * api : /api/rooms
+ * require : admin,manager role
+ * @param req.body Body of RoomType need to be created
+ */
 exports.createRoomType = async (req, res) => {
     try {
         const roomType = await RoomType.create(req.body);
@@ -69,7 +80,12 @@ exports.createRoomType = async (req, res) => {
     }
 };
 
-// Update room type
+/**
+ * api : /api/rooms
+ * require : admin,manager role
+ * @param req.params.id ID of RoomType need to update
+ * @param req.body Body of RoomType need to update
+ */
 exports.updateRoomType = async (req, res) => {
     try {
         const roomType = await RoomType.findByIdAndUpdate(
@@ -107,7 +123,11 @@ exports.updateRoomType = async (req, res) => {
     }
 };
 
-// Delete room type
+/**
+ * API endpoint : /api/rooms
+ * required Role : admin,manager
+ * @params req.params.id ID of the room need to delete
+ */
 exports.deleteRoomType = async (req, res) => {
     try {
         // Check if any rooms are using this room type

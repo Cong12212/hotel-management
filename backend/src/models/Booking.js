@@ -5,7 +5,7 @@ const bookingSchema = new mongoose.Schema({
     customerIds: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Customer',
-        required: true
+        required: true,
     }],
     userId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -28,5 +28,10 @@ const bookingSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-
+bookingSchema.pre('validate', function(next) {
+    if (this.customerIds && this.customerIds.length === 0) {
+        return next(new Error('customerIds must contain at least one customer'));
+    }
+    next();
+});
 module.exports = mongoose.model('Booking', bookingSchema);
