@@ -1,7 +1,9 @@
 const RoomType = require('../models/RoomType');
 const Room = require('../models/Room');
-
-// Get all rooms
+/**
+ * api : /api/rooms
+ * required permission : view rooms
+ */
 exports.getAllRooms = async (req, res) => {
     try {
         const rooms = await Room.find()
@@ -22,7 +24,10 @@ exports.getAllRooms = async (req, res) => {
     }
 };
 
-// Get single room
+/**
+ * api : /api/rooms
+ * require : admin,manager,receptionist role
+ */
 exports.getRoom = async (req, res) => {
     try {
         const room = await Room.findById(req.params.id).populate('roomTypeId');
@@ -47,7 +52,10 @@ exports.getRoom = async (req, res) => {
     }
 };
 
-// Create room
+/**
+ * api : /api/rooms
+ * require : admin,manager role
+ */
 exports.createRoom = async (req, res) => {
     try {
         const { roomTypeId, roomName, status, notes } = req.body;
@@ -87,7 +95,10 @@ exports.createRoom = async (req, res) => {
     }
 };
 
-// Update room
+/**
+ * api : /api/rooms
+ * require : admin,manager,receptionist role
+ */
 exports.updateRoom = async (req, res) => {
     try {
         const { roomTypeId, roomName, status, notes } = req.body;
@@ -138,7 +149,10 @@ exports.updateRoom = async (req, res) => {
     }
 };
 
-// Delete room
+/**
+ * api : /api/rooms
+ * require : admin,manager role
+ */
 exports.deleteRoom = async (req, res) => {
     try {
         const room = await Room.findById(req.params.id);
@@ -172,7 +186,10 @@ exports.deleteRoom = async (req, res) => {
     }
 };
 
-// Get available rooms
+/**
+ * api : /api/rooms
+ * require : admin,manager,receptionist role
+ */
 exports.getAvailableRooms = async (req, res) => {
     try {
         const { checkIn, checkOut } = req.query;

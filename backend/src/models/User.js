@@ -16,10 +16,10 @@ const userSchema = new mongoose.Schema({
     },
     phone: String,
     address: String,
-    role: {
+    role: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Role'
-    }
+    }]
 }, {
     timestamps: true
 });

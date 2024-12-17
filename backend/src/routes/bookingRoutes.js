@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middlewares/auth');
+const Permission = require('../models/Permission')
 const {
     getAllBookings,
     getBooking,
@@ -14,16 +15,15 @@ const {
 // Protect all routes
 router.use(protect);
 
-// Routes cho staff/receptionist (người dùng đã đăng nhập)
-router.post('/', createBooking);
-router.get('/my-bookings', getBookingsByUser);
-router.get('/:id', getBooking);
+// Routes cho staff/receptionist 
+router.post('/',authorize(Permission.CREATE_BOOKINGS), createBooking);
+router.get('/my-bookings',authorize(Permission.VIEW_BOOKINGS), getBookingsByUser);
+router.get('/:id',authorize(Permission.VIEW_BOOKINGS) ,getBooking);
 
-// Admin only routes
-router.use(authorize('admin'));
-router.get('/', getAllBookings);
-router.get('/stats/summary', getBookingStats);
-router.put('/:id/status', updateBookingStatus);
-router.delete('/:id', deleteBooking);  // Xóa booking
+// Admin routes
+router.get('/',authorize(Permission.VIEW_BOOKINGS), getAllBookings);
+router.get('/stats/summary',authorize(Permission.VIEW_REPORTS) ,getBookingStats);
+router.put('/:id/status',authorize(Permission.UPDATE_BOOKINGS), updateBookingStatus);
+router.delete('/:id',authorize(Permission.DELETE_BOOKINGS), deleteBooking);  // Xóa booking
 
 module.exports = router;

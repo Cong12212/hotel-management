@@ -34,13 +34,6 @@ exports.getCustomer = async (req, res) => {
             });
         }
 
-        // Chỉ admin hoặc chính user đó mới xem được thông tin
-        if (req.user.role !== 'admin' && customer._id.toString() !== req.user.id) {
-            return res.status(403).json({
-                success: false,
-                error: 'Not authorized'
-            });
-        }
 
         res.status(200).json({
             success: true,
@@ -54,7 +47,12 @@ exports.getCustomer = async (req, res) => {
     }
 };
 
-// Create customer (Admin)
+/**
+ * 
+ * @param req.body fields containing : {fullName-required, idNumber(CCCD)-required, address, phone-required, customerTypeId-required} 
+ * @param {*} res 
+ * @description creation of a new customer 
+ */
 exports.createCustomer = async (req, res) => {
     try {
         const { customerTypeId } = req.body;
@@ -100,13 +98,6 @@ exports.updateCustomer = async (req, res) => {
             });
         }
 
-        // Chỉ admin hoặc chính user đó mới update được
-        if (req.user.role !== 'admin' && customer._id.toString() !== req.user.id) {
-            return res.status(403).json({
-                success: false,
-                error: 'Not authorized'
-            });
-        }
 
         const updatedCustomer = await Customer.findByIdAndUpdate(
             req.params.id,
