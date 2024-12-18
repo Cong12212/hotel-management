@@ -1,0 +1,25 @@
+body {
+  background-color: #f8f9fa;
+}
+
+.card {
+  border: none;
+  border-radius: 10px;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  border: none;
+}
+
+.text-danger {
+  color: #d9534f !important;
+}
+
+.form-check-label {
+  font-size: 0.9rem;
+}
+
+small {
+  font-size: 0.85rem;
+}
