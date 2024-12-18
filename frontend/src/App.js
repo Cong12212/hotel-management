@@ -1,5 +1,5 @@
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
-import DashBoard from './page/dashboard/DashBoard'
+import DashBoard from './page/Dashboard/DashBoard'
 import AppLayout from './ui/AppLayout'
 import { NavBarItemProvider } from './context/NavBarItemContext'
 import Hotel from './page/hotel/Hotel'
