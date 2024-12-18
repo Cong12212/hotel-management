@@ -1,77 +1,75 @@
-  .title{
-    padding-bottom: 20px;
-  }
-  
-  .search-bar input {
-    border: 1px solid #8e8e8e;
-    border-radius: 5px;
-    padding: 5px 10px;
-    outline: none;
-  }
+.title{
+  padding-bottom: 20px;
+}
 
-  .search-bar input:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-  }
+.search-bar input {
+  border: 1px solid #8e8e8e;
+  border-radius: 5px;
+  padding: 5px 10px;
+  outline: none;
+}
 
-  .search-bar label {
-    font-size: 1rem;
-    color: #555;
-  }
+.search-bar input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
 
-  /* Wrapper để bo góc bảng và xử lý border ngoài */
-  .table-wrapper {
-    border: 1px solid #6c757d;
-    border-radius: 10px;
-    overflow: hidden; /* Giữ phần bo tròn góc */
-  }
+.search-bar label {
+  font-size: 1rem;
+  color: #555;
+}
 
-  /* Table styling */
-  .custom-table {
-    padding-top: 20px;
-    padding-left: 30px;
-    border-collapse: separate; /* Tách border của table */
-    border-spacing: 0; /* Loại bỏ khoảng cách giữa các ô */
-    margin: 0; /* Loại bỏ margin */
-    width: 100%;
-    background-color: transparent;
-  }
+/* Wrapper để bo góc bảng và xử lý border ngoài */
+.table-wrapper {
+  border: 1px solid #6c757d;
+  border-radius: 10px;
+  overflow: hidden; /* Giữ phần bo tròn góc */
+}
 
-  .custom-table th,
-  .custom-table td {
-    border: none; /* Ẩn các border bên trong */
-    text-align: left;
-    vertical-align: middle;
-    padding: 10px; /* Khoảng cách giữa nội dung và border */
-    background-color: transparent !important;
-  }
+/* Table styling */
+.custom-table {
+  padding-top: 20px;
+  padding-left: 30px;
+  border-collapse: separate; /* Tách border của table */
+  border-spacing: 0; /* Loại bỏ khoảng cách giữa các ô */
+  margin: 0; /* Loại bỏ margin */
+  width: 100%;
+  background-color: transparent;
+}
 
+.custom-table th,
+.custom-table td {
+  border: none; /* Ẩn các border bên trong */
+  text-align: left;
+  vertical-align: middle;
+  padding: 10px; /* Khoảng cách giữa nội dung và border */
+  background-color: transparent !important;
+}
 
-  .custom-table th {
-    font-size: 1rem;
-    color: #555;
-    cursor: pointer;
-  }
+.custom-table th {
+  font-size: 1rem;
+  color: #555;
+  cursor: pointer;
+}
 
+/* Responsive */
+.table-responsive {
+  overflow-x: auto; /* Cho phép cuộn ngang khi bảng quá rộng */
+}
 
-  /* Responsive */
-  .table-responsive {
-    overflow-x: auto; /* Cho phép cuộn ngang khi bảng quá rộng */
-  }
-
-
-  /* Pagination container */
+/* Pagination container */
 .pagination {
   margin-top: 20px;
 }
 
 .pagination .page-item {
   margin: 0 2px; /* Khoảng cách giữa các nút */
+  padding-bottom: 20px;
 }
 
 .pagination .page-link {
-  color: #007bff; /* Màu chữ */
-  background-color: #fff; /* Màu nền */
+  color: #6c757d; /* Màu chữ tối */
+  background-color: #fff; /* Màu nền trắng */
   border: 1px solid #ddd; /* Viền nút */
   border-radius: 5px; /* Bo tròn góc */
   transition: all 0.3s ease-in-out; /* Hiệu ứng mượt */
@@ -80,15 +78,15 @@
 /* Hover effect */
 .pagination .page-link:hover {
   color: #fff; /* Chữ chuyển thành màu trắng */
-  background-color: #007bff; /* Màu nền khi hover */
-  border-color: #007bff; /* Viền khi hover */
+  background-color: #343a40; /* Màu nền tối khi hover */
+  border-color: #343a40; /* Viền tối khi hover */
 }
 
 /* Active page */
 .pagination .page-item.active .page-link {
   color: #fff; /* Chữ màu trắng */
-  background-color: #007bff; /* Màu nền */
-  border-color: #007bff; /* Viền màu xanh */
+  background-color: #343a40; /* Màu nền tối */
+  border-color: #343a40; /* Viền màu tối */
 }
 
 /* Disabled button */

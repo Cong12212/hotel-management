@@ -602,8 +602,11 @@ const Transaction = () => {
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   return (
-    <div className="container my-5">
-    <p class="h2 fw-bold title">Transaction</p>
+    <div className="pt-16 pb-8 pr-8 mt-2">
+    <div className="flex items-center mb-3 justify-between">
+      <h2 className="font-bold text-3xl font-sans ">Transaction</h2>
+    </div>
+    
       {/* Thanh tìm kiếm */}
       <div className="search-bar mb-3">
         <label htmlFor="search" className="me-2 fw-bold">Search:</label>

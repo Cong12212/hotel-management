@@ -81,17 +81,26 @@ const RoomCheckout = () => {
         setCustomerName("");
     };
 
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter") {
+            handleSearch();
+        }
+    };
+
     return (
-        <div className="container mt-5 w-full">
-            <p className="h2 fw-bold">Check Out</p>
+        <div className="pt-16 pb-8 pr-8 mt-2" >
+            <div className="flex items-center mb-3 justify-between">
+                <h2 className="font-bold text-3xl font-sans ">Room Checkout</h2>
+            </div>
+            
 
             {/* Hiển thị thông báo thành công */}
             {successMessage && (
-                <div className="alert alert-success">{successMessage}</div>
+                <div className="alert alert-success ms-4">{successMessage}</div>
             )}
 
             {/* Search Section */}
-            <div className="card bg-white shadow mb-4">
+            <div className="card bg-white shadow mb-4 ms-4">
                 <div className="card-header bg-white">
                     <h4 className="mb-0">Search for Customer</h4>
                 </div>
@@ -104,6 +113,7 @@ const RoomCheckout = () => {
                             className="form-control"
                             value={roomID}
                             onChange={(e) => setRoomID(e.target.value)}
+                            onKeyDown={handleKeyDown}
                         />
                     </div>
                     <div className="mb-3">
@@ -114,18 +124,19 @@ const RoomCheckout = () => {
                             className="form-control"
                             value={customerName}
                             onChange={(e) => setCustomerName(e.target.value)}
+                            onKeyDown={handleKeyDown}
                         />
                     </div>
                     <button className="btn btn-primary" onClick={handleSearch}>Search</button>
                 </div>
             </div>
 
-            {error && <div className="alert alert-danger">{error}</div>}
+            {error && <div className="alert alert-danger ms-4">{error}</div>}
 
             {foundBill && (
                 <>
                     {/* Customer Details */}
-                    <div className="card bg-white shadow mb-4">
+                    <div className="card bg-white shadow mb-4 ms-4">
                         <div className="card-header bg-white">
                             <h4 className="mb-0">Customer Details</h4>
                         </div>
@@ -158,7 +169,7 @@ const RoomCheckout = () => {
                     </div>
 
                     {/* Bill Details */}
-                    <div className="card bg-white shadow">
+                    <div className="card bg-white shadow ms-4">
                         <div className="card-header bg-white">
                             <h4 className="mb-0">Bill Details</h4>
                         </div>
@@ -200,7 +211,7 @@ const RoomCheckout = () => {
                         </div>
                     </div>
 
-                    <div className="text-end mt-3" style={{ marginBottom: '10px' }}>
+                    <div className="text-end mt-3 ms-4" style={{ marginBottom: '10px'}}>
                         <button className="btn btn-primary" onClick={handleCheckout}>Checkout</button>
                     </div>
                 </>

@@ -1,17 +1,26 @@
-import {Outlet} from 'react-router-dom'
-import Header from './Header'
-import NavBar from './NavBar'
-const AppLayout = ()=>{
+import React, { useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import Header from './Header';
+import NavBar from './NavBar';
+
+const AppLayout = () => {
+    const [isNavBarOpen, setIsNavBarOpen] = useState(true);
+
+    const toggleNavBar = () => {
+        setIsNavBarOpen(!isNavBarOpen);
+    };
+
     return (
-        <div className=" flex gap-12 font-dm-sans bg-gradient-to-b from-gray-50 to-custom-gray">
-            <NavBar />
-            <div className="flex-1 flex flex-col ">
-                <Header />
-                <div className="  overflow-auto h-full">
+        <div className={`flex font-dm-sans bg-gradient-to-b from-gray-50 to-custom-gray h-screen min-h-screen ${isNavBarOpen ? 'gap-12' : 'gap-4'}`}>
+            <NavBar isOpen={isNavBarOpen} />
+            <div className={`flex-1 flex flex-col transition-all duration-300 ${isNavBarOpen ? 'ml-64' : 'ml-16'}`}>
+                <Header toggleNavBar={toggleNavBar} isNavBarOpen={isNavBarOpen} />
+                <div className="overflow-auto h-full">
                     <Outlet />
                 </div>
             </div>
         </div>
     );
-}
-export default AppLayout
+};
+
+export default AppLayout;
