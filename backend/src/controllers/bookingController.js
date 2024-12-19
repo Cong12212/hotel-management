@@ -249,10 +249,10 @@ exports.createBooking = async (req, res) => {
             totalAmount += bookingDetail.totalPrice
 
             // Update room status
-            await Room.findByIdAndUpdate(
-                detail.roomId,
-                { status: 'occupied' }
-            );
+            // await Room.findByIdAndUpdate(
+            //     detail.roomId,
+            //     { status: 'occupied' }
+            // );
         }
 
         // Create main booking
