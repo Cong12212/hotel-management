@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Table, Button, Form, InputGroup, DropdownButton, Dropdown, Offcanvas } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import roomService from '../../service/apiServices';
+import {getAllRooms} from '../../service/apiServices';
 
 
 function RoomList() {
@@ -15,12 +15,11 @@ function RoomList() {
     const fetchListRoom = async () => {
         try {
             console.log("Fetching rooms...");
-            let res = await roomService.getAllRooms();
+            let res = await getAllRooms();
             console.log("Response:", res);
     
             // Kiểm tra nếu res hoặc res.data là null
             if (res && res.data && res.data.data) {
-                console.log("Rooms data:", res.data.data);
                 setRooms(res.data.data);
             } else {
                 console.error("No data found in the response.");
@@ -62,6 +61,7 @@ function RoomList() {
         setSearch(e.target.value);
         setCurrentPage(1);
     };
+
     const handleSearchFieldChange = (field) => {
         setSearchField(field);
     };
@@ -217,24 +217,7 @@ function RoomList() {
             );
         }
     };
-    // const filteredRooms = rooms
-    //     .filter((room) => room[searchField]?.toString().toLowerCase().includes(search.toLowerCase()))
-    //     .sort((a, b) => {
-    //         const activeColumn = Object.keys(sortState).find((key) => sortState[key].active);
-    //         if (!activeColumn) return 0;
-
-    //         const sortOrder = sortState[activeColumn].order;
-    //         if (activeColumn === 'price') {
-    //             return sortOrder === 'asc' ? a.roomTypeId.price - b.roomTypeId.price : b.roomTypeId.price - a.roomTypeId.price;
-    //         } else if (activeColumn === 'id') {
-    //             return sortOrder === 'asc' ? a.id - b.id : b.id - a.id;
-    //         }
-    //         return 0;
-    //     });
-    // // Calculate Pagination
-    // const startIdx = (currentPage - 1) * rowsPerPage;
-    // const paginatedRooms = filteredRooms.slice(startIdx, startIdx + rowsPerPage);
-
+   
     const filteredRooms = rooms
         .filter((room) => {
             if (!searchField || !room[searchField]) return true; // Nếu trường tìm kiếm không tồn tại
@@ -242,13 +225,13 @@ function RoomList() {
         })
         .sort((a, b) => {
             const activeColumn = Object.keys(sortState).find((key) => sortState[key].active);
+            
             if (!activeColumn) return 0; // Không có cột nào được chọn để sắp xếp
 
             const sortOrder = sortState[activeColumn]?.order;
+            
             if (activeColumn === 'price' && a.roomTypeId?.price !== undefined && b.roomTypeId?.price !== undefined) {
                 return sortOrder === 'asc' ? a.roomTypeId.price - b.roomTypeId.price : b.roomTypeId.price - a.roomTypeId.price;
-            } else if (activeColumn === 'id') {
-                return sortOrder === 'asc' ? a._id - b.id : b.id - a.id;
             }
             return 0;
         });
@@ -256,15 +239,8 @@ function RoomList() {
     // Xử lý phân trang
     const startIdx = (currentPage - 1) * rowsPerPage;
     const paginatedRooms = filteredRooms.slice(startIdx, startIdx + rowsPerPage);
-
-    useEffect(() => {
-        console.log("Filtered Rooms:", filteredRooms);
-
-    }, [filteredRooms]);
-    useEffect(() => {
-
-        console.log("Rooms final updated:", paginatedRooms);
-    }, [paginatedRooms]);
+    
+   
     return (
         <div className="pt-16 pb-8 pr-8 mt-2 ">
             <ToastContainer />
@@ -329,9 +305,6 @@ function RoomList() {
                         <tr>
                             <th>
                                 ID
-                                <button onClick={() => handleSort('id')} className="ml-2 text-l">
-                                    {getSortIcon('id')}
-                                </button>
                             </th>
                             <th>Room Name</th>
                             <th>Room Type</th>
@@ -346,7 +319,7 @@ function RoomList() {
                         </tr>
                     </thead>
                     <tbody>
-                        {paginatedRooms.map((room, index) => (
+                        {rooms.map((room, index) => (
                             <tr key={room._id}>
                                 <td className="align-middle">{index + 1}</td>
                                 <td className="align-middle">{room.roomName}</td>

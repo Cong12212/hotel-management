@@ -1,18 +1,55 @@
 const RoomType = require('../models/RoomType');
 const Room = require('../models/Room');
+const QueryHelper = require('../utils/QueryHelper')
 /**
  * api : /api/rooms
  * required permission : view rooms
+ * possible query params : sort, limit, page , search 
+ * @returns : success status, count (number of records) , total (total number of records), data 
  */
 exports.getAllRooms = async (req, res) => {
     try {
-        const rooms = await Room.find()
+        const total = await Product.countDocuments()
+
+        const roomQuery = Room.find()
             .populate('roomTypeId')
             .sort('roomName');
+        const queryHelper = new QueryHelper(roomQuery,req.query).executeQuery()
+        let rooms = await queryHelper.query 
+
+        const {sort,search} = req.query 
+
+        if (sort === 'roomTypeId.price' || sort === '-roomTypeId.price') {
+
+            const order = sort.startsWith('-') ? -1 : 1;
+    
+            rooms = rooms.sort((a, b) => {
+                const valA = a.roomTypeId['price'];
+                const valB = b.roomTypeId['price'];
+                if (valA < valB) return -order;
+                if (valA > valB) return order;
+                return 0;
+            });
+        }
+
+        if(search){
+            const searchTerm = search.toLowerCase()
+
+            rooms = rooms.filter(room => {
+
+                const roomName = String(room.roomName).toLowerCase();
+                const roomTypeName = room.roomTypeId && room.roomTypeId.name ? String(room.roomTypeId.name).toLowerCase() : '';
+                const notes = room.notes ? String(room.notes).toLowerCase() : '';
+
+                return roomName.includes(searchTerm) || roomTypeName.includes(searchTerm) || notes.includes(searchTerm);
+            });
+
+        }
 
         res.status(200).json({
             success: true,
             count: rooms.length,
+            total,
             data: rooms
         });
     } catch (error) {
