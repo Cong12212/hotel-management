@@ -4,11 +4,18 @@ const Room = require('../models/Room');
 const Customer = require('../models/Customer')
 const CustomerType = require('../models/CustomerType')
 const mongoose = require('mongoose');
+const QueryHelper = require('../utils/QueryHelper')
 
-// Get all bookings (Admin)
+/**
+ * Example API endpoint : http://localhost:4000/api/bookings?sort=totalAmount&page=1&limit=2
+ * @param possible query params : sort, page, limit
+ * Required role : admin, manager, receptionist
+ * @return success status, count , total, data
+ */
 exports.getAllBookings = async (req, res) => {
     try {
-        const bookings = await Booking.find()
+        const total = await Booking.countDocuments()
+        const bookingQuery = Booking.find()
             .populate('customerIds', 'fullName phone email')
             .populate('userId', 'username')
             .populate({
@@ -18,11 +25,14 @@ exports.getAllBookings = async (req, res) => {
                     select: 'roomName roomTypeId'
                 }
             })
-            .sort('-createdAt');
 
+        const queryHelper = new QueryHelper(bookingQuery,req.query).executeQuery()
+
+        const bookings = await queryHelper.query 
         res.status(200).json({
             success: true,
             count: bookings.length,
+            total,
             data: bookings
         });
     } catch (error) {
@@ -239,10 +249,10 @@ exports.createBooking = async (req, res) => {
             totalAmount += bookingDetail.totalPrice
 
             // Update room status
-            await Room.findByIdAndUpdate(
-                detail.roomId,
-                { status: 'occupied' }
-            );
+            // await Room.findByIdAndUpdate(
+            //     detail.roomId,
+            //     { status: 'occupied' }
+            // );
         }
 
         // Create main booking
