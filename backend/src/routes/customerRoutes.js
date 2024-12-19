@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middlewares/auth');
+const Permission = require('../models/Permission')
 const {
     getAllCustomers,
     getCustomer,
@@ -11,12 +12,11 @@ const {
 
 router.use(protect);
 
-router.post('/', createCustomer);
-router.get('/:id', getCustomer);
+router.post('/',authorize(Permission.CREATE_CUSTOMERS),createCustomer);
+router.get('/:id',authorize(Permission.VIEW_CUSTOMERS),getCustomer);
 
-router.use(authorize('admin'));
-router.get('/', getAllCustomers);
-router.put('/:id', updateCustomer);
-router.delete('/:id', deleteCustomer);
+router.get('/',authorize(Permission.VIEW_CUSTOMERS), getAllCustomers);
+router.put('/:id',authorize(Permission.UPDATE_CUSTOMERS), updateCustomer);
+router.delete('/:id',authorize(Permission.DELETE_CUSTOMERS), deleteCustomer);
 
 module.exports = router;

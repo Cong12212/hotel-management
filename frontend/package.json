@@ -3,12 +3,23 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+<<<<<<< HEAD
     "@tanstack/react-table": "^8.20.6",
+=======
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "axios": "^1.7.9",
+    "bootstrap": "^5.3.0",
+>>>>>>> 849a1700f626ef0f4eaee613b4541fef844333d6
     "cra-template": "1.2.0",
+    "jwt-decode": "^4.0.0",
     "react": "^18.2.0",
+    "react-bootstrap": "^2.7.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.0.2",
     "react-scripts": "5.0.1",
+    "react-toastify": "^11.0.0",
     "web-vitals": "^4.2.4"
   },
   "scripts": {

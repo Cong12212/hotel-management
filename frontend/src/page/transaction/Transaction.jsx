@@ -1,8 +1,9 @@
-const Transaction = ()=>{
-    return (
-        <div>
-
-        </div>
-    )
+const Transaction = () => {
+  return (
+    <div className="pt-16 pb-8 pr-8 mt-2 ">
+        
+    </div>    
+  )
 }
-export default Transaction ;
+
+export default Transaction;

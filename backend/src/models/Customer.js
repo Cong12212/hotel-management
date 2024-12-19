@@ -12,7 +12,11 @@ const customerSchema = new mongoose.Schema({
         unique: true
     },
     address: String,
-    phone: String,
+    phone: {
+        type: String,
+        required: [true, 'Phone number is required'],
+        unique: true
+    },
     customerTypeId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'CustomerType',

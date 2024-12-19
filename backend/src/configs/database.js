@@ -3,7 +3,8 @@ const Role = require('../models/Role');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv')
-
+const Permission = require('../models/Permission')
+const {mockRoomTypeAndRoomData,mockCustomerTypeData} = require('../boot/createMockData')
 dotenv.config({path:'../../.env'})
 
 const connectDB = async () => {
@@ -19,45 +20,107 @@ const connectDB = async () => {
 
 const initializeSystem = async () => {
     try {
-        // Admin role với tất cả quyền
+        /**
+         * admin role with full access to web server
+         */
         const adminRole = {
             name: 'admin',
             description: 'Administrator with full access',
             permissions: [
-                'manage_users',
-                'manage_roles',
-                'manage_rooms',
-                'manage_room_types',
-                'manage_bookings',
-                'view_reports',
-                'view_rooms',
-                'create_booking',
-                'view_own_bookings'
+                Permission.CREATE_BOOKINGS,
+                Permission.CREATE_ROOMS,
+                Permission.CREATE_ROOMTYPES,
+                Permission.DELETE_BOOKINGS,
+                Permission.DELETE_ROOMS,
+                Permission.DELETE_ROOMTYPES,
+                Permission.MANAGE_ROLES,
+                Permission.MANAGE_USERS,
+                Permission.UPDATE_BOOKINGS,
+                Permission.UPDATE_ROOMS,
+                Permission.UPDATE_ROOMTYPES,
+                Permission.VIEW_BOOKINGS,
+                Permission.VIEW_REPORTS,
+                Permission.VIEW_ROOMS,
+                Permission.VIEW_ROOMTYPES,
+                Permission.CREATE_CUSTOMERS,
+                Permission.VIEW_CUSTOMERS,
+                Permission.UPDATE_CUSTOMERS,
+                Permission.DELETE_CUSTOMERS,
+
             ]
         };
 
-        // User role với quyền hạn chế
-        const userRole = {
-            name: 'user',
-            description: 'Regular user with limited access',
+        /**
+         * receptist with limit permision 
+         * permisison : view permission, create bookings, update room status,checkout 
+         */
+        const receptionistRole = {
+            name: 'receptionist',
+            description: 'Receptionist with limited access, also default role when account created',
             permissions: [
-                'view_rooms',
-                'create_booking',
-                'view_own_bookings'
+                Permission.VIEW_ROOMS,
+                Permission.CREATE_BOOKINGS,
+                Permission.UPDATE_BOOKINGS,
+                Permission.DELETE_BOOKINGS,
+                Permission.VIEW_BOOKINGS,
+                Permission.VIEW_ROOMTYPES,
+                Permission.UPDATE_ROOMS,
+                Permission.CREATE_CUSTOMERS,
+                Permission.VIEW_CUSTOMERS,
+                Permission.UPDATE_CUSTOMERS
+            ]
+        };
+        /**
+         * Manage role with almost full permissions
+         * 
+         */
+        const managerRole = {
+            name: 'manager',
+            description: 'Manager role with almost full access',
+            permissions: [
+                Permission.CREATE_CUSTOMERS,
+                Permission.VIEW_CUSTOMERS,
+                Permission.UPDATE_CUSTOMERS,
+                Permission.DELETE_CUSTOMERS,
+                Permission.CREATE_BOOKINGS,
+                Permission.CREATE_ROOMS,
+                Permission.CREATE_ROOMTYPES,
+                Permission.DELETE_BOOKINGS,
+                Permission.DELETE_ROOMS,
+                Permission.DELETE_ROOMTYPES,
+                Permission.MANAGE_ROLES,
+                Permission.MANAGE_USERS,
+                Permission.UPDATE_BOOKINGS,
+                Permission.UPDATE_ROOMS,
+                Permission.UPDATE_ROOMTYPES,
+                Permission.VIEW_BOOKINGS,
+                Permission.VIEW_REPORTS,
+                Permission.VIEW_ROOMS,
+                Permission.VIEW_ROOMTYPES
             ]
         };
 
         // Tạo hoặc cập nhật admin role
         const adminRoleDoc = await Role.findOneAndUpdate(
             { name: 'admin' },
-            adminRole,
+            adminRole,  
             { upsert: true, new: true }
         );
 
         // Tạo hoặc cập nhật user role
         await Role.findOneAndUpdate(
-            { name: 'user' },
-            userRole,
+            { name: 'admin' },
+            adminRole,
+            { upsert: true }
+        );
+        await Role.findOneAndUpdate(
+            { name: 'manager' },
+            managerRole,
+            { upsert: true }
+        );
+        await Role.findOneAndUpdate(
+            { name: 'receptionist' },
+            receptionistRole,
             { upsert: true }
         );
 
@@ -92,6 +155,19 @@ const initializeSystem = async () => {
                 console.log(`Created admin account: ${admin.username}`);
             }
         }
+
+        /**
+         * @author pctien 
+         * Create default roomtype and room when there is no room or room type available
+         * Log to console when data created
+        */
+        await mockRoomTypeAndRoomData()
+        /**
+         * @author pctien 
+         * Create default roomtype and room when there is no customerType available
+         * Log to console when data created
+        */
+        await mockCustomerTypeData()
 
     } catch (error) {
         console.error('Error initializing system:', error);
