@@ -9,7 +9,7 @@ const QueryHelper = require('../utils/QueryHelper')
  */
 exports.getAllRooms = async (req, res) => {
     try {
-        const total = await Product.countDocuments()
+        const total = await Room.countDocuments()
 
         const roomQuery = Room.find()
             .populate('roomTypeId')
