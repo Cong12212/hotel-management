@@ -10,7 +10,7 @@ const NavBar = ({ isOpen }) => {
             title: 'Dashboard',
             icon: '/home.svg',
             redirect: '/',
-            subItems: []
+            subItems: [],
         },
         {
             title: 'Hotel',

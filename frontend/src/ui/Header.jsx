@@ -1,4 +1,5 @@
 
+
 const Header = ({ toggleNavBar, isNavBarOpen }) => {
     return (
         <div className=" w-full bg-gray-50 z-50 fixed  ">
