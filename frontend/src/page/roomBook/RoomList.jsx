@@ -16,7 +16,7 @@ function RoomList() {
         try {
             console.log("Fetching rooms...");
             let res = await getAllRooms();
-            console.log("Response:", res);
+            console.log("Response:", res);// In ra response
     
             // Kiểm tra nếu res hoặc res.data là null
             if (res && res.data && res.data.data) {
