@@ -56,7 +56,7 @@ const Header = ({ toggleNavBar, isNavBarOpen }) => {
                     </div>
                     <div className="flex items-center gap-2 mr-4">
                         <button className="focus:outline-dashed focus:outline-2 focus:outline-violet-500 cursor-pointer px-3 py-2 rounded-md text-white bg-gradient-to-r from-violet-500 to-pink-500 hover:bg-gradient-to-r hover:from-violet-700 hover:to-pink-700 ">
-                            Logout
+                            LogIn 
                         </button>
                         <div className="w-10 h-10 ">
                             <img className="rounded-full hover:shadow-lg"

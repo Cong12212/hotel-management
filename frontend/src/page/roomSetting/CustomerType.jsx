@@ -65,59 +65,59 @@ function CustomerType() {
     <div className="pt-16 pb-8 pr-8 mt-2">
       <div className="flex items-center mb-3 justify-between">
         <h2 className="font-bold text-3xl font-sans">Customer Configure</h2>
-      </div>
-
-      {/* Nút Add Customer bên phải */}
-      <div className="d-flex justify-content-end mb-3">
         <Button
           variant="dark" // Màu đen
           onClick={handleAddCustomer}
-          className="text-white" // Màu chữ trắng
-        >
+          className="text-white">
           Add Customer
         </Button>
       </div>
 
+      {/* Nút Add Customer bên phải */}
+
+
       {/* Bảng có hiệu ứng đổ bóng */}
-      <Table striped bordered hover className="shadow-lg">
-        <thead>
-          <tr>
-            <th onClick={() => handleSort('id')}>
-              ID {sortConfig.key === 'id' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-            <th onClick={() => handleSort('type')}>
-              Customer Type {sortConfig.key === 'type' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-            <th onClick={() => handleSort('coefficient')}>
-              Coefficient {sortConfig.key === 'coefficient' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {customers.map((customer) => (
-            <tr key={customer.id}>
-              <td>{customer.id}</td>
-              <td>{customer.type}</td>
-              <td>{customer.coefficient}</td>
-              <td>
-                <button
-                  className="hover:text-blue-800 text-blue-500 text-xl me-2"
-                  onClick={() => handleEditClick(customer)}
-                >
-                  ✎
-                </button>
-                <button
-                  className="hover:text-red-800 text-red-500 font-bold text-xl"
-                  onClick={() => handleDelete(customer.id)}
-                >
-                  🗑
-                </button>
-              </td>
+      <div className="bg-white font-dm-sans rounded-md shadow-sm p-3">
+        <Table bordered-y="true" hover>
+          <thead>
+            <tr>
+              <th onClick={() => handleSort('id')}>
+                ID {sortConfig.key === 'id' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+              </th>
+              <th onClick={() => handleSort('type')}>
+                Customer Type {sortConfig.key === 'type' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+              </th>
+              <th onClick={() => handleSort('coefficient')}>
+                Coefficient {sortConfig.key === 'coefficient' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+              </th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
+          </thead>
+          <tbody>
+            {customers.map((customer) => (
+              <tr key={customer.id}>
+                <td>{customer.id}</td>
+                <td>{customer.type}</td>
+                <td>{customer.coefficient}</td>
+                <td>
+                  <button
+                    className="hover:text-blue-800 text-blue-500 text-xl me-2"
+                    onClick={() => handleEditClick(customer)}
+                  >
+                    ✎
+                  </button>
+                  <button
+                    className="hover:text-red-800 text-red-500 font-bold text-xl"
+                    onClick={() => handleDelete(customer.id)}
+                  >
+                    🗑
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </div>
 
       {/* Offcanvas cho Add/Edit */}
       <Offcanvas show={show} onHide={handleClose} placement="end"> {/* Hiện bên phải */}

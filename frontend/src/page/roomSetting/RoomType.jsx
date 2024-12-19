@@ -53,55 +53,56 @@ function RoomConfigure() {
 
   return (
     <div className="pt-16 pb-8 pr-8 mt-2">
-      <div className="flex items-center mb-3 justify-between">
+      <div className="flex items-center mb-3 justify-between ">
         <h2 className="font-bold text-3xl font-sans">Room Configure</h2>
       </div>
 
       {/* Table displaying the rooms */}
-      <Table striped bordered hover className="shadow-lg">
-        <thead>
-          <tr>
-            <th onClick={() => handleSort('id')}>
-              ID {sortConfig.key === 'id' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-            <th onClick={() => handleSort('roomId')}>
-              Room ID {sortConfig.key === 'roomId' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-            <th onClick={() => handleSort('maxCustomers')}>
-              Max Customers {sortConfig.key === 'maxCustomers' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-            <th onClick={() => handleSort('surcharge')}>
-              Surcharge {sortConfig.key === 'surcharge' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-            </th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rooms.map((room) => (
-            <tr key={room.id}>
-              <td>{room.id}</td>
-              <td>{room.roomId}</td>
-              <td>{room.maxCustomers}</td>
-              <td>{room.surcharge}</td>
-              <td>
-                <button
-                  className="hover:text-blue-800 text-blue-500 text-xl me-2"
-                  onClick={() => handleEditClick(room)}
-                >
-                  ✎
-                </button>
-                <button
-                  className="hover:text-red-800 text-red-500 font-bold text-xl"
-                  onClick={() => handleDelete(room.id)}
-                >
-                  🗑
-                </button>
-              </td>
+      <div className="bg-white font-dm-sans rounded-md shadow-sm p-3">
+        <Table bordered-y="true" hover>
+          <thead>
+            <tr>
+              <th onClick={() => handleSort('id')}>
+                ID {sortConfig.key === 'id' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+              </th>
+              <th onClick={() => handleSort('roomId')}>
+                Room ID {sortConfig.key === 'roomId' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+              </th>
+              <th onClick={() => handleSort('maxCustomers')}>
+                Max Customers {sortConfig.key === 'maxCustomers' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+              </th>
+              <th onClick={() => handleSort('surcharge')}>
+                Surcharge {sortConfig.key === 'surcharge' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+              </th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
-
+          </thead>
+          <tbody>
+            {rooms.map((room) => (
+              <tr key={room.id}>
+                <td>{room.id}</td>
+                <td>{room.roomId}</td>
+                <td>{room.maxCustomers}</td>
+                <td>{room.surcharge}</td>
+                <td>
+                  <button
+                    className="hover:text-blue-800 text-blue-500 text-xl me-2"
+                    onClick={() => handleEditClick(room)}
+                  >
+                    ✎
+                  </button>
+                  <button
+                    className="hover:text-red-800 text-red-500 font-bold text-xl"
+                    onClick={() => handleDelete(room.id)}
+                  >
+                    🗑
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </div>
       {/* Offcanvas for Edit */}
       <Offcanvas show={show} onHide={handleClose} placement="end">
         <Offcanvas.Header closeButton>
