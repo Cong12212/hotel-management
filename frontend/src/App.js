@@ -10,7 +10,7 @@ import BookingList from './page/roomBook/BookingList'
 import RoomCheckout from './page/roomBook/RoomCheckout'
 import RoomStatus from './page/roomBook/RoomStatus'
 import RoomType from './page/roomSetting/RoomType'
-import CustomerType from './page/roomSetting/CustomerType'
+import CustomerType from './page/roomSetting/CustomerType.jsx'
 const useViewport = () => {
   const [width, setWidth] = React.useState(window.innerWidth);
 
