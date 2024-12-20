@@ -90,8 +90,9 @@ exports.getRoom = async (req, res) => {
 };
 
 /**
- * api : /api/rooms
+ * API endpoint example POST http://localhost:4000/api/rooms
  * require : admin,manager role
+ * @param {roomName,roomTypeId,notes,status(optional)}
  */
 exports.createRoom = async (req, res) => {
     try {
@@ -133,7 +134,7 @@ exports.createRoom = async (req, res) => {
 };
 
 /**
- * api : /api/rooms
+ * API endpoint : PATCH http://localhost:4000/api/rooms/{roomId}
  * require : admin,manager,receptionist role
  */
 exports.updateRoom = async (req, res) => {

@@ -1,8 +1,9 @@
 import React from "react";
 import Card from "./Card"; // Đường dẫn đã chính xác
 import Table from "./Table"; // Đường dẫn đã chính xác
+import RevenueReport from "./RevenueReport"; // Import component bảng doanh thu
 
-const Dashboard = () => {
+const DashBoard = () => {
   // Dữ liệu mẫu cho Today Booking List
   const data = [
     {
@@ -54,11 +55,21 @@ const Dashboard = () => {
       name: "Aictor Sterling",
       roomType: "Studio",
       checkIn: "22/03/2024",
-      checkOut: "29/03/2024",
+      checkOut: "15/03/2024",
       paidAmount: 0.0,
       dueAmount: 530,
       status: "Pending",
     },
+  ];
+
+  // Dữ liệu mẫu cho báo cáo doanh thu hàng tháng
+  const monthlyRevenue = [
+    { month: "January", revenue: 10500, date: "2024-01-01", bookingStatus: "Pending", paymentStatus: "Pending" },
+    { month: "February", revenue: 12500, date: "2024-02-01", bookingStatus: "Confirmed", paymentStatus: "Success" },
+    { month: "March", revenue: 13500, date: "2024-03-01", bookingStatus: "Pending", paymentStatus: "Pending" },
+    { month: "April", revenue: 14500, date: "2024-04-01", bookingStatus: "Confirmed", paymentStatus: "Success" },
+    { month: "May", revenue: 15500, date: "2024-05-01", bookingStatus: "Pending", paymentStatus: "Pending" },
+    { month: "June", revenue: 16500, date: "2024-06-01", bookingStatus: "Confirmed", paymentStatus: "Success" },
   ];
 
   return (
@@ -75,12 +86,18 @@ const Dashboard = () => {
       </div>
 
       {/* Booking List */}
-      <div className="bg-white p-4 rounded-lg shadow-md">
+      <div className="bg-white p-4 rounded-lg shadow-md mb-8">
         <h2 className="text-xl font-semibold mb-4">Today Booking List</h2>
         <Table data={data} /> {/* Truyền data làm props */}
+      </div>
+
+      {/* Bảng báo cáo doanh thu hàng tháng */}
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <h2 className="text-xl font-semibold mb-4">Monthly Revenue Report</h2>
+        <RevenueReport data={monthlyRevenue} />
       </div>
     </div>
   );
 };
 
-export default Dashboard;
+export default DashBoard;
