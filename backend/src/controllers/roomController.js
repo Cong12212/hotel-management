@@ -19,6 +19,7 @@ exports.getAllRooms = async (req, res) => {
 
         const {sort,search} = req.query 
 
+        
         if (sort === 'roomTypeId.price' || sort === '-roomTypeId.price') {
 
             const order = sort.startsWith('-') ? -1 : 1;
