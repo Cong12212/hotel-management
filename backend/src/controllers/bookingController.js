@@ -8,7 +8,7 @@ const QueryHelper = require('../utils/QueryHelper')
 
 /**
  * Example API endpoint : http://localhost:4000/api/bookings?sort=totalAmount&page=1&limit=2
- * @param possible query params : sort, page, limit
+ * @param possible query params : sort, page, limit,search
  * Required role : admin, manager, receptionist
  * @return success status, count , total, data
  */
