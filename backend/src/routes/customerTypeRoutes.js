@@ -9,16 +9,18 @@ const {
     updateCustomerType,
     deleteCustomerType
 } = require('../controllers/customerTypeController');
+const Permissison = require('../models/Permission')
+
+router.use(protect);
 
 // Public routes
-router.get('/', getAllCustomerTypes);
-router.get('/:id', getCustomerType);
+router.get('/',authorize(Permissison.VIEW_CUSTOMERTYPES), getAllCustomerTypes);
+router.get('/:id',authorize(Permissison.VIEW_CUSTOMERTYPES), getCustomerType);
 
 // Admin routes
-router.use(protect);
-router.use(authorize('admin'));
-router.post('/', createCustomerType);
-router.put('/:id', updateCustomerType);
-router.delete('/:id', deleteCustomerType);
+
+router.post('/',authorize(Permissison.CREATE_CUSTOMERTYPES), createCustomerType);
+router.patch('/:id',authorize(Permissison.UPDATE_CUSTOMERTYPES), updateCustomerType);
+router.delete('/:id',authorize(Permissison.DELETE_CUSTOMERTYPES), deleteCustomerType);
 
 module.exports = router;
