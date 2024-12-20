@@ -108,8 +108,13 @@ const getAllInvoices = async(req,res)=>{
                 select: 'fullName phone role'
             },
             {
-                path: 'bookingDetails'
-            }
+                path: 'bookingDetails',
+                populate: {
+                    path: 'roomId',
+                    select: '_id roomName'
+                }
+            }             
+
 
         ]
     })
