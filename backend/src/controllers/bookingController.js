@@ -14,6 +14,7 @@ const QueryHelper = require('../utils/QueryHelper')
  */
 exports.getAllBookings = async (req, res) => {
     try {
+        const {sort,search} = req.query
         const total = await Booking.countDocuments()
         const bookingQuery = Booking.find()
             .populate('customerIds', 'fullName phone email')
@@ -28,7 +29,39 @@ exports.getAllBookings = async (req, res) => {
 
         const queryHelper = new QueryHelper(bookingQuery,req.query).executeQuery()
 
-        const bookings = await queryHelper.query 
+        let bookings = await queryHelper.query 
+
+        if (search) {
+            const searchTerm = search.toLowerCase();
+            bookings = bookings.filter(booking => 
+                booking.bookingDetails.some(detail => 
+                    detail.roomId && 
+                    detail.roomId.roomName && 
+                    detail.roomId.roomName.toLowerCase().includes(searchTerm)
+                )
+            );
+        }
+
+        // if (sort === 'checkInDate' || sort === '-checkInDate') {
+
+        //     const order = sort.startsWith('-') ? -1 : 1;
+    
+        //     bookings = bookings.sort((a, b) => {
+        //         const valA = Array.isArray(a.bookingDetails)
+        //             ? Math.min(...a.bookingDetails.map(detail => new Date(detail.checkInDate).getTime()))
+        //             : new Date(a.bookingDetails?.checkInDate).getTime();
+        
+        //         const valB = Array.isArray(b.bookingDetails)
+        //             ? Math.min(...b.bookingDetails.map(detail => new Date(detail.checkInDate).getTime()))
+        //             : new Date(b.bookingDetails?.checkInDate).getTime();
+        
+        //         if (valA < valB) return -order;
+        //         if (valA > valB) return order;
+        //         return 0;
+        //     });
+        // }
+
+
         res.status(200).json({
             success: true,
             count: bookings.length,
