@@ -7,15 +7,18 @@ const mongoose = require('mongoose');
 const QueryHelper = require('../utils/QueryHelper')
 
 /**
- * Example API endpoint : http://localhost:4000/api/bookings?sort=totalAmount&page=1&limit=2
- * @param possible query params : sort, page, limit,search
+ * Example API endpoint : http://localhost:4000/api/bookings?sort=totalAmount&page=1&limit=2&startDate=2025-06-01&endDate=2025-12-01
+ * @param possible query params : sort, page, limit,search, startDate, endDate
  * Required role : admin, manager, receptionist
  * @return success status, count , total, data
  */
 exports.getAllBookings = async (req, res) => {
     try {
-        const {sort,search} = req.query
+        const {sort,search,startDate,endDate } = req.query
+
+       
         const total = await Booking.countDocuments()
+
         const bookingQuery = Booking.find()
             .populate('customerIds', 'fullName phone email')
             .populate('userId', 'username')
@@ -30,6 +33,26 @@ exports.getAllBookings = async (req, res) => {
         const queryHelper = new QueryHelper(bookingQuery,req.query).executeQuery()
 
         let bookings = await queryHelper.query 
+
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+
+            if (isNaN(start) || isNaN(end)) {
+                throw new Error("startDate or endDate is not valid.");
+            }
+            bookings = bookings.filter(booking =>
+                booking.bookingDetails.some(detail => {
+                    const checkInDate = new Date(detail.checkInDate);
+                    if (isNaN(checkInDate)) {
+                        console.warn("checkInDate is not valid:", detail);
+                        return false;
+                    }
+        
+                    return checkInDate >= start && checkInDate <= end;
+                })
+            );
+        }
 
         if (search) {
             const searchTerm = search.toLowerCase();
