@@ -134,7 +134,7 @@ exports.createRoom = async (req, res) => {
 };
 
 /**
- * api : /api/rooms
+ * API endpoint : PATCH http://localhost:4000/api/rooms/{roomId}
  * require : admin,manager,receptionist role
  */
 exports.updateRoom = async (req, res) => {

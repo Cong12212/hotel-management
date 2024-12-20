@@ -21,7 +21,7 @@ router.get('/:id', getRoom);
 // 
 // Admin routes
 router.get('/',authorize(Permission.VIEW_ROOMS), getAllRooms);
-router.put('/:id',authorize(Permission.UPDATE_ROOMS), updateRoom);
+router.patch('/:id',authorize(Permission.UPDATE_ROOMS), updateRoom);
 
 // Only admin access
 router.post('/',authorize(Permission.CREATE_ROOMS), createRoom);
