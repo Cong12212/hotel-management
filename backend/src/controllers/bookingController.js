@@ -1,12 +1,21 @@
 const Booking = require('../models/Booking');
 const BookingDetail = require('../models/BookingDetail');
 const Room = require('../models/Room');
+const Customer = require('../models/Customer')
+const CustomerType = require('../models/CustomerType')
 const mongoose = require('mongoose');
+const QueryHelper = require('../utils/QueryHelper')
 
-// Get all bookings (Admin)
+/**
+ * Example API endpoint : http://localhost:4000/api/bookings?sort=totalAmount&page=1&limit=2
+ * @param possible query params : sort, page, limit
+ * Required role : admin, manager, receptionist
+ * @return success status, count , total, data
+ */
 exports.getAllBookings = async (req, res) => {
     try {
-        const bookings = await Booking.find()
+        const total = await Booking.countDocuments()
+        const bookingQuery = Booking.find()
             .populate('customerIds', 'fullName phone email')
             .populate('userId', 'username')
             .populate({
@@ -16,11 +25,14 @@ exports.getAllBookings = async (req, res) => {
                     select: 'roomName roomTypeId'
                 }
             })
-            .sort('-createdAt');
 
+        const queryHelper = new QueryHelper(bookingQuery,req.query).executeQuery()
+
+        const bookings = await queryHelper.query 
         res.status(200).json({
             success: true,
             count: bookings.length,
+            total,
             data: bookings
         });
     } catch (error) {
@@ -158,46 +170,89 @@ exports.getBooking = async (req, res) => {
 //     }
 // };
 
+/**
+ * 
+ * @param customerIds an array of customer id 
+ * @param bookingDetails an array of booking details , field included : {roomId, checkInDate, checkOutDate, numberOfGuests}
+ * @returns 
+ */
 exports.createBooking = async (req, res) => {
     try {
-        const { customerIds, bookingDetails, totalAmount } = req.body;
+        const { customerIds, bookingDetails } = req.body;
 
         // Validate input
-        if (!customerIds || !Array.isArray(customerIds) || customerIds.length === 0 || !bookingDetails || !totalAmount) {
+        if (!customerIds || !Array.isArray(customerIds) || customerIds.length === 0 || !bookingDetails ) {
             return res.status(400).json({
                 success: false,
-                error: 'Please provide all required fields. customerIds must be an array.'
+                error: 'Please provide all required fields.'
             });
         }
 
-        // Validate dates and room availability
+
+        var totalAmount = 0
+        // Create booking details
+        const bookingDetailsIds = [];
         for (let detail of bookingDetails) {
+            var additionalFees = []
+            var price = 0
+
+            // Check room exists
+            const room = await Room.findById((detail.roomId)).populate("roomTypeId")
+            if(!room) throw new Error(`Room ${detail.roomId} is not exist`);
             if (new Date(detail.checkInDate) >= new Date(detail.checkOutDate)) {
                 throw new Error('Check-out date must be after check-in date');
             }
+            
 
+            // Check room available 
             const isRoomAvailable = await checkRoomAvailability(
                 detail.roomId,
                 detail.checkInDate,
                 detail.checkOutDate
             );
-
             if (!isRoomAvailable) {
                 throw new Error(`Room ${detail.roomId} is not available for selected dates`);
             }
-        }
 
-        // Create booking details
-        const bookingDetailsIds = [];
-        for (let detail of bookingDetails) {
-            const bookingDetail = await BookingDetail.create(detail);
+
+            price += room.roomTypeId.price
+            if(detail.numberOfGuests > room.roomTypeId.maxOccupancy)
+            {
+                additionalFees.push({amount: room.roomTypeId.price*room.roomTypeId.surchargeRate,description: "Surcharge fee"})
+                price+= price*room.roomTypeId.surchargeRate
+            }
+            const guests = await Customer.find({
+                '_id': {$in: customerIds}
+            }).populate("customerTypeId")
+            
+            const hasForeignGuest = guests.some(guest => guest.customerTypeId && guest.customerTypeId.name.toLowerCase() === 'foreign');
+            
+            if(hasForeignGuest) {
+                const foreignCustomerType = await CustomerType.findOne({
+                    'name': "Foreign"
+                })
+                if(foreignCustomerType.coefficient > 1)
+                {
+                    additionalFees.push({amount: price*(foreignCustomerType.coefficient-1),description: "Foreign customer fee"})
+                    price *= foreignCustomerType.coefficient
+
+                }
+
+
+            }
+            
+            const bookingDetail = await BookingDetail.create({...detail,additionalFees,totalPrice:price,roomPrice:room.roomTypeId.price});
+
+            
             bookingDetailsIds.push(bookingDetail._id);
 
+            totalAmount += bookingDetail.totalPrice
+
             // Update room status
-            await Room.findByIdAndUpdate(
-                detail.roomId,
-                { status: 'occupied' }
-            );
+            // await Room.findByIdAndUpdate(
+            //     detail.roomId,
+            //     { status: 'occupied' }
+            // );
         }
 
         // Create main booking
@@ -205,7 +260,7 @@ exports.createBooking = async (req, res) => {
             customerIds,
             userId: req.user.id,
             bookingDetails: bookingDetailsIds,
-            totalAmount,
+            totalAmount : totalAmount,
             status: 'confirmed'
         });
 

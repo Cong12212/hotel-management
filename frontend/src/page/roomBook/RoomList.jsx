@@ -1,78 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Table, Button, Form, InputGroup, DropdownButton, Dropdown, Offcanvas } from 'react-bootstrap';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import {getAllRooms} from '../../service/apiServices';
+
 
 function RoomList() {
-    const initialRooms = [
-        { id: 1, name: 'P.101', type: 'A', price: 4000, note: '2 bed' },
-        { id: 2, name: 'P.102', type: 'A', price: 4000, note: '2 bed' },
-        { id: 3, name: 'P.103', type: 'B', price: 5000, note: '1 bed' },
-        { id: 4, name: 'P.104', type: 'B', price: 5000, note: '2 bed' },
-        { id: 5, name: 'P.105', type: 'C', price: 6000, note: '1 bed' },
-        { id: 6, name: 'P.106', type: 'C', price: 6000, note: '2 bed' },
-        // { id: 7, name: 'P.107', type: 'A', price: 7000, note: '3 bed' },
-        // { id: 8, name: 'P.108', type: 'B', price: 7000, note: '2 bed' },
-        // { id: 9, name: 'P.109', type: 'C', price: 8000, note: '4 bed' },
-        // { id: 10, name: 'P.110', type: 'C', price: 8000, note: '2 bed' },
-        // { id: 11, name: 'P.111', type: 'A', price: 4000, note: '2 bed' },
-        // { id: 12, name: 'P.112', type: 'A', price: 4000, note: '2 bed' },
-        // { id: 13, name: 'P.113', type: 'B', price: 5000, note: '1 bed' },
-        // { id: 14, name: 'P.114', type: 'B', price: 5000, note: '2 bed' },
-        // { id: 15, name: 'P.115', type: 'C', price: 6000, note: '1 bed' },
-        // { id: 16, name: 'P.116', type: 'C', price: 6000, note: '2 bed' },
-        // { id: 17, name: 'P.117', type: 'A', price: 7000, note: '3 bed' },
-        // { id: 18, name: 'P.118', type: 'B', price: 7000, note: '2 bed' },
-        // { id: 19, name: 'P.119', type: 'C', price: 8000, note: '4 bed' },
-        // { id: 20, name: 'P.120', type: 'C', price: 8000, note: '2 bed' },
-        // { id: 21, name: 'P.121', type: 'A', price: 4000, note: '2 bed' },
-        // { id: 22, name: 'P.122', type: 'A', price: 4000, note: '2 bed' },
-        // { id: 23, name: 'P.123', type: 'B', price: 5000, note: '1 bed' },
-        // { id: 24, name: 'P.124', type: 'B', price: 5000, note: '2 bed' },
-        // { id: 25, name: 'P.125', type: 'C', price: 6000, note: '1 bed' },
-        // { id: 26, name: 'P.126', type: 'C', price: 6000, note: '2 bed' },
-        // { id: 27, name: 'P.127', type: 'A', price: 7000, note: '3 bed' },
-        // { id: 28, name: 'P.128', type: 'B', price: 7000, note: '2 bed' },
-        // { id: 29, name: 'P.129', type: 'C', price: 8000, note: '4 bed' },
-        // { id: 30, name: 'P.130', type: 'C', price: 8000, note: '2 bed' },
-        // { id: 31, name: 'P.131', type: 'A', price: 4000, note: '2 bed' },
-        // { id: 32, name: 'P.132', type: 'A', price: 4000, note: '2 bed' },
-        // { id: 33, name: 'P.133', type: 'B', price: 5000, note: '1 bed' },
-        // { id: 34, name: 'P.134', type: 'B', price: 5000, note: '2 bed' },
-        // { id: 35, name: 'P.135', type: 'C', price: 6000, note: '1 bed' },
-        // { id: 36, name: 'P.136', type: 'C', price: 6000, note: '2 bed' },
-        // { id: 37, name: 'P.137', type: 'A', price: 7000, note: '3 bed' },
-        // { id: 38, name: 'P.138', type: 'B', price: 7000, note: '2 bed' },
-        // { id: 39, name: 'P.139', type: 'C', price: 8000, note: '4 bed' },
-        // { id: 40, name: 'P.140', type: 'C', price: 8000, note: '2 bed' },
-        // { id: 41, name: 'P.141', type: 'A', price: 4000, note: '2 bed' },
-        // { id: 42, name: 'P.142', type: 'A', price: 4000, note: '2 bed' },
-        // { id: 43, name: 'P.143', type: 'B', price: 5000, note: '1 bed' },
-        // { id: 44, name: 'P.144', type: 'B', price: 5000, note: '2 bed' },
-        // { id: 45, name: 'P.145', type: 'C', price: 6000, note: '1 bed' },
-        // { id: 46, name: 'P.146', type: 'C', price: 6000, note: '2 bed' },
-        // { id: 47, name: 'P.147', type: 'A', price: 7000, note: '3 bed' },
-        // { id: 48, name: 'P.148', type: 'B', price: 7000, note: '2 bed' },
-        // { id: 49, name: 'P.149', type: 'C', price: 8000, note: '4 bed' },
-        // { id: 50, name: 'P.150', type: 'C', price: 8000, note: '2 bed' },
-        // { id: 51, name: 'P.151', type: 'A', price: 4000, note: '2 bed' },
-        // { id: 52, name: 'P.152', type: 'A', price: 4000, note: '2 bed' },
-        // { id: 53, name: 'P.153', type: 'B', price: 5000, note: '1 bed' },
-        // { id: 54, name: 'P.154', type: 'B', price: 5000, note: '2 bed' },
-        // { id: 55, name: 'P.155', type: 'C', price: 6000, note: '1 bed' },
-        // { id: 56, name: 'P.156', type: 'C', price: 6000, note: '2 bed' },
-        // { id: 57, name: 'P.157', type: 'A', price: 7000, note: '3 bed' },
-        // { id: 58, name: 'P.158', type: 'B', price: 7000, note: '2 bed' },
-        // { id: 59, name: 'P.159', type: 'C', price: 8000, note: '4 bed' },
-        // { id: 60, name: 'P.160', type: 'C', price: 8000, note: '2 bed' },
-        // { id: 61, name: 'P.161', type: 'A', price: 4000, note: '2 bed' },
-        // { id: 62, name: 'P.162', type: 'A', price: 4000, note: '2 bed' },
-        // { id: 63, name: 'P.163', type: 'B', price: 5000, note: '1 bed' },
-        // { id: 64, name: 'P.164', type: 'B', price: 5000, note: '2 bed' },
-        // { id: 65, name: 'P.165', type: 'C', price: 6000, note: '1 bed' },
-        // { id: 66, name: 'P.166', type: 'C', price: 6000, note: '2 bed' }
-    ];
+    const [rooms, setRooms] = useState([]);
+    useEffect(() => {
+        fetchListRoom();
+    }, [])
 
-    const [rooms, setRooms] = useState(initialRooms);
+    const fetchListRoom = async () => {
+        try {
+            console.log("Fetching rooms...");
+            let res = await getAllRooms();
+            console.log("Response:", res);// In ra response
+    
+            // Kiểm tra nếu res hoặc res.data là null
+            if (res && res.data && res.data.data) {
+                setRooms(res.data.data);
+            } else {
+                console.error("No data found in the response.");
+            }
+        } catch (error) {
+            console.error("Error fetching rooms:", error);
+        }
+    };
+
+    useEffect(() => {
+        console.log("Rooms updated:", rooms);
+
+    }, [rooms]);
     const [search, setSearch] = useState('');
     const [searchField, setSearchField] = useState('name');
     const [sortState, setSortState] = useState({
@@ -92,15 +52,16 @@ function RoomList() {
     const [duplicateError, setDuplicateError] = useState('');
     const [editingRoom, setEditingRoom] = useState(null);
 
-
     const handleDelete = (id) => {
         setRooms(rooms.filter((room) => room.id !== id));
+        toast.success('Room deleted successfully', { autoClose: 2000 });
     };
 
     const handleSearch = (e) => {
         setSearch(e.target.value);
         setCurrentPage(1);
     };
+
     const handleSearchFieldChange = (field) => {
         setSearchField(field);
     };
@@ -112,7 +73,6 @@ function RoomList() {
             [name]: value
         });
     };
-
 
     const validateForm = () => {
         const newErrors = {};
@@ -139,9 +99,8 @@ function RoomList() {
     const handleAddRoom = () => {
         setDuplicateError('');
 
-        // Kiểm tra nếu không có thay đổi gì trong việc chỉnh sửa phòng
         if (editingRoom && newRoom.name === editingRoom.name && newRoom.type === editingRoom.type && newRoom.price === editingRoom.price && newRoom.note === editingRoom.note) {
-            alert("No changes were made.");
+            toast.info("No changes were made.", { autoClose: 2000 });
             handleModalClose();
             return;
         }
@@ -156,6 +115,7 @@ function RoomList() {
             };
             if (isRoomDuplicate()) {
                 setDuplicateError('Room with this name or ID already exists.');
+                toast.error('Room with this name already exists.', { autoClose: 2000 });
                 return;
             }
 
@@ -165,16 +125,17 @@ function RoomList() {
                         room.id === editingRoom.id ? { ...editingRoom, ...newRoom, price: Number(newRoom.price) } : room
                     )
                 );
+                toast.success('Room updated successfully', { autoClose: 1000 });
             } else {
                 const newRoomId = findMissingId();
                 setRooms([...rooms, { ...newRoom, id: newRoomId, price: Number(newRoom.price) }]);
+                toast.success('Room added successfully', { autoClose: 2000 });
             }
             setEditingRoom(null);
             setNewRoom({ name: '', type: '', price: '', note: '' });
             setShowModal(false);
         }
     };
-
 
     const handleRowsPerPageChange = (value) => {
         setRowsPerPage(Number(value));
@@ -256,27 +217,33 @@ function RoomList() {
             );
         }
     };
-
+   
     const filteredRooms = rooms
-        .filter((room) => room[searchField]?.toString().toLowerCase().includes(search.toLowerCase()))
+        .filter((room) => {
+            if (!searchField || !room[searchField]) return true; // Nếu trường tìm kiếm không tồn tại
+            return room[searchField]?.toString().toLowerCase().includes(search.toLowerCase());
+        })
         .sort((a, b) => {
             const activeColumn = Object.keys(sortState).find((key) => sortState[key].active);
-            if (!activeColumn) return 0;
+            
+            if (!activeColumn) return 0; // Không có cột nào được chọn để sắp xếp
 
-            const sortOrder = sortState[activeColumn].order;
-            if (activeColumn === 'price') {
-                return sortOrder === 'asc' ? a.price - b.price : b.price - a.price;
-            } else if (activeColumn === 'id') {
-                return sortOrder === 'asc' ? a.id - b.id : b.id - a.id;
+            const sortOrder = sortState[activeColumn]?.order;
+            
+            if (activeColumn === 'price' && a.roomTypeId?.price !== undefined && b.roomTypeId?.price !== undefined) {
+                return sortOrder === 'asc' ? a.roomTypeId.price - b.roomTypeId.price : b.roomTypeId.price - a.roomTypeId.price;
             }
             return 0;
         });
-    // Calculate Pagination
+
+    // Xử lý phân trang
     const startIdx = (currentPage - 1) * rowsPerPage;
     const paginatedRooms = filteredRooms.slice(startIdx, startIdx + rowsPerPage);
-
+    
+   
     return (
         <div className="pt-16 pb-8 pr-8 mt-2 ">
+            <ToastContainer />
             <div className="flex items-center mb-3 justify-between">
                 <h2 className="font-bold text-3xl font-sans">Room List</h2>
                 <Button variant="dark" onClick={handleModalShow}>Add Room</Button>
@@ -325,7 +292,7 @@ function RoomList() {
 
                 </div>
 
-                <Table className="text-center" bordered-y hover>
+                <Table className="text-center" bordered-y="true" hover>
                     <colgroup>
                         <col style={{ width: '10%' }} />
                         <col style={{ width: '20%' }} />
@@ -338,9 +305,6 @@ function RoomList() {
                         <tr>
                             <th>
                                 ID
-                                <button onClick={() => handleSort('id')} className="ml-2 text-l">
-                                    {getSortIcon('id')}
-                                </button>
                             </th>
                             <th>Room Name</th>
                             <th>Room Type</th>
@@ -355,13 +319,13 @@ function RoomList() {
                         </tr>
                     </thead>
                     <tbody>
-                        {paginatedRooms.map((room) => (
-                            <tr key={room.id}>
-                                <td className="align-middle">{room.id}</td>
-                                <td className="align-middle">{room.name}</td>
-                                <td className="align-middle">{room.type}</td>
-                                <td className="align-middle">{room.price}</td>
-                                <td className="align-middle">{room.note}</td>
+                        {rooms.map((room, index) => (
+                            <tr key={room._id}>
+                                <td className="align-middle">{index + 1}</td>
+                                <td className="align-middle">{room.roomName}</td>
+                                <td className="align-middle">{room.roomTypeId.name}</td>
+                                <td className="align-middle">{room.roomTypeId.price}</td>
+                                <td className="align-middle">{new Date(room.createdAt).toLocaleString()}</td>
                                 <td className="flex justify-center gap-2 p-3 align-middle">
                                     <button className="hover:text-blue-800 text-blue-500 text-xl" onClick={() => handleEditClick(room)}>✎</button>
                                     <button className="hover:text-red-800 text-red-500 font-bold text-xl" onClick={() => handleDelete(room.id)}>🗑</button>
@@ -461,12 +425,7 @@ function RoomList() {
                     </Form>
                 </Offcanvas.Body>
                 <div className="offcanvas-footer flex-row justify-between gap-8">
-                    {duplicateError && (
-                        <div className="alert alert-danger mx-3" role="alert">
-                            {duplicateError}
-                        </div>
-                    )}
-                    <div className = "flex justify-between gap-8 p-3">
+                    <div className="flex justify-between gap-8 p-3">
                         <Button variant="secondary" onClick={handleModalClose}>
                             Close
                         </Button>
@@ -474,8 +433,6 @@ function RoomList() {
                             {editingRoom ? 'Save changes' : 'Add Room'}
                         </Button>
                     </div>
-
-
                 </div>
             </Offcanvas>
         </div>

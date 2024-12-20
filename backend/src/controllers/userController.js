@@ -77,7 +77,7 @@ exports.register = async (req, res) => {
         }
 
         // Get user role
-        const userRole = await Role.findOne({ name: 'user' });
+        const userRole = await Role.findOne({ name: 'receptionist' });
         if (!userRole) {
             return res.status(500).json({
                 success: false,

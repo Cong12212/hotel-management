@@ -49,10 +49,16 @@ exports.protect = async (req, res, next) => {
     }
 };
 
-// Kiểm tra role
-exports.authorize = (...roles) => {
+/**
+ * 
+ * @param roles List of roles can access to specified functionality  
+ * @description if current user's roles are not in required roles list then return 403
+ */
+exports.authorize = (...permissions) => {
     return (req, res, next) => {
-        if (!roles.includes(req.user.role.name)) {
+
+        const hasPermission = permissions.every(permission=>req.user.role.some(userRole=>userRole.permissions.includes(permission)))
+        if (!hasPermission) {
             return res.status(403).json({
                 success: false,
                 error: 'You do not have permission'

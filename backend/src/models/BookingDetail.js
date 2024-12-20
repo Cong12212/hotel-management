@@ -19,7 +19,21 @@ const bookingDetailSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    price: {
+    roomPrice: {
+        type: Number,
+        required: true
+    },
+    additionalFees: [{
+        description: {
+            type: String,
+            required: false
+        },
+        amount: {
+            type: Number,
+            required: true
+        }
+    }],
+    totalPrice : {
         type: Number,
         required: true
     }

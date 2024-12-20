@@ -10,7 +10,7 @@ const roomTypeRoutes = require('./src/routes/roomTypeRoutes');
 const bookingRoutes = require('./src/routes/bookingRoutes');
 const customerRoutes = require('./src/routes/customerRoutes');
 const customerTypeRoutes = require('./src/routes/customerTypeRoutes');
-
+const invoiceRoutes = require('./src/routes/invoiceRoutes')
 // Connect to database
 connectDB();
 
@@ -28,7 +28,7 @@ app.use('/api/room-types', roomTypeRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/customer-types', customerTypeRoutes);
-
+app.use('/api/invoices',invoiceRoutes)
 // Base route
 app.get('/', (req, res) => {
     res.json({ message: 'Welcome to Hotel Management API' });

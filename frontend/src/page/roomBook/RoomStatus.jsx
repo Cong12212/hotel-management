@@ -245,7 +245,7 @@ function RoomStatus() {
 
                 </div>
 
-                <Table className="text-center" bordered-y hover>
+                <Table className="text-center" bordered-y = "true" hover>
                     <colgroup>
                         <col style={{ width: '10%' }} />
                         <col style={{ width: '20%' }} />

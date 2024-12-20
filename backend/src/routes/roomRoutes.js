@@ -1,6 +1,7 @@
 // routes/roomRoutes.js
 const express = require('express');
 const router = express.Router();
+const Permission = require('../models/Permission')
 const { protect, authorize } = require('../middlewares/auth');
 const {
     getAllRooms,
@@ -17,12 +18,13 @@ router.get('/available', getAvailableRooms); // Cho trang chủ
 // Protected routes (yêu cầu đăng nhập)
 router.use(protect);
 router.get('/:id', getRoom);
-
+// 
 // Admin routes
-router.use(authorize('admin'));
-router.get('/', getAllRooms);
-router.post('/', createRoom);
-router.put('/:id', updateRoom);
-router.delete('/:id', deleteRoom);
+router.get('/',authorize(Permission.VIEW_ROOMS), getAllRooms);
+router.put('/:id',authorize(Permission.UPDATE_ROOMS), updateRoom);
+
+// Only admin access
+router.post('/',authorize(Permission.CREATE_ROOMS), createRoom);
+router.delete('/:id',authorize(Permission.DELETE_ROOMS), deleteRoom);
 
 module.exports = router;
