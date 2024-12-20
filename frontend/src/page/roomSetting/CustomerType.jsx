@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Table, Button, Form, Offcanvas } from 'react-bootstrap';
 
+
 function CustomerType() {
   const [customers, setCustomers] = useState([
     { id: 1, type: 'Inland', coefficient: 1.0 },
