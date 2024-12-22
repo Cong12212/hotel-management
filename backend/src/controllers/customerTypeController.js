@@ -48,7 +48,11 @@ exports.getCustomerType = async (req, res) => {
     }
 };
 
-// Create customer type (Admin)
+/**
+ * API endpoint example POST http://localhost:4000/api/customer-types
+ * Required role: receptionist, manager
+ * @param {req.body = {name,coefficient}}
+ */
 exports.createCustomerType = async (req, res) => {
     try {
         const customerType = await CustomerType.create(req.body);
@@ -108,6 +112,11 @@ exports.updateCustomerType = async (req, res) => {
 };
 
 // Delete customer type (Admin)
+/**
+ * API endpoint example DELETE http://localhost:4000/api/customer-types/6761956e50ddce926994bbcf
+ * Required role: admin, manager
+ * @param {id}
+ */
 exports.deleteCustomerType = async (req, res) => {
     try {
         const customerType = await CustomerType.findById(req.params.id);
