@@ -1,18 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Table, Button, Form, Offcanvas } from 'react-bootstrap';
-
+import { Table, Button, Form, Offcanvas, Alert } from 'react-bootstrap';
+import { getAllCustomerTypes, createCustomerType, updateCustomerType, deleteCustomerType } from "../../service/apiServices";
 
 function CustomerType() {
-  const [customers, setCustomers] = useState([
-    { id: 1, type: 'Inland', coefficient: 1.0 },
-    { id: 2, type: 'Foreign', coefficient: 1.5 },
-  ]);
+  const [customers, setCustomers] = useState([]);
   const [show, setShow] = useState(false);
   const [editData, setEditData] = useState(null);
+  const [error, setError] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
-  const handleClose = () => setShow(false);
+  useEffect(() => {
+    const fetchCustomerTypes = async () => {
+      try {
+        const response = await getAllCustomerTypes();
+        if (response.data.success) {
+          const formattedData = response.data.data.map((item) => ({
+            id: item._id,
+            type: item.name,
+            coefficient: item.coefficient,
+          }));
+          setCustomers(formattedData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch customer types:', error);
+      }
+    };
+
+    fetchCustomerTypes();
+  }, []);
+
+  const handleClose = () => {
+    setShow(false);
+    setError(null);
+  };
+
   const handleShow = () => setShow(true);
 
   const handleAddCustomer = () => {
@@ -25,26 +47,45 @@ function CustomerType() {
     handleShow();
   };
 
-  const handleDelete = (id) => {
-    setCustomers(customers.filter((customer) => customer.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      await deleteCustomerType(id);
+      setCustomers(customers.filter((customer) => customer.id !== id));
+    } catch (error) {
+      setError(error.response?.data?.error || 'Failed to delete customer type');
+    }
   };
 
-  const handleSave = (event) => {
+  const handleSave = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const newCustomer = {
-      id: editData ? editData.id : customers.length + 1,
-      type: formData.get('type'),
+      name: formData.get('type'),
       coefficient: parseFloat(formData.get('coefficient')),
     };
 
-    if (editData) {
-      setCustomers(customers.map((customer) => (customer.id === editData.id ? newCustomer : customer)));
-    } else {
-      setCustomers([...customers, newCustomer]);
+    try {
+      if (editData) {
+        // Update existing customer type
+        const response = await updateCustomerType(editData.id, newCustomer);
+        if (response.data.success) {
+          setCustomers(customers.map((customer) =>
+            customer.id === editData.id
+              ? { ...customer, ...response.data.data }
+              : customer
+          ));
+        }
+      } else {
+        // Create new customertype
+        const response = await createCustomerType(newCustomer);
+        if (response.data.success) {
+          setCustomers([...customers, { id: response.data.data._id, ...response.data.data }]);
+        }
+      }
+      handleClose();
+    } catch (error) {
+      setError(error.response?.data?.error || 'Failed to save customer type');
     }
-
-    handleClose();
   };
 
   const handleSort = (key) => {
@@ -67,17 +108,15 @@ function CustomerType() {
       <div className="flex items-center mb-3 justify-between">
         <h2 className="font-bold text-3xl font-sans">Customer Configure</h2>
         <Button
-          variant="dark" // Màu đen
+          variant="dark"
           onClick={handleAddCustomer}
           className="text-white">
           Add Customer
         </Button>
       </div>
 
-      {/* Nút Add Customer bên phải */}
+      {error && <Alert variant="danger">{error}</Alert>}
 
-
-      {/* Bảng có hiệu ứng đổ bóng */}
       <div className="bg-white font-dm-sans rounded-md shadow-sm p-3">
         <Table bordered-y="true" hover>
           <thead>
@@ -95,9 +134,9 @@ function CustomerType() {
             </tr>
           </thead>
           <tbody>
-            {customers.map((customer) => (
+            {customers.map((customer, index) => (
               <tr key={customer.id}>
-                <td>{customer.id}</td>
+                <td>{index + 1}</td>
                 <td>{customer.type}</td>
                 <td>{customer.coefficient}</td>
                 <td>
@@ -120,8 +159,7 @@ function CustomerType() {
         </Table>
       </div>
 
-      {/* Offcanvas cho Add/Edit */}
-      <Offcanvas show={show} onHide={handleClose} placement="end"> {/* Hiện bên phải */}
+      <Offcanvas show={show} onHide={handleClose} placement="end">
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>{editData ? 'Edit Customer' : 'Add Customer'}</Offcanvas.Title>
         </Offcanvas.Header>
