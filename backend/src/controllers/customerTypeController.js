@@ -1,14 +1,19 @@
 const Customer = require('../models/Customer');
 const CustomerType = require('../models/CustomerType');
 
-// Get all customer types
+/**
+ * API endpoint example GET http://localhost:4000/api/customer-types
+ * Required role: receptionist, manager, admin
+ */
 exports.getAllCustomerTypes = async (req, res) => {
     try {
+        const total = await CustomerType.countDocuments()
         const customerTypes = await CustomerType.find().sort('name');
 
         res.status(200).json({
             success: true,
             count: customerTypes.length,
+            total,
             data: customerTypes
         });
     } catch (error) {
@@ -66,7 +71,12 @@ exports.createCustomerType = async (req, res) => {
     }
 };
 
-// Update customer type (Admin)
+/**
+ * API endpoint example PATCH http://localhost:4000/api/customer-types/6761956e50ddce926994bbcf
+ * Required role: receptionist, manager
+ * @param {customertype_id}
+ * @param {req.body = {name,coefficient}}
+ */
 exports.updateCustomerType = async (req, res) => {
     try {
         const customerType = await CustomerType.findByIdAndUpdate(

@@ -99,6 +99,13 @@ exports.getAllBookings = async (req, res) => {
         });
     }
 };
+
+/**
+ * Example API endpoint : http://localhost:4000/api/bookings/uncompleted?sort=totalAmount&page=1&limit=2&startDate=2025-06-01&endDate=2025-12-01
+ * @param possible query params : sort, page, limit,search, startDate, endDate
+ * Required role : admin, manager, receptionist
+ * @return success status, count , total, data
+ */
 exports.getAllUncomletedBookings = async (req, res) => {
     try {
         const {sort,search,startDate,endDate } = req.query

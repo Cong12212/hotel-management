@@ -27,6 +27,10 @@ const initializeSystem = async () => {
             name: 'admin',
             description: 'Administrator with full access',
             permissions: [
+                Permission.CREATE_CUSTOMERTYPES,
+                Permission.UPDATE_CUSTOMERTYPES,
+                Permission.DELETE_CUSTOMERTYPES ,
+                Permission.VIEW_CUSTOMERTYPES ,
                 Permission.CREATE_BOOKINGS,
                 Permission.CREATE_ROOMS,
                 Permission.CREATE_ROOMTYPES,
@@ -58,6 +62,7 @@ const initializeSystem = async () => {
             name: 'receptionist',
             description: 'Receptionist with limited access, also default role when account created',
             permissions: [
+                Permission.VIEW_CUSTOMERTYPES ,
                 Permission.VIEW_ROOMS,
                 Permission.CREATE_BOOKINGS,
                 Permission.UPDATE_BOOKINGS,
@@ -78,6 +83,10 @@ const initializeSystem = async () => {
             name: 'manager',
             description: 'Manager role with almost full access',
             permissions: [
+                Permission.CREATE_CUSTOMERTYPES,
+                Permission.UPDATE_CUSTOMERTYPES,
+                Permission.DELETE_CUSTOMERTYPES ,
+                Permission.VIEW_CUSTOMERTYPES ,
                 Permission.CREATE_CUSTOMERS,
                 Permission.VIEW_CUSTOMERS,
                 Permission.UPDATE_CUSTOMERS,
