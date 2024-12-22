@@ -63,7 +63,7 @@ function CustomerType() {
       name: formData.get('type'),
       coefficient: parseFloat(formData.get('coefficient')),
     };
-
+  
     try {
       if (editData) {
         // Update existing customer type
@@ -76,10 +76,16 @@ function CustomerType() {
           ));
         }
       } else {
-        // Create new customertype
+        // Create new customer type
         const response = await createCustomerType(newCustomer);
         if (response.data.success) {
-          setCustomers([...customers, { id: response.data.data._id, ...response.data.data }]);
+          // Map the response to match the expected structure
+          const newCustomerData = {
+            id: response.data.data._id,
+            type: response.data.data.name, // Ensure "type" is correctly mapped
+            coefficient: response.data.data.coefficient,
+          };
+          setCustomers([...customers, newCustomerData]);
         }
       }
       handleClose();
