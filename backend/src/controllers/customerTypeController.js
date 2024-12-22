@@ -137,7 +137,7 @@ exports.deleteCustomerType = async (req, res) => {
             });
         }
 
-        await customerType.remove();
+        await customerType.deleteOne();
 
         res.status(200).json({
             success: true,
