@@ -1,6 +1,6 @@
 const RoomType = require('../models/RoomType');
 const Room = require('../models/Room');
-
+const QueryHelper = require('../utils/QueryHelper')
 /**
  * API endpoint example GET http://localhost:4000/api/room-types
  * required Role : admin,manager,receptionist
@@ -8,7 +8,11 @@ const Room = require('../models/Room');
  */
 exports.getAllRoomTypes = async (req, res) => {
     try {
-        const roomTypes = await RoomType.find().sort('name');
+        const roomTypeQuery = RoomType.find().sort('name');
+
+        const queryHelper = new QueryHelper(roomTypeQuery,req.query).executeQuery()
+
+        const roomTypes = await queryHelper.query
 
         res.status(200).json({
             success: true,
