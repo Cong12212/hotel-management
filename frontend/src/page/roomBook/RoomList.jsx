@@ -266,13 +266,13 @@ function RoomList() {
                             <th>Room Name
                                 <button
                                     onClick={() => handleSort('roomName', 'asc')}
-                                    className="ml-2 text-l"
+                                    className="ml-1 text-l"
                                 >
                                     ▲
                                 </button>
                                 <button
                                     onClick={() => handleSort('roomName', 'desc')}
-                                    className="ml-2 text-l"
+                                    className=" text-l"
                                 >
                                     ▼
                                 </button>
@@ -282,13 +282,13 @@ function RoomList() {
                                 Room Price
                                 <button
                                     onClick={() => handleSort('roomTypeId.price', 'asc')}
-                                    className="ml-2 text-l"
+                                    className="ml-1 text-l"
                                 >
                                     ▲
                                 </button>
                                 <button
                                     onClick={() => handleSort('roomTypeId.price', 'desc')}
-                                    className="ml-2 text-l"
+                                    className=" text-l"
                                 >
                                     ▼
                                 </button>

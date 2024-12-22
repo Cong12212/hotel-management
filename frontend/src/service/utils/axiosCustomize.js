@@ -1,5 +1,4 @@
 import axios from 'axios';
-// import { jwtDecode } from "jwt-decode";
 
 const baseURL = 'http://localhost:4000/';
 const instance = axios.create({
@@ -9,8 +8,6 @@ const instance = axios.create({
 
     },
 });
-export default instance
-
 // const signUp = async (usename, password) => {
 //     return await instance.post('api/users/register', {usename, password})
 //         .then(response => {
@@ -48,21 +45,21 @@ export default instance
 // }
 // export { signUp, logIn };
 
-// instance.interceptors.request.use((config) => {
-//     let token = null
-//     const data = localStorage.getItem('user')
-//     console.log("Data ===>", data)
-//     if (data) {
-//         const user = JSON.parse(data)
-//         if (user) {
-//             token = user.token
-//         }
-//     }
-//     if (token) {
-//         config.headers.Authorization = `Bearer ${token}`;
-//     }
-//     return config;
-// }, (error) => {
-//     return Promise.reject(error);
-// });
+instance.interceptors.request.use((config) => {
+    let token = null
+    const data = localStorage.getItem('user')
+    if (data) {
+        const user = JSON.parse(data)
+        if (user) {
+            token = user.token
+        }
+    }
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+}, (error) => {
+    return Promise.reject(error);
+});
+export default instance
 
