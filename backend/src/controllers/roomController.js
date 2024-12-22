@@ -188,8 +188,9 @@ exports.updateRoom = async (req, res) => {
 };
 
 /**
- * API endpoint example DELETE : /api/rooms/
+ * API endpoint example DELETE : /api/rooms/:room_id
  * require : admin,manager role
+ * @param {req.params = {room_id}}
  */
 exports.deleteRoom = async (req, res) => {
     try {
