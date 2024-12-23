@@ -1,7 +1,7 @@
 import React from "react";
 import { Bar } from "react-chartjs-2";
 
-const Dashboard = () => {
+const DashBoard = () => {
   // Dữ liệu doanh thu giả lập
   const monthlyRevenueData = {
     labels: [
@@ -72,4 +72,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default DashBoard;
