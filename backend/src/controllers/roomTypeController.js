@@ -134,21 +134,22 @@ exports.updateRoomType = async (req, res) => {
  */
 exports.deleteRoomType = async (req, res) => {
     try {
-        // Check if any rooms are using this room type
-        const hasRooms = await Room.exists({ roomTypeId: req.params.id });
-        if (hasRooms) {
-            return res.status(400).json({
-                success: false,
-                error: 'Cannot delete room type that has rooms'
-            });
-        }
-
+        
         const roomType = await RoomType.findByIdAndDelete(req.params.id);
 
         if (!roomType) {
             return res.status(404).json({
                 success: false,
                 error: 'Room type not found'
+            });
+        }
+
+        // Check if any rooms are using this room type
+        const hasRooms = await Room.exists({ roomTypeId: req.params.id });
+        if (hasRooms) {
+            return res.status(400).json({
+                success: false,
+                error: 'Cannot delete room type that has rooms'
             });
         }
 
