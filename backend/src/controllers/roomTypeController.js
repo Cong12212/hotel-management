@@ -1,14 +1,18 @@
 const RoomType = require('../models/RoomType');
 const Room = require('../models/Room');
-
+const QueryHelper = require('../utils/QueryHelper')
 /**
- * API endpoint : /api/rooms
+ * API endpoint example GET http://localhost:4000/api/room-types
  * required Role : admin,manager,receptionist
  * 
  */
 exports.getAllRoomTypes = async (req, res) => {
     try {
-        const roomTypes = await RoomType.find().sort('name');
+        const roomTypeQuery = RoomType.find().sort('name');
+
+        const queryHelper = new QueryHelper(roomTypeQuery,req.query).executeQuery()
+
+        const roomTypes = await queryHelper.query
 
         res.status(200).json({
             success: true,
@@ -53,7 +57,7 @@ exports.getRoomType = async (req, res) => {
 };
 
 /**
- * api : /api/rooms
+ * API endpoint example POST http://localhost:4000/api/room-types
  * require : admin,manager role
  * @param req.body Body of RoomType need to be created
  */
@@ -81,7 +85,7 @@ exports.createRoomType = async (req, res) => {
 };
 
 /**
- * api : /api/rooms
+ * API Endpoint example PATCH http://localhost:4000/api/room-types/67683730f3bc4088c6b5dd94
  * require : admin,manager role
  * @param req.params.id ID of RoomType need to update
  * @param req.body Body of RoomType need to update
@@ -124,27 +128,28 @@ exports.updateRoomType = async (req, res) => {
 };
 
 /**
- * API endpoint : /api/rooms
+ * API endpoint example:  DELETE http://localhost:4000/api/room-types/67683730f3bc4088c6b5dd94
  * required Role : admin,manager
  * @params req.params.id ID of the room need to delete
  */
 exports.deleteRoomType = async (req, res) => {
     try {
-        // Check if any rooms are using this room type
-        const hasRooms = await Room.exists({ roomTypeId: req.params.id });
-        if (hasRooms) {
-            return res.status(400).json({
-                success: false,
-                error: 'Cannot delete room type that has rooms'
-            });
-        }
-
+        
         const roomType = await RoomType.findByIdAndDelete(req.params.id);
 
         if (!roomType) {
             return res.status(404).json({
                 success: false,
                 error: 'Room type not found'
+            });
+        }
+
+        // Check if any rooms are using this room type
+        const hasRooms = await Room.exists({ roomTypeId: req.params.id });
+        if (hasRooms) {
+            return res.status(400).json({
+                success: false,
+                error: 'Cannot delete room type that has rooms'
             });
         }
 

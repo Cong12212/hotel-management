@@ -363,8 +363,11 @@ exports.createBooking = async (req, res) => {
                 throw new Error(`Room ${detail.roomId} is not available for selected dates`);
             }
 
-
-            price += room.roomTypeId.price
+            const checkIn = new Date(detail.checkInDate);
+            const checkOut = new Date(detail.checkOutDate);
+            const days = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24))
+            
+            price += room.roomTypeId.price * days;
             if(detail.numberOfGuests > room.roomTypeId.maxOccupancy)
             {
                 additionalFees.push({amount: room.roomTypeId.price*room.roomTypeId.surchargeRate,description: "Surcharge fee"})
@@ -397,11 +400,7 @@ exports.createBooking = async (req, res) => {
 
             totalAmount += bookingDetail.totalPrice
 
-            // Update room status
-            // await Room.findByIdAndUpdate(
-            //     detail.roomId,
-            //     { status: 'occupied' }
-            // );
+
         }
 
         // Create main booking

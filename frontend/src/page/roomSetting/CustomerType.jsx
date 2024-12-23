@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { Table, Button, Form, Offcanvas, Alert } from 'react-bootstrap';
+import React, { useState, useEffect } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { Table, Button, Form, Offcanvas, Alert } from "react-bootstrap";
 import { getAllCustomerTypes, createCustomerType, updateCustomerType, deleteCustomerType } from "../../service/apiServices";
 
 function CustomerType() {
@@ -8,7 +8,7 @@ function CustomerType() {
   const [show, setShow] = useState(false);
   const [editData, setEditData] = useState(null);
   const [error, setError] = useState(null);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     const fetchCustomerTypes = async () => {
@@ -23,7 +23,7 @@ function CustomerType() {
           setCustomers(formattedData);
         }
       } catch (error) {
-        console.error('Failed to fetch customer types:', error);
+        console.error("Failed to fetch customer types:", error);
       }
     };
 
@@ -51,8 +51,9 @@ function CustomerType() {
     try {
       await deleteCustomerType(id);
       setCustomers(customers.filter((customer) => customer.id !== id));
+      showNotification("Customer type deleted successfully!");
     } catch (error) {
-      setError(error.response?.data?.error || 'Failed to delete customer type');
+      setError(error.response?.data?.error || "Failed to delete customer type");
     }
   };
 
@@ -60,66 +61,62 @@ function CustomerType() {
     event.preventDefault();
     const formData = new FormData(event.target);
     const newCustomer = {
-      name: formData.get('type'),
-      coefficient: parseFloat(formData.get('coefficient')),
+      name: formData.get("type"),
+      coefficient: parseFloat(formData.get("coefficient")),
     };
-  
+
     try {
       if (editData) {
         // Update existing customer type
         const response = await updateCustomerType(editData.id, newCustomer);
         if (response.data.success) {
-          setCustomers(customers.map((customer) =>
-            customer.id === editData.id
-              ? { ...customer, ...response.data.data }
-              : customer
-          ));
+          setCustomers((prevCustomers) =>
+            prevCustomers.map((customer) =>
+              customer.id === editData.id
+                ? { ...customer, type: newCustomer.name, coefficient: newCustomer.coefficient }
+                : customer
+            )
+          );
+          showNotification("Customer type updated successfully!");
         }
       } else {
         // Create new customer type
         const response = await createCustomerType(newCustomer);
         if (response.data.success) {
-          // Map the response to match the expected structure
           const newCustomerData = {
             id: response.data.data._id,
-            type: response.data.data.name, // Ensure "type" is correctly mapped
+            type: response.data.data.name,
             coefficient: response.data.data.coefficient,
           };
-          setCustomers([...customers, newCustomerData]);
+          setCustomers((prevCustomers) => [...prevCustomers, newCustomerData]);
+          showNotification("Customer type added successfully!");
         }
       }
       handleClose();
     } catch (error) {
-      setError(error.response?.data?.error || 'Failed to save customer type');
+      setError(error.response?.data?.error || "Failed to save customer type");
     }
   };
 
-  const handleSort = (key) => {
-    let direction = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfig({ key, direction });
-
-    const sortedData = [...customers].sort((a, b) => {
-      if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
-      if (a[key] > b[key]) return direction === 'asc' ? 1 : -1;
-      return 0;
-    });
-    setCustomers(sortedData);
+  const showNotification = (message) => {
+    setNotification(message);
+    setTimeout(() => setNotification(null), 3000); // Hide notification after 3 seconds
   };
 
   return (
     <div className="pt-16 pb-8 pr-8 mt-2">
       <div className="flex items-center mb-3 justify-between">
         <h2 className="font-bold text-3xl font-sans">Customer Configure</h2>
-        <Button
-          variant="dark"
-          onClick={handleAddCustomer}
-          className="text-white">
+        <Button variant="dark" onClick={handleAddCustomer} className="text-white">
           Add Customer
         </Button>
       </div>
+
+      {notification && (
+        <Alert variant="success" onClose={() => setNotification(null)} dismissible>
+          {notification}
+        </Alert>
+      )}
 
       {error && <Alert variant="danger">{error}</Alert>}
 
@@ -127,15 +124,9 @@ function CustomerType() {
         <Table bordered-y="true" hover>
           <thead>
             <tr>
-              <th onClick={() => handleSort('id')}>
-                ID {sortConfig.key === 'id' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-              </th>
-              <th onClick={() => handleSort('type')}>
-                Customer Type {sortConfig.key === 'type' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-              </th>
-              <th onClick={() => handleSort('coefficient')}>
-                Coefficient {sortConfig.key === 'coefficient' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-              </th>
+              <th>ID</th>
+              <th>Customer Type</th>
+              <th>Coefficient</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -167,7 +158,7 @@ function CustomerType() {
 
       <Offcanvas show={show} onHide={handleClose} placement="end">
         <Offcanvas.Header closeButton>
-          <Offcanvas.Title>{editData ? 'Edit Customer' : 'Add Customer'}</Offcanvas.Title>
+          <Offcanvas.Title>{editData ? "Edit Customer" : "Add Customer"}</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>
           <Form onSubmit={handleSave}>
@@ -176,7 +167,7 @@ function CustomerType() {
               <Form.Control
                 type="text"
                 name="type"
-                defaultValue={editData ? editData.type : ''}
+                defaultValue={editData ? editData.type : ""}
                 required
               />
             </Form.Group>
@@ -186,7 +177,7 @@ function CustomerType() {
                 type="number"
                 step="0.1"
                 name="coefficient"
-                defaultValue={editData ? editData.coefficient : ''}
+                defaultValue={editData ? editData.coefficient : ""}
                 required
               />
             </Form.Group>

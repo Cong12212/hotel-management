@@ -9,16 +9,13 @@ const {
     updateRoomType,
     deleteRoomType
 } = require('../controllers/roomTypeController');
-
-// Public routes (không cần đăng nhập)
-router.get('/', getAllRoomTypes);  // Cho trang chủ hiển thị các loại phòng
-router.get('/:id', getRoomType);   // Xem chi tiết loại phòng
-
-// Admin routes
+const Permission = require('../models/Permission')
 router.use(protect);
-router.use(authorize('admin'));
-router.post('/', createRoomType);
-router.put('/:id', updateRoomType);
-router.delete('/:id', deleteRoomType);
+
+router.get('/', authorize(Permission.VIEW_ROOMTYPES),getAllRoomTypes); 
+router.get('/:id',authorize(Permission.VIEW_ROOMTYPES), getRoomType);  
+router.post('/',authorize(Permission.CREATE_ROOMTYPES), createRoomType);
+router.patch('/:id',authorize(Permission.UPDATE_ROOMTYPES) ,updateRoomType);
+router.delete('/:id',authorize(Permission.DELETE_ROOMTYPES), deleteRoomType);
 
 module.exports = router;
