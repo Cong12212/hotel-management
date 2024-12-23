@@ -3,11 +3,11 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Table, Button, Form, InputGroup, DropdownButton, Dropdown, Offcanvas } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { getAllRooms } from '../../service/apiServices';
-
+import { getAllRooms, postAddRoom, patchUpdateRoom, delDeleteRoom, getAllRoomTypes } from '../../service/apiServices';
 
 function RoomList() {
     const [rooms, setRooms] = useState([]);
+    const [roomtypes, setRoomTypes] = useState([]);
     const [totalRooms, setTotalRooms] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -15,7 +15,10 @@ function RoomList() {
     const [search, setSearch] = useState('');
     const [sortField, setSortField] = useState(null); //
     const [pageInput, setPageInput] = useState(currentPage); // Input để người dùng nhập
-
+    const [showModal, setShowModal] = useState(false);
+    const [newRoom, setNewRoom] = useState({ roomName: '', roomTypeId: '', status: '', notes: '' });
+    const [editingRoom, setEditingRoom] = useState(null);
+    const [errors, setErrors] = useState({});
 
 
     const handlePagination = useCallback((totalRooms) => {
@@ -36,16 +39,37 @@ function RoomList() {
             if (res && res.data && res.data.data) {
                 setRooms(res.data.data);
                 handlePagination(res.data.total);
+
             }
         } catch (error) {
             console.error("Error fetching rooms:", error);
+        }
+
+    }, [search, sortField, rowsPerPage, currentPage, handlePagination]);
+
+    const fetchListRoomTypes = useCallback(async () => {
+        try {
+            const queryParams = {
+                search: search.trim(),
+                sort: sortField,
+                limit: rowsPerPage,
+                page: currentPage,
+            };
+            const res = await getAllRoomTypes(queryParams);
+            if (res && res.data && res.data.data) {
+                setRoomTypes(res.data.data);
+                handlePagination(res.data.count);
+
+            }
+        } catch (error) {
+            console.error("Error fetching roomtypes:", error);
         }
     }, [search, sortField, rowsPerPage, currentPage, handlePagination]);
 
     useEffect(() => {
         fetchListRoom();
-
-    }, [fetchListRoom]);
+        fetchListRoomTypes();
+    }, [fetchListRoom, fetchListRoomTypes]);
 
     const handleSearch = (e) => {
         setSearch(e.target.value);
@@ -85,130 +109,104 @@ function RoomList() {
 
     useEffect(() => {
         setPageInput(currentPage); // Đồng bộ input khi thay đổi trang
+
     }, [currentPage]);
-
-
-    const [showModal, setShowModal] = useState(false);
-    const [newRoom, setNewRoom] = useState({
-        name: '',
-        type: '',
-        price: '',
-        note: ''
-    });
-    const [errors, setErrors] = useState({});
-    const [duplicateError, setDuplicateError] = useState('');
-    const [editingRoom, setEditingRoom] = useState(null);
-
-    const handleDelete = (id) => {
-        setRooms(rooms.filter((room) => room.id !== id));
-        toast.success('Room deleted successfully', { autoClose: 2000 });
-    };
-
-
-
 
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        setNewRoom((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+
+    const handleAddRoom = async () => {
+
+        try {
+            const requiredFields = ['roomName', 'roomTypeId', 'status'];
+            const fieldsToCompare = ['roomName', 'status', 'notes'];
+
+            const fieldNamesMap = {
+                roomName: "Room Name",
+                status: "Status",
+                roomTypeId: "Room Type",
+            };
+
+            let isRoomChanged = true;
+            const emptyFields = requiredFields.filter((field) => !newRoom[field] || newRoom[field].trim() === '');
+
+            if (emptyFields.length > 0) {
+                const readableFieldNames = emptyFields.map((field) => fieldNamesMap[field]);
+                toast.error(`The following fields are required: ${readableFieldNames.join(', ')}`, { autoClose: 2000 });
+            }
+            let res;
+            if (editingRoom) {
+                isRoomChanged = fieldsToCompare.some(
+                    (field) => newRoom[field] !== editingRoom[field]
+                ) || newRoom.roomTypeId !== editingRoom.roomTypeId._id;
+                if (!isRoomChanged) {
+                    toast.info('No changes detected.', { autoClose: 2000 });
+
+                } else {
+                    res = await patchUpdateRoom({ ...newRoom, id: editingRoom._id });
+                }
+            } else {
+                res = await postAddRoom(newRoom);
+                if (res.error && res.error.error.toLowerCase().includes('already exists')) {
+                    toast.error('Room already exists. Please use a different name.', { autoClose: 2000 });
+                }
+            }
+            console.log(res);
+            if (res.success) {
+                toast.success(`${editingRoom ? 'Room updated' : 'Room added'} successfully!`, { autoClose: 2000 });
+                fetchListRoom();
+                handleModalClose();
+
+            } else {
+                toast.error(res.error || 'Operation failed', { autoClose: 2000 });
+            }
+        } catch (error) {
+            toast.error('Error while saving room', { autoClose: 2000 });
+            console.error(error);
+        }
+    };
+
+    const handleEditClick = (room) => {
+        setEditingRoom(room);
         setNewRoom({
-            ...newRoom,
-            [name]: value
+            roomName: room.roomName,
+            roomTypeId: room.roomTypeId,
+            status: room.roomTypeId,
+            notes: room.notes || '',
         });
+        setShowModal(true);
     };
 
-    const validateForm = () => {
-        const newErrors = {};
-        if (!newRoom.name) newErrors.name = 'Room name is required';
-        if (!newRoom.type) newErrors.type = 'Room type is required';
-        if (!newRoom.price || isNaN(newRoom.price)) newErrors.price = 'Price must be a valid number';
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+    const handleDelete = async (id) => {
+        if (window.confirm('Are you sure you want to delete this room?')) {
+            const res = await delDeleteRoom(id);
+            if (res.success) {
+                toast.success('Room deleted successfully!');
+                fetchListRoom();
+            } else {
+                toast.error(res.error || 'Failed to delete room');
+            }
+        }
     };
 
-    const isRoomDuplicate = () => {
-        return rooms.some((room) => room.name === newRoom.name);
-    };
 
     const handleModalClose = () => {
         setShowModal(false);
         setEditingRoom(null);
-        setNewRoom({ name: '', type: '', price: '', note: '' });
+        setNewRoom({ roomName: '', roomTypeId: '', status: '', notes: '' });
         setErrors({});
-        setDuplicateError('');
     };
+
     const handleModalShow = () => setShowModal(true);
 
-    const handleAddRoom = () => {
-        setDuplicateError('');
-
-        if (editingRoom && newRoom.name === editingRoom.name && newRoom.type === editingRoom.type && newRoom.price === editingRoom.price && newRoom.note === editingRoom.note) {
-            toast.info("No changes were made.", { autoClose: 2000 });
-            handleModalClose();
-            return;
-        }
-
-        if (validateForm()) {
-            const findMissingId = () => {
-                const sortedIds = rooms.map((room) => room.id).sort((a, b) => a - b);
-                for (let i = 1; i <= sortedIds.length; i++) {
-                    if (sortedIds[i - 1] !== i) return i;
-                }
-                return sortedIds.length + 1;
-            };
-            if (isRoomDuplicate()) {
-                setDuplicateError('Room with this name or ID already exists.');
-                toast.error('Room with this name already exists.', { autoClose: 2000 });
-                return;
-            }
-
-            if (editingRoom) {
-                setRooms(
-                    rooms.map((room) =>
-                        room.id === editingRoom.id ? { ...editingRoom, ...newRoom, price: Number(newRoom.price) } : room
-                    )
-                );
-                toast.success('Room updated successfully', { autoClose: 1000 });
-            } else {
-                const newRoomId = findMissingId();
-                setRooms([...rooms, { ...newRoom, id: newRoomId, price: Number(newRoom.price) }]);
-                toast.success('Room added successfully', { autoClose: 2000 });
-            }
-            setEditingRoom(null);
-            setNewRoom({ name: '', type: '', price: '', note: '' });
-            setShowModal(false);
-        }
-    };
-
-
-    const handleEditClick = (room) => {
-        setEditingRoom(room);
-        setNewRoom(room);
-        setShowModal(true);
-    };
-
-    // const filteredRooms = rooms
-    //     .filter((room) => {
-    //         if (!searchField || !room[searchField]) return true; // Nếu trường tìm kiếm không tồn tại
-    //         return room[searchField]?.toString().toLowerCase().includes(search.toLowerCase());
-    //     })
-    //     .sort((a, b) => {
-    //         const activeColumn = Object.keys(sortState).find((key) => sortState[key].active);
-
-    //         if (!activeColumn) return 0; // Không có cột nào được chọn để sắp xếp
-
-    //         const sortOrder = sortState[activeColumn]?.order;
-
-    //         if (activeColumn === 'price' && a.roomTypeId?.price !== undefined && b.roomTypeId?.price !== undefined) {
-    //             return sortOrder === 'asc' ? a.roomTypeId.price - b.roomTypeId.price : b.roomTypeId.price - a.roomTypeId.price;
-    //         }
-    //         return 0;
-    //     });
-
-    // // Xử lý phân trang
-    // const startIdx = (currentPage - 1) * rowsPerPage;
-    // const paginatedRooms = filteredRooms.slice(startIdx, startIdx + rowsPerPage);
-
-
+    // Other unchanged functions: handleSearch, handleSort, etc.
     return (
         <div className="pt-16 pb-8 pr-8 mt-2 ">
             <ToastContainer />
@@ -304,10 +302,10 @@ function RoomList() {
                                 <td className="align-middle">{room.roomName}</td>
                                 <td className="align-middle">{room.roomTypeId.name}</td>
                                 <td className="align-middle">{room.roomTypeId.price}</td>
-                                <td className="align-middle">{new Date(room.createdAt).toLocaleString()}</td>
+                                <td className="align-middle">{room.notes}</td>
                                 <td className="flex justify-center gap-2 p-3 align-middle">
                                     <button className="hover:text-blue-800 text-blue-500 text-xl" onClick={() => handleEditClick(room)}>✎</button>
-                                    <button className="hover:text-red-800 text-red-500 font-bold text-xl" onClick={() => handleDelete(room.id)}>🗑</button>
+                                    <button className="hover:text-red-800 text-red-500 font-bold text-xl" onClick={() => handleDelete(room._id)}>🗑</button>
                                 </td>
                             </tr>
                         ))}
@@ -350,13 +348,14 @@ function RoomList() {
                             <Form.Control
                                 type="text"
                                 placeholder="Enter room name"
-                                name="name"
-                                value={newRoom.name}
+                                name="roomName"
+                                value={newRoom.roomName}
                                 onChange={handleInputChange}
-                                isInvalid={!!errors.name}
+                                isInvalid={!!errors.roomName}
+                                className="mb-3"
                             />
                             <Form.Control.Feedback type="invalid">
-                                {errors.name}
+                                {errors.roomName}
                             </Form.Control.Feedback>
                         </Form.Group>
 
@@ -364,34 +363,52 @@ function RoomList() {
                             <Form.Label className="text-muted">
                                 Room Type <span style={{ color: 'red' }}>*</span>
                             </Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Enter room type"
-                                name="type"
-                                value={newRoom.type}
+                            <Form.Select
+                                name="roomTypeId"
+                                value={newRoom.roomTypeId}
                                 onChange={handleInputChange}
-                                isInvalid={!!errors.type}
-                            />
+                                isInvalid={!!errors.roomTypeId}
+                                className="mb-3"
+                            >
+                                <option value="">Select room type</option>
+                                {roomtypes.map((type) => (
+                                    <option key={type._id} value={type._id}>
+                                        {type.name}
+                                    </option>
+                                ))}
+                            </Form.Select>
                             <Form.Control.Feedback type="invalid">
-                                {errors.type}
+                                {errors.roomTypeId}
                             </Form.Control.Feedback>
                         </Form.Group>
 
-                        <Form.Group controlId="formRoomPrice">
+                        <Form.Group controlId="formRoomStatus">
                             <Form.Label className="text-muted">
-                                Price <span style={{ color: 'red' }}>*</span>
+                                Status <span style={{ color: 'red' }}>*</span>
                             </Form.Label>
-                            <Form.Control
-                                type="number"
-                                placeholder="Enter room price"
-                                name="price"
-                                value={newRoom.price}
+                            <Form.Select
+                                placeholder="Select room status"
+                                name="status"
+                                value={newRoom.status}
                                 onChange={handleInputChange}
-                                isInvalid={!!errors.price}
-                                step="100"
-                            />
+                                isInvalid={!!errors.status}
+                                className="mb-3"
+                            >
+                                <option value="">Select room status</option>
+                                <>
+                                    <option>
+                                        available
+                                    </option>
+                                    <option>
+                                        occupied
+                                    </option>
+                                    <option>
+                                        maintenance
+                                    </option>
+                                </>
+                            </Form.Select>
                             <Form.Control.Feedback type="invalid">
-                                {errors.price}
+                                {errors.status}
                             </Form.Control.Feedback>
                         </Form.Group>
 
@@ -400,13 +417,14 @@ function RoomList() {
                             <Form.Control
                                 type="text"
                                 placeholder="Enter note"
-                                name="note"
-                                value={newRoom.note}
+                                name="notes"
+                                value={newRoom.notes}
                                 onChange={handleInputChange}
-                                isInvalid={!!errors.note}
+                                isInvalid={!!errors.notes}
+                                className="mb-3"
                             />
                             <Form.Control.Feedback type="invalid">
-                                {errors.note}
+                                {errors.notes}
                             </Form.Control.Feedback>
                         </Form.Group>
                     </Form>

@@ -13,7 +13,6 @@ import RoomType from "./page/roomSetting/RoomType";
 import CustomerType from "./page/roomSetting/CustomerType";
 import LogIn from "./page/auth/LogIn";
 import { AuthProvider } from "./hook/useAuth";
-import { ToastContainer } from "react-toastify";
 // import SignUp from './page/auth/SignUp';
 // import ForgotPass from './page/auth/ForgotPass';
 

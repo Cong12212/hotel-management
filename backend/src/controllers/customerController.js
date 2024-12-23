@@ -2,6 +2,9 @@ const Customer = require('../models/Customer');
 const CustomerType = require('../models/CustomerType');
 
 // Get all customers (Admin)
+/**
+ * API endpoint example GET http://localhost:4000/api/customers
+ */
 exports.getAllCustomers = async (req, res) => {
     try {
         const customers = await Customer.find()

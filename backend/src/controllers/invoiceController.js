@@ -90,10 +90,13 @@ const checkoutInvoice = async(req,res)=>{
 
 /**
  * @api_endpoint example :GET http://localhost:4000/api/invoices
- * @param {sort, page, limit}
+ * @param {sort, page, limit, search}
  * @returns {success status, total page, count, data}
  */
 const getAllInvoices = async(req,res)=>{
+
+    const {search} = req.query 
+
     const total = await Invoice.countDocuments()
     const invoiceQuery = Invoice.find().populate({
         path: 'bookingId',
@@ -108,14 +111,38 @@ const getAllInvoices = async(req,res)=>{
                 select: 'fullName phone role'
             },
             {
-                path: 'bookingDetails'
-            }
+                path: 'bookingDetails',
+                populate: {
+                    path: 'roomId',
+                    select: '_id roomName'
+                }
+            }             
+
 
         ]
     })
     const queryHelper = new QueryHelper(invoiceQuery, req.query).executeQuery()
 
-    const invoices = await queryHelper.query 
+    let invoices = await queryHelper.query 
+
+    // Handle search by roomName
+    if (search){
+        const searchTerm = search.toLowerCase()
+        invoices = invoices.filter(invoice=>{
+            if(invoice.bookingId.bookingDetails)
+            {
+                return invoice.bookingId.bookingDetails.some(bookingDetail=>{
+                    if(bookingDetail.roomId && bookingDetail.roomId.roomName)
+                    {
+                        return bookingDetail.roomId.roomName.toLowerCase().includes(searchTerm)
+                    }
+                })
+            }
+            return false
+
+        })
+    }
+
 
     return res.status(200).json({
         success: true,

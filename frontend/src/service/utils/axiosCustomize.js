@@ -8,42 +8,6 @@ const instance = axios.create({
 
     },
 });
-// const signUp = async (usename, password) => {
-//     return await instance.post('api/users/register', {usename, password})
-//         .then(response => {
-//             return {
-//                 data: response.data
-//             }
-//         })
-//         .catch(err => {
-//             return {
-//                 data: null,
-//                 err
-//             }
-//         })
-// }
-
-// const logIn = async (usename, password) => {
-
-//     return await instance.post('api/users/login', {usename, password})
-//         .then(response => {
-//             const token = response.data.token
-//             const user = jwtDecode(token)
-//             return {
-//                 data: {
-//                     user,
-//                     token
-//                 }
-//             }
-//         })
-//         .catch(err => {
-//             return {
-//                 data: null,
-//                 err
-//             }
-//         })
-// }
-// export { signUp, logIn };
 
 instance.interceptors.request.use((config) => {
     let token = null

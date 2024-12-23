@@ -9,7 +9,7 @@ class QueryHelper {
 
     filter(){
         const queryObj = {...this.queryString}
-        const excludedFields = ["page", "sort", "limit","search"]
+        const excludedFields = ["page", "sort", "limit","search","startDate","endDate"]
         excludedFields.forEach(field => delete queryObj[field])
         let queryStr = JSON.stringify(queryObj)
         queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`)

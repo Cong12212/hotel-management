@@ -56,8 +56,9 @@ exports.protect = async (req, res, next) => {
  */
 exports.authorize = (...permissions) => {
     return (req, res, next) => {
+        
+        const hasPermission = permissions.every(permission=>req.user.role && req.user.role.some(userRole=>userRole && userRole.permissions.includes(permission)))
 
-        const hasPermission = permissions.every(permission=>req.user.role.some(userRole=>userRole.permissions.includes(permission)))
         if (!hasPermission) {
             return res.status(403).json({
                 success: false,
