@@ -13,8 +13,8 @@ function RoomList() {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
-    const [sortField, setSortField] = useState('roomTypeId.price');
-
+    const [sortField, setSortField] = useState(null); //
+    const [pageInput, setPageInput] = useState(currentPage); // Input để người dùng nhập
     const handlePagination = useCallback((totalRooms) => {
         setTotalRooms(totalRooms);
         setTotalPages(Math.ceil(totalRooms / rowsPerPage));
@@ -33,12 +33,12 @@ function RoomList() {
             if (res && res.data && res.data.data) {
                 setRooms(res.data.data);
                 handlePagination(res.data.total);
-                console.log("Rooms ===>", res.data.data)
             }
         } catch (error) {
             console.error("Error fetching rooms:", error);
         }
     }, [search, sortField, rowsPerPage, currentPage, handlePagination]);
+
 
     useEffect(() => {
         fetchListRoom();
@@ -63,13 +63,28 @@ function RoomList() {
         }
     };
 
-    const getSortIcon = (field) => {
-        return sortField === field ? '▲' : '▼'; // Giả định sortField chứa tên trường (price) 
+    const handleSort = (field, order) => {
+        setSortField(order === 'asc' ? field : `-${field}`);
     };
 
-    const handleSort = (field) => {
-        setSortField((prev) => prev === field ? `-${field}` : field); // Toggle ASC/DESC
+    const handlePageInput = (e) => {
+        setPageInput(e.target.value);
     };
+
+    const handleGoToPage = () => {
+        const page = parseInt(pageInput, 10);
+        if (!isNaN(page) && page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        } else {
+            toast.error("Invalid page number!", { autoClose: 2000 });
+            setPageInput(currentPage); // Reset input về trang hiện tại nếu không hợp lệ
+        }
+    };
+
+    useEffect(() => {
+        setPageInput(currentPage); // Đồng bộ input khi thay đổi trang
+    }, [currentPage]);
+
 
 
     const [showModal, setShowModal] = useState(false);
@@ -247,12 +262,34 @@ function RoomList() {
                             <th>
                                 ID
                             </th>
-                            <th>Room Name</th>
+                            <th>Room Name
+                                <button
+                                    onClick={() => handleSort('roomName', 'asc')}
+                                    className="ml-1 text-l"
+                                >
+                                    ▲
+                                </button>
+                                <button
+                                    onClick={() => handleSort('roomName', 'desc')}
+                                    className=" text-l"
+                                >
+                                    ▼
+                                </button>
+                            </th>
                             <th>Room Type</th>
                             <th>
                                 Room Price
-                                <button onClick={() => handleSort('roomTypeID.price')} className="ml-2 text-l">
-                                    {getSortIcon('price')}
+                                <button
+                                    onClick={() => handleSort('roomTypeId.price', 'asc')}
+                                    className="ml-1 text-l"
+                                >
+                                    ▲
+                                </button>
+                                <button
+                                    onClick={() => handleSort('roomTypeId.price', 'desc')}
+                                    className=" text-l"
+                                >
+                                    ▼
                                 </button>
                             </th>
                             <th>Note</th>
@@ -281,7 +318,18 @@ function RoomList() {
                         onClick={() => handlePageChange('prev')}>
                         Previous
                     </Button>
-                    <span>Page {currentPage} of {Math.ceil(totalRooms / rowsPerPage)}</span>
+
+                    <span>Page </span>
+                    <input
+                        type="number"
+                        value={pageInput}
+                        onChange={handlePageInput}
+                        className="text-center px-1 py-2 text-sm rounded-md border border-gray-500 w-12"
+                        onKeyPress={(e) => e.key === "Enter" && handleGoToPage()}
+                        onBlur={handleGoToPage}
+                    />
+                    <span> of {Math.ceil(totalRooms / rowsPerPage)}</span>
+
                     <Button variant="dark"
                         disabled={currentPage === totalPages}
                         onClick={() => handlePageChange('next')}>

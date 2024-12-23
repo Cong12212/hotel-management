@@ -9,7 +9,7 @@ const NavBar = ({ isOpen }) => {
         {
             title: 'Dashboard',
             icon: '/home.svg',
-            redirect: '/',
+            redirect: '/dashboard',
             subItems: [],
         },
         {
