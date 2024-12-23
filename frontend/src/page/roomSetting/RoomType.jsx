@@ -37,8 +37,8 @@ function RoomConfigure() {
       const res = await getAllRoomTypes(queryParams);
       if (res && res.data && res.data.data) {
         setRoomTypes(res.data.data);
-
-        handlePagination(res.data.count);
+        
+        handlePagination(res.data.total);
       }
     } catch (error) {
       console.error("Error fetching roomtypes:", error);
@@ -225,7 +225,7 @@ function RoomConfigure() {
 
         {/* Table displaying the rooms */}
         <div className="bg-white font-dm-sans rounded-md p-3">
-          <Table className="text-center" bordered-y="true" hover>
+          <Table className="text-center " bordered-y="true" hover>
             <colgroup>
               <col style={{ width: '10%' }} />
               <col style={{ width: '20%' }} />
@@ -281,12 +281,12 @@ function RoomConfigure() {
             <tbody>
               {roomtypes.map((roomtype, index) => (
                 <tr key={roomtype._id}>
-                  <td>{index + 1}</td>
-                  <td>{roomtype.name}</td>
-                  <td>{roomtype.maxOccupancy}</td>
-                  <td>{roomtype.surchargeRate}</td>
-                  <td>{roomtype.price}</td>
-                  <td>
+                  <td className="align-middle py-3">{index + 1}</td>
+                  <td className="align-middle py-3">{roomtype.name}</td>
+                  <td className="align-middle py-3">{roomtype.maxOccupancy}</td>
+                  <td className="align-middle py-3">{roomtype.surchargeRate}</td>
+                  <td className="align-middle py-3">{roomtype.price}</td>
+                  <td className="align-middle py-3">
                     <button
                       className="hover:text-blue-800 text-blue-500 text-xl me-2"
                       onClick={() => handleEditClick(roomtype)}

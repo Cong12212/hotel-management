@@ -158,7 +158,6 @@ function RoomList() {
                     toast.error('Room already exists. Please use a different name.', { autoClose: 2000 });
                 }
             }
-            console.log(res);
             if (res.success) {
                 toast.success(`${editingRoom ? 'Room updated' : 'Room added'} successfully!`, { autoClose: 2000 });
                 fetchListRoom();
