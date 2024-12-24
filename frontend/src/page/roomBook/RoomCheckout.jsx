@@ -12,26 +12,33 @@ const RoomCheckout = () => {
         setError("");
         setFoundBills([]);
         setSuccessMessage("");
-
+    
         if (!roomID.trim()) {
             setError("Please enter the room name");
             return;
         }
-
+    
         try {
-            const response = await getUncompletedBookings({
-                search: roomID,
-                sort: "roomName",
-                page: 1,
-                limit: 10,
-            });
-
-            const bookings = response.data.data;
-
-            if (bookings.length > 0) {
-                setFoundBills(bookings);
+            // Gọi API để lấy danh sách bookings
+            const response = await getUncompletedBookings({ search: roomID });
+    
+            if (response.success) {
+                const bookings = response.data.data;
+    
+                // Lọc kết quả để chỉ lấy các phòng khớp với roomID
+                const filteredBookings = bookings.filter((booking) =>
+                    booking.bookingDetails.some((detail) =>
+                        detail.roomId.roomName.toLowerCase().includes(roomID.toLowerCase())
+                    )
+                );
+    
+                if (filteredBookings.length > 0) {
+                    setFoundBills(filteredBookings);
+                } else {
+                    setError("Room not found.");
+                }
             } else {
-                setError("Room not found.");
+                setError("Failed to fetch bookings. Please try again later.");
             }
         } catch (err) {
             setError("Failed to fetch bookings. Please try again later.");
