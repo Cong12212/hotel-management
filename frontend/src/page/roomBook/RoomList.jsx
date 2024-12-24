@@ -1,47 +1,93 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Table, Button, Form, InputGroup, DropdownButton, Dropdown, Offcanvas } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import {getAllRooms} from '../../service/apiServices';
+import { getAllRooms } from '../../service/apiServices';
 
 
 function RoomList() {
     const [rooms, setRooms] = useState([]);
-    useEffect(() => {
-        fetchListRoom();
-    }, [])
+    const [totalRooms, setTotalRooms] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [search, setSearch] = useState('');
+    const [sortField, setSortField] = useState(null); //
+    const [pageInput, setPageInput] = useState(currentPage); // Input để người dùng nhập
+    const handlePagination = useCallback((totalRooms) => {
+        setTotalRooms(totalRooms);
+        setTotalPages(Math.ceil(totalRooms / rowsPerPage));
+    }, [rowsPerPage]);
 
-    const fetchListRoom = async () => {
+
+    const fetchListRoom = useCallback(async () => {
         try {
-            console.log("Fetching rooms...");
-            let res = await getAllRooms();
-            console.log("Response:", res);// In ra response
-    
-            // Kiểm tra nếu res hoặc res.data là null
+            const queryParams = {
+                search: search.trim(),
+                sort: sortField,
+                limit: rowsPerPage,
+                page: currentPage,
+            };
+            const res = await getAllRooms(queryParams);
             if (res && res.data && res.data.data) {
                 setRooms(res.data.data);
-            } else {
-                console.error("No data found in the response.");
+                handlePagination(res.data.total);
             }
         } catch (error) {
             console.error("Error fetching rooms:", error);
         }
+    }, [search, sortField, rowsPerPage, currentPage, handlePagination]);
+
+
+    useEffect(() => {
+        fetchListRoom();
+
+    }, [fetchListRoom]);
+
+    const handleSearch = (e) => {
+        setSearch(e.target.value);
+        setCurrentPage(1);
+    };
+
+    const handleRowsPerPageChange = (value) => {
+        setRowsPerPage(Number(value));
+        setCurrentPage(1); // Reset về trang 1 khi thay đổi số dòng trên 1 trang
+    };
+
+    const handlePageChange = (type) => {
+        if (type === 'prev') {
+            setCurrentPage((prev) => prev - 1);
+        } else {
+            setCurrentPage((prev) => prev + 1);
+        }
+    };
+
+    const handleSort = (field, order) => {
+        setSortField(order === 'asc' ? field : `-${field}`);
+    };
+
+    const handlePageInput = (e) => {
+        setPageInput(e.target.value);
+    };
+
+    const handleGoToPage = () => {
+        const page = parseInt(pageInput, 10);
+        if (!isNaN(page) && page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        } else {
+            toast.error("Invalid page number!", { autoClose: 2000 });
+            setPageInput(currentPage); // Reset input về trang hiện tại nếu không hợp lệ
+        }
     };
 
     useEffect(() => {
-        console.log("Rooms updated:", rooms);
+        setPageInput(currentPage); // Đồng bộ input khi thay đổi trang
+    }, [currentPage]);
 
-    }, [rooms]);
-    const [search, setSearch] = useState('');
-    const [searchField, setSearchField] = useState('name');
-    const [sortState, setSortState] = useState({
-        id: { order: 'asc', active: false },
-        price: { order: 'asc', active: false },
-    });
+
+
     const [showModal, setShowModal] = useState(false);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [currentPage, setCurrentPage] = useState(1);
     const [newRoom, setNewRoom] = useState({
         name: '',
         type: '',
@@ -57,14 +103,9 @@ function RoomList() {
         toast.success('Room deleted successfully', { autoClose: 2000 });
     };
 
-    const handleSearch = (e) => {
-        setSearch(e.target.value);
-        setCurrentPage(1);
-    };
 
-    const handleSearchFieldChange = (field) => {
-        setSearchField(field);
-    };
+
+
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -137,14 +178,6 @@ function RoomList() {
         }
     };
 
-    const handleRowsPerPageChange = (value) => {
-        setRowsPerPage(Number(value));
-        setCurrentPage(1);
-    };
-    const handlePageChange = (direction) => {
-        if (direction === 'prev' && currentPage > 1) setCurrentPage(currentPage - 1);
-        if (direction === 'next' && startIdx + rowsPerPage < filteredRooms.length) setCurrentPage(currentPage + 1);
-    };
 
     const handleEditClick = (room) => {
         setEditingRoom(room);
@@ -152,95 +185,29 @@ function RoomList() {
         setShowModal(true);
     };
 
-    const handleSort = (column) => {
-        setSortState((prevState) => {
-            const isAsc = prevState[column]?.order === 'asc';
-            return {
-                ...prevState,
-                [column]: { order: isAsc ? 'desc' : 'asc', active: true },
-                ...Object.keys(prevState)
-                    .filter((key) => key !== column)
-                    .reduce((acc, key) => {
-                        acc[key] = { ...prevState[key], active: false };
-                        return acc;
-                    }, {}),
-            };
-        });
-    };
+    // const filteredRooms = rooms
+    //     .filter((room) => {
+    //         if (!searchField || !room[searchField]) return true; // Nếu trường tìm kiếm không tồn tại
+    //         return room[searchField]?.toString().toLowerCase().includes(search.toLowerCase());
+    //     })
+    //     .sort((a, b) => {
+    //         const activeColumn = Object.keys(sortState).find((key) => sortState[key].active);
 
-    const toggleSortOrder = (column, newOrder) => {
-        const newSortState = { ...sortState };
-        if (newSortState[column].order === newOrder) {
-            newSortState[column].order = ''; // reset nếu đã nhấn vào cùng một thứ tự
-        } else {
-            newSortState[column].order = newOrder;
-        }
-        setSortState(newSortState); // Cập nhật state với sortState mới
-    };
-    const getSortIcon = (column) => {
-        const currentSort = sortState[column];
-        if (currentSort.order === 'desc') {
-            return (
-                <>
-                    ↑
-                    <span
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => toggleSortOrder(column, 'asc')}
-                    >
-                        ↓
-                    </span>
-                </>
-            );
-        } else if (currentSort.order === 'asc') {
-            return (
-                <>
-                    <span
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => toggleSortOrder(column, 'desc')}
-                    >
-                        ↑
-                    </span>
-                    ↓
-                </>
-            );
-        } else {
-            return (
-                <>
-                    ↑
-                    <span
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => toggleSortOrder(column, 'desc')}
-                    >
-                        ↓
-                    </span>
-                </>
-            );
-        }
-    };
-   
-    const filteredRooms = rooms
-        .filter((room) => {
-            if (!searchField || !room[searchField]) return true; // Nếu trường tìm kiếm không tồn tại
-            return room[searchField]?.toString().toLowerCase().includes(search.toLowerCase());
-        })
-        .sort((a, b) => {
-            const activeColumn = Object.keys(sortState).find((key) => sortState[key].active);
-            
-            if (!activeColumn) return 0; // Không có cột nào được chọn để sắp xếp
+    //         if (!activeColumn) return 0; // Không có cột nào được chọn để sắp xếp
 
-            const sortOrder = sortState[activeColumn]?.order;
-            
-            if (activeColumn === 'price' && a.roomTypeId?.price !== undefined && b.roomTypeId?.price !== undefined) {
-                return sortOrder === 'asc' ? a.roomTypeId.price - b.roomTypeId.price : b.roomTypeId.price - a.roomTypeId.price;
-            }
-            return 0;
-        });
+    //         const sortOrder = sortState[activeColumn]?.order;
 
-    // Xử lý phân trang
-    const startIdx = (currentPage - 1) * rowsPerPage;
-    const paginatedRooms = filteredRooms.slice(startIdx, startIdx + rowsPerPage);
-    
-   
+    //         if (activeColumn === 'price' && a.roomTypeId?.price !== undefined && b.roomTypeId?.price !== undefined) {
+    //             return sortOrder === 'asc' ? a.roomTypeId.price - b.roomTypeId.price : b.roomTypeId.price - a.roomTypeId.price;
+    //         }
+    //         return 0;
+    //     });
+
+    // // Xử lý phân trang
+    // const startIdx = (currentPage - 1) * rowsPerPage;
+    // const paginatedRooms = filteredRooms.slice(startIdx, startIdx + rowsPerPage);
+
+
     return (
         <div className="pt-16 pb-8 pr-8 mt-2 ">
             <ToastContainer />
@@ -253,17 +220,6 @@ function RoomList() {
                 <div className="flex justify-between">
                     <div className="d-flex">
                         {/* Search Input */}
-                        <DropdownButton
-                            id="dropdownSearch"
-                            title={`Search by: ${searchField}`}
-                            onSelect={handleSearchFieldChange}
-                            variant="outline-secondary"
-                            className="mr-3"
-                        >
-                            <Dropdown.Item eventKey="name">Room Name</Dropdown.Item>
-                            <Dropdown.Item eventKey="type">Room Type</Dropdown.Item>
-                            <Dropdown.Item eventKey="price">Room Price</Dropdown.Item>
-                        </DropdownButton>
 
                         <InputGroup>
                             <input
@@ -297,21 +253,43 @@ function RoomList() {
                         <col style={{ width: '10%' }} />
                         <col style={{ width: '20%' }} />
                         <col style={{ width: '20%' }} />
-                        <col style={{ width: '15%' }} />
                         <col style={{ width: '20%' }} />
-                        <col style={{ width: '10%' }} />
+                        <col style={{ width: '25%' }} />
+                        <col style={{ width: '5%' }} />
                     </colgroup>
                     <thead>
                         <tr>
                             <th>
                                 ID
                             </th>
-                            <th>Room Name</th>
+                            <th>Room Name
+                                <button
+                                    onClick={() => handleSort('roomName', 'asc')}
+                                    className="ml-1 text-l"
+                                >
+                                    ▲
+                                </button>
+                                <button
+                                    onClick={() => handleSort('roomName', 'desc')}
+                                    className=" text-l"
+                                >
+                                    ▼
+                                </button>
+                            </th>
                             <th>Room Type</th>
                             <th>
                                 Room Price
-                                <button onClick={() => handleSort('price')} className="ml-2 text-l">
-                                    {getSortIcon('price')}
+                                <button
+                                    onClick={() => handleSort('roomTypeId.price', 'asc')}
+                                    className="ml-1 text-l"
+                                >
+                                    ▲
+                                </button>
+                                <button
+                                    onClick={() => handleSort('roomTypeId.price', 'desc')}
+                                    className=" text-l"
+                                >
+                                    ▼
                                 </button>
                             </th>
                             <th>Note</th>
@@ -334,16 +312,26 @@ function RoomList() {
                         ))}
                     </tbody>
                 </Table>
-                {/* Pagination Controls */}
                 <div className="flex items-center justify-end gap-3">
                     <Button variant="dark"
                         disabled={currentPage === 1}
                         onClick={() => handlePageChange('prev')}>
                         Previous
                     </Button>
-                    <span>Page {currentPage}</span>
+
+                    <span>Page </span>
+                    <input
+                        type="number"
+                        value={pageInput}
+                        onChange={handlePageInput}
+                        className="text-center px-1 py-2 text-sm rounded-md border border-gray-500 w-12"
+                        onKeyPress={(e) => e.key === "Enter" && handleGoToPage()}
+                        onBlur={handleGoToPage}
+                    />
+                    <span> of {Math.ceil(totalRooms / rowsPerPage)}</span>
+
                     <Button variant="dark"
-                        disabled={startIdx + rowsPerPage >= filteredRooms.length}
+                        disabled={currentPage === totalPages}
                         onClick={() => handlePageChange('next')}>
                         Next
                     </Button>
