@@ -45,6 +45,7 @@ exports.getAllRoomTypes = async (req, res) => {
         );
       });
     }
+    
     res.status(200).json({
       success: true,
       count: roomTypes.length,

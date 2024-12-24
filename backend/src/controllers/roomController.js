@@ -30,7 +30,6 @@ exports.getAllRooms = async (req, res) => {
         return 0;
       });
     }
-    console.log("Search Query:", { searchField, search });
     if (search) {
       const searchTerm = search.toLowerCase();
       rooms = rooms.filter((room) => {

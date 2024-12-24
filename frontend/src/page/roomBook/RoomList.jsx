@@ -70,6 +70,7 @@ function RoomList() {
         }
     }, [search, sortField, rowsPerPage, currentPage, handlePagination]);
 
+
     useEffect(() => {
         fetchListRoom();
         fetchListRoomTypes();
@@ -221,7 +222,7 @@ function RoomList() {
             <div className="bg-white font-dm-sans rounded-md shadow-sm p-3">
                 <div className="flex justify-between">
                     <div className="d-flex items-center">
-                        <Button
+                        {/* <Button
                             variant="outline-secondary"
                             onClick={() => {
                                 setSearch('');
@@ -241,10 +242,10 @@ function RoomList() {
                         >
                             <Dropdown.Item eventKey="roomName">Room Name</Dropdown.Item>
                             <Dropdown.Item eventKey="roomTypeId.name">Room Type</Dropdown.Item>
-                        </DropdownButton>
+                        </DropdownButton> */}
                         <InputGroup>
                             <input
-                                placeholder={`Enter ${searchField ? (searchField === 'roomName' ? 'Room Name' : 'Room Type') : ''}`}
+                                placeholder= "Search" //{/*`Enter ${searchField ? (searchField === 'roomName' ? 'Room Name' : 'Room Type') : ''}`*/}
                                 className="outline-none focus:outline-dashed focus:outline-2 focus:outline-violet-500 border border-gray-300 rounded-md p-2"
                                 value={search}
                                 onChange={handleSearch}
@@ -339,6 +340,7 @@ function RoomList() {
                         onClick={() => handlePageChange('prev')}>
                         Previous
                     </Button>
+
                     <span>Page </span>
                     <input
                         type="number"
@@ -349,6 +351,7 @@ function RoomList() {
                         onBlur={handleGoToPage}
                     />
                     <span> of {Math.ceil(totalRooms / rowsPerPage)}</span>
+
                     <Button variant="dark"
                         disabled={currentPage === totalPages}
                         onClick={() => handlePageChange('next')}>
