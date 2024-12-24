@@ -13,6 +13,7 @@ function RoomList() {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
+    const [searchField, setSearchField] = useState('');
     const [sortField, setSortField] = useState(null); //
     const [pageInput, setPageInput] = useState(currentPage); // Input để người dùng nhập
     const [showModal, setShowModal] = useState(false);
@@ -26,18 +27,20 @@ function RoomList() {
         setTotalPages(Math.ceil(totalRooms / rowsPerPage));
     }, [rowsPerPage]);
 
-
     const fetchListRoom = useCallback(async () => {
         try {
             const queryParams = {
-                search: search.trim(),
+                ...(searchField && { searchField }),
+                search: search?.trim(),
                 sort: sortField,
                 limit: rowsPerPage,
                 page: currentPage,
             };
+            console.log("query", queryParams);
             const res = await getAllRooms(queryParams);
             if (res && res.data && res.data.data) {
                 setRooms(res.data.data);
+                console.log("data",res.data);
                 handlePagination(res.data.total);
 
             }
@@ -45,7 +48,7 @@ function RoomList() {
             console.error("Error fetching rooms:", error);
         }
 
-    }, [search, sortField, rowsPerPage, currentPage, handlePagination]);
+    }, [search, searchField, sortField, rowsPerPage, currentPage, handlePagination]);
 
     const fetchListRoomTypes = useCallback(async () => {
         try {
@@ -54,6 +57,7 @@ function RoomList() {
                 sort: sortField,
                 limit: rowsPerPage,
                 page: currentPage,
+
             };
             const res = await getAllRoomTypes(queryParams);
             if (res && res.data && res.data.data) {
@@ -75,7 +79,6 @@ function RoomList() {
         setSearch(e.target.value);
         setCurrentPage(1);
     };
-
     const handleRowsPerPageChange = (value) => {
         setRowsPerPage(Number(value));
         setCurrentPage(1); // Reset về trang 1 khi thay đổi số dòng trên 1 trang
@@ -206,6 +209,7 @@ function RoomList() {
     const handleModalShow = () => setShowModal(true);
 
     // Other unchanged functions: handleSearch, handleSort, etc.
+   
     return (
         <div className="pt-16 pb-8 pr-8 mt-2 ">
             <ToastContainer />
@@ -216,12 +220,31 @@ function RoomList() {
 
             <div className="bg-white font-dm-sans rounded-md shadow-sm p-3">
                 <div className="flex justify-between">
-                    <div className="d-flex">
-                        {/* Search Input */}
-
+                    <div className="d-flex items-center">
+                        <Button
+                            variant="outline-secondary"
+                            onClick={() => {
+                                setSearch('');
+                                setSearchField('');
+                                setCurrentPage(1);
+                            }}
+                            className="btn btn-outline-danger mr-2"
+                        >
+                            Clear
+                        </Button>
+                        <DropdownButton
+                            id="dropdownSearch"
+                            title={`Search by: ${searchField ? (searchField === 'roomName' ? 'Room Name' : 'Room Type') : 'Select a field'}`}
+                            onSelect={(field) => setSearchField(field)}
+                            variant="outline-secondary"
+                            className="mr-3"
+                        >
+                            <Dropdown.Item eventKey="roomName">Room Name</Dropdown.Item>
+                            <Dropdown.Item eventKey="roomTypeId.name">Room Type</Dropdown.Item>
+                        </DropdownButton>
                         <InputGroup>
                             <input
-                                placeholder="Search"
+                                placeholder={`Enter ${searchField ? (searchField === 'roomName' ? 'Room Name' : 'Room Type') : ''}`}
                                 className="outline-none focus:outline-dashed focus:outline-2 focus:outline-violet-500 border border-gray-300 rounded-md p-2"
                                 value={search}
                                 onChange={handleSearch}
