@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getInvoices } from "../../service/apiServices";
-import './Transaction.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './Transaction.css';
 
 const Transaction = () => {
     const [data, setData] = useState([]);
@@ -62,59 +62,59 @@ const Transaction = () => {
     };
 
     return (
-        <div className="pt-16 pb-8 pr-8 mt-2">
-            <div className="flex items-center mb-3 justify-between">
+        <div className="pt-5 pb-8 px-4 mt-4">
+            <div className="mb-4 text-center">
                 <h2 className="font-bold text-3xl font-sans">Transaction</h2>
             </div>
 
-            <div className="search-bar mb-3">
+            <div className="search-bar mb-4 d-flex align-items-center">
                 <label htmlFor="search" className="me-2 fw-bold">Search:</label>
                 <input
                     type="text"
                     id="search"
-                    className="form-control d-inline-block w-auto"
+                    className="form-control w-50"
                     placeholder="Search..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
 
-            <div className="table-responsive table-wrapper">
-                <table className="table table-bordered custom-table">
-                    <thead className="thead-light">
+            <div className="table-responsive">
+                <table className="table table-bordered table-striped">
+                    <thead className="table-light text-center">
                         <tr>
                             <th scope="col">ID</th>
-                            <th scope="col">Customer</th>
                             <th
                                 scope="col"
-                                onClick={() => handleSortChange('createdAt')}
                                 className="sortable-column"
+                                onClick={() => handleSortChange('customer')}
+                            >
+                                Customer {sort === 'customer' && (sortOrder === 'asc' ? '▲' : '▼')}
+                            </th>
+                            <th
+                                scope="col"
+                                className="sortable-column"
+                                onClick={() => handleSortChange('createdAt')}
                             >
                                 Date {sort === 'createdAt' && (sortOrder === 'asc' ? '▲' : '▼')}
                             </th>
-                            <th
-                                scope="col"
-                                onClick={() => handleSortChange('totalAmount')}
-                                className="sortable-column"
-                            >
-                                Total {sort === 'totalAmount' && (sortOrder === 'asc' ? '▲' : '▼')}
-                            </th>
+                            <th scope="col">Total</th>
                             <th scope="col">Details</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {data.map((item) => (
+                        {data.map((item, index) => (
                             <React.Fragment key={item.id}>
-                                <tr className="border-bottom"> {/* Using Bootstrap's border-bottom */}
-                                    <td>{item.id}</td>
+                                <tr className={index % 2 === 0 ? 'bg-light' : ''}>
+                                    <td className="text-center">{item.id}</td>
                                     <td>{item.customers.split('\n').map((name, idx) => (
                                         <div key={idx}>{name}</div>
                                     ))}</td>
-                                    <td>{item.date}</td>
-                                    <td>{item.total.toLocaleString('en-US')} VND</td>
-                                    <td>
+                                    <td className="text-center">{item.date}</td>
+                                    <td className="text-center">{item.total.toLocaleString('en-US')} VND</td>
+                                    <td className="text-center">
                                         <button
-                                            className="btn btn-link"
+                                            className="btn btn-link text-black text-decoration-none"
                                             onClick={() => toggleDetails(item.id)}
                                         >
                                             {expandedRow === item.id ? 'Hide Details' : 'Show Details'}
@@ -124,7 +124,7 @@ const Transaction = () => {
                                 {expandedRow === item.id && (
                                     <tr>
                                         <td colSpan="5">
-                                            <div className="details-table p-3 bg-white shadow rounded">
+                                            <div className="p-3 bg-white shadow rounded">
                                                 <table className="table">
                                                     <thead>
                                                         <tr>
@@ -148,22 +148,23 @@ const Transaction = () => {
                             </React.Fragment>
                         ))}
                     </tbody>
-                </table>
-                <nav aria-label="Pagination">
-                    <ul className="pagination justify-content-center">
-                        <li className={`page-item ${currentPage === 1 && 'disabled'}`}>
-                            <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>Previous</button>
-                        </li>
-                        {[...Array(totalPages)].map((_, i) => (
-                            <li key={i} className={`page-item ${currentPage === i + 1 && 'active'}`}>
-                                <button className="page-link" onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
+                    </table>
+                    <nav aria-label="Pagination">
+                        <ul className="pagination justify-content-center">
+                            <li className={`page-item ${currentPage === 1 && 'disabled'}`}>
+                                <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>Previous</button>
                             </li>
-                        ))}
-                        <li className={`page-item ${currentPage === totalPages && 'disabled'}`}>
-                            <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
-                        </li>
-                    </ul>
-                </nav>
+                            {[...Array(totalPages)].map((_, i) => (
+                                <li key={i} className={`page-item ${currentPage === i + 1 && 'active'}`}>
+                                    <button className="page-link" onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
+                                </li>
+                            ))}
+                            <li className={`page-item ${currentPage === totalPages && 'disabled'}`}>
+                                <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
+                            </li>
+                        </ul>
+                    </nav>
+                
             </div>
         </div>
     );

@@ -203,6 +203,39 @@ const getAllRoomTypes = async () => {
       };
     }
   };
+
+// Hàm gọi API lấy danh sách đặt phòng chưa hoàn thành
+const getUncompletedBookings = async () => {
+    try {
+        const response = await axios.get('api/bookings/uncompleted');
+        return {
+            success: true,
+            data: response.data,
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: error.response ? error.response.data : 'Network error',
+        };
+    }
+};
+
+// Hàm gọi API tạo hóa đơn
+const addInvoice = async (data) => {
+    try {
+        const response = await axios.post('api/invoices', data);
+        return {
+            success: true,
+            data: response.data,
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: error.response ? error.response.data : 'Network error',
+        };
+    }
+};
+
 export {
     logIn,
     getAllRooms,
@@ -216,4 +249,6 @@ export {
     createRoomType,
     updateRoomType,
     deleteRoomType,
+    getUncompletedBookings,
+    addInvoice,
 };
