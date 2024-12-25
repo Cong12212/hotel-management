@@ -10,7 +10,7 @@ const {
     deleteBooking,
     getBookingsByUser,
     getBookingStats,
-    getAllUncomletedBookings
+    getAllUncompletedBookings
 } = require('../controllers/bookingController');
 
 // Protect all routes
@@ -22,7 +22,7 @@ router.get('/my-bookings',authorize(Permission.VIEW_BOOKINGS), getBookingsByUser
 
 // Admin routes
 router.get('/',authorize(Permission.VIEW_BOOKINGS), getAllBookings);
-router.get('/uncompleted',authorize(Permission.VIEW_BOOKINGS), getAllUncomletedBookings);
+router.get('/uncompleted',authorize(Permission.VIEW_BOOKINGS), getAllUncompletedBookings);
 
 router.get('/stats/summary',authorize(Permission.VIEW_REPORTS) ,getBookingStats);
 router.put('/:id/status',authorize(Permission.UPDATE_BOOKINGS), updateBookingStatus);

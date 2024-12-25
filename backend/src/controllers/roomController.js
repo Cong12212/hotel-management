@@ -23,7 +23,7 @@ exports.getAllRooms = async (req, res) => {
                 { notes: searchTerm }
             ];
         }
-        
+
         let sortOption = {};
         if (sort) {
             if (sort === 'roomTypeId.price' || sort === '-roomTypeId.price') {
