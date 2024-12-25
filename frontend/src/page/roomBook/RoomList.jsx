@@ -13,7 +13,7 @@ function RoomList() {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
-    const [searchField, setSearchField] = useState('');
+    const [searchField, setSearchField] = useState(null);
     const [sortField, setSortField] = useState(null); //
     const [pageInput, setPageInput] = useState(currentPage); // Input để người dùng nhập
     const [showModal, setShowModal] = useState(false);
@@ -40,7 +40,6 @@ function RoomList() {
             const res = await getAllRooms(queryParams);
             if (res && res.data && res.data.data) {
                 setRooms(res.data.data);
-                console.log("data",res.data);
                 handlePagination(res.data.total);
 
             }
@@ -270,7 +269,7 @@ function RoomList() {
 
                 </div>
 
-                <Table className="text-center" bordered-y="true" hover>
+                <Table className="text-center align-middle" bordered-y="true" hover>
                     <colgroup>
                         <col style={{ width: '10%' }} />
                         <col style={{ width: '20%' }} />
@@ -321,12 +320,12 @@ function RoomList() {
                     <tbody>
                         {rooms.map((room, index) => (
                             <tr key={room._id}>
-                                <td className="align-middle">{index + 1}</td>
-                                <td className="align-middle">{room.roomName}</td>
-                                <td className="align-middle">{room.roomTypeId.name}</td>
-                                <td className="align-middle">{room.roomTypeId.price}</td>
-                                <td className="align-middle">{room.notes}</td>
-                                <td className="flex justify-center gap-2 p-3 align-middle">
+                                <td >{index + 1}</td>
+                                <td >{room.roomName}</td>
+                                <td >{room.roomTypeId.name}</td>
+                                <td >{room.roomTypeId.price}</td>
+                                <td >{room.notes}</td>
+                                <td className="flex justify-center gap-2 p-3">
                                     <button className="hover:text-blue-800 text-blue-500 text-xl" onClick={() => handleEditClick(room)}>✎</button>
                                     <button className="hover:text-red-800 text-red-500 font-bold text-xl" onClick={() => handleDelete(room._id)}>🗑</button>
                                 </td>

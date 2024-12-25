@@ -10,6 +10,7 @@ const QueryHelper = require("../utils/QueryHelper");
  */
 
 exports.getAllRooms = async (req, res) => {
+<<<<<<< HEAD
   try {
     const total = await Room.countDocuments();
     const roomQuery = Room.find().populate("roomTypeId");
@@ -29,6 +30,53 @@ exports.getAllRooms = async (req, res) => {
         if (valA > valB) return order;
         return 0;
       });
+=======
+    try {
+
+        const { sort, search, page = 1, limit = 10 } = req.query;
+
+        const filter = {};
+
+        if (search) {
+            const searchTerm = new RegExp(search, 'i'); 
+            filter.$or = [
+                { roomName: searchTerm },
+                { 'roomTypeId.name': searchTerm },
+                { notes: searchTerm }
+            ];
+        }
+        
+        let sortOption = {};
+        if (sort) {
+            if (sort === 'roomTypeId.price' || sort === '-roomTypeId.price') {
+                sortOption = { 'roomTypeId.price': sort.startsWith('-') ? -1 : 1 };
+            } else {
+                sortOption[sort.replace('-', '')] = sort.startsWith('-') ? -1 : 1;
+            }
+        }
+
+        const total = await Room.countDocuments(filter);
+        
+        const skip = (page - 1) * limit; 
+        const rooms = await Room.find(filter)
+            .populate('roomTypeId')
+            .sort(sortOption)
+            .skip(skip)
+            .limit(Number(limit));
+
+        res.status(200).json({
+            success: true,
+            count: rooms.length,
+            total,
+            data: rooms
+        });
+    } catch (error) {
+        console.error('Get all rooms error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server Error'
+        });
+>>>>>>> f23f10dd657574a2fb1bc997f2bc521a6814b7ac
     }
     if (search) {
       const searchTerm = search.toLowerCase();

@@ -86,7 +86,7 @@ const delDeleteRoom = async (id) => {
   }
 };
 
-const getBookings = async (queryParams) => {
+const getAllBookings = async (queryParams) => {
   try {
     const response = await axios.get("api/bookings", {
       params: queryParams,
@@ -288,7 +288,7 @@ export {
   postAddRoom,
   patchUpdateRoom,
   delDeleteRoom,
-  getBookings,
+  getAllBookings,
   getInvoices,
   getAllCustomerTypes,
   updateCustomerType,
