@@ -35,7 +35,7 @@ const RoomCheckout = () => {
                 if (filteredBookings.length > 0) {
                     setFoundBills(filteredBookings);
                 } else {
-                    setError("Room not found.");
+                    setError("Room in booking not found.");
                 }
             } else {
                 setError("Failed to fetch bookings. Please try again later.");
