@@ -137,7 +137,7 @@ exports.deleteRoomType = async (req, res) => {
         
         const roomType = await RoomType.findByIdAndDelete(req.params.id);
 
-        if (!roomType) {
+        if (!roomType) {0
             return res.status(404).json({
                 success: false,
                 error: 'Room type not found'
