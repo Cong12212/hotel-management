@@ -13,39 +13,34 @@ exports.getAllRooms = async (req, res) => {
 
         const { sort, search, page = 1, limit = 10 } = req.query;
 
-        const roomQuery = Room.find()
+        const filter = {};
+
+        if (search) {
+            const searchTerm = new RegExp(search, 'i'); 
+            filter.$or = [
+                { roomName: searchTerm },
+                { 'roomTypeId.name': searchTerm },
+                { notes: searchTerm }
+            ];
+        }
+        
+        let sortOption = {};
+        if (sort) {
+            if (sort === 'roomTypeId.price' || sort === '-roomTypeId.price') {
+                sortOption = { 'roomTypeId.price': sort.startsWith('-') ? -1 : 1 };
+            } else {
+                sortOption[sort.replace('-', '')] = sort.startsWith('-') ? -1 : 1;
+            }
+        }
+
+        const total = await Room.countDocuments(filter);
+        
+        const skip = (page - 1) * limit; 
+        const rooms = await Room.find(filter)
             .populate('roomTypeId')
-        const queryHelper = new QueryHelper(roomQuery,req.query).executeQuery()
-        let rooms = await queryHelper.query 
-
-        const {sort,search} = req.query 
-
-        if (sort === 'roomTypeId.price' || sort === '-roomTypeId.price') {
-
-            const order = sort.startsWith('-') ? -1 : 1;
-    
-            rooms = rooms.sort((a, b) => {
-                const valA = a.roomTypeId['price'];
-                const valB = b.roomTypeId['price'];
-                if (valA < valB) return -order;
-                if (valA > valB) return order;
-                return 0;
-            });
-        }
-
-        if(search){
-            const searchTerm = search.toLowerCase()
-
-            rooms = rooms.filter(room => {
-
-                const roomName = String(room.roomName).toLowerCase();
-                const roomTypeName = room.roomTypeId && room.roomTypeId.name ? String(room.roomTypeId.name).toLowerCase() : '';
-                const notes = room.notes ? String(room.notes).toLowerCase() : '';
-
-                return roomName.includes(searchTerm) || roomTypeName.includes(searchTerm) || notes.includes(searchTerm);
-            });
-
-        }
+            .sort(sortOption)
+            .skip(skip)
+            .limit(Number(limit));
 
         res.status(200).json({
             success: true,
