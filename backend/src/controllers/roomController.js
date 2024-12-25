@@ -10,7 +10,8 @@ const QueryHelper = require('../utils/QueryHelper')
  */
 exports.getAllRooms = async (req, res) => {
     try {
-        const total = await Room.countDocuments()
+
+        const { sort, search, page = 1, limit = 10 } = req.query;
 
         const roomQuery = Room.find()
             .populate('roomTypeId')
@@ -19,7 +20,6 @@ exports.getAllRooms = async (req, res) => {
 
         const {sort,search} = req.query 
 
-        
         if (sort === 'roomTypeId.price' || sort === '-roomTypeId.price') {
 
             const order = sort.startsWith('-') ? -1 : 1;
