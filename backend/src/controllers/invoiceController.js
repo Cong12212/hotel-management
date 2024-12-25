@@ -96,63 +96,72 @@ const checkoutInvoice = async(req,res)=>{
 const getAllInvoices = async (req, res) => {
     try {
         const { sort, search, page = 1, limit = 10 } = req.query;
-
+        
+        const searchRegex = new RegExp(search, 'i'); 
+        
         const skip = (page - 1) * limit;
-        const limitValue = parseInt(limit);
-
-        let filter = {};  
-
-        if (search) {
-            const searchTerm = new RegExp(search, 'i');  
-
-            filter['bookingId.bookingDetails'] = {
-                $elemMatch: {
-                    'roomId.roomName': searchTerm  
-                }
-            };
-        }
-
-
-        const total = await Invoice.countDocuments(filter);
-
-        const invoices = await Invoice.find(filter)
+        
+        const allInvoices = await Invoice.find({})
             .populate({
                 path: 'bookingId', 
-                select: 'customerIds userId bookingDetails',  
+                select: 'customerIds userId bookingDetails ',  
                 populate: [
                     {
                         path: 'customerIds',  
-                        select: 'fullName idNumber phone address',
+                        select: 'fullName idNumber phone address -_id',
                     },
                     {
                         path: 'userId', 
-                        select: 'fullName phone role',
+                        select: 'fullName phone -_id',
                     },
                     {
-                        path: 'bookingDetails',  
-                        populate: {
-                            path: 'roomId',
-                            select: '_id roomName',  
-                        },
+                        path: 'bookingDetails', 
+                        select: 'roomId numberOfGuests checkInDate checkOutDate roomPrice additionalFees totalPrice' ,
+                        populate: [
+                            {
+                                path: 'roomId',
+                                select: '-_id roomName',  
+                            },
+                            {
+                                path: 'additionalFees',
+                                select: '-_id amount description',
+                            }
+                        ],
                     },
                 ],
             })
-            .sort(sort || 'createdAt') 
-            .skip(skip) 
-            .limit(limitValue); 
+            .sort(sort || 'createdAt')
+            .exec();
 
-     
-        return res.status(200).json({
+
+            const filteredInvoices = allInvoices.filter(invoice => {
+            return (
+                (invoice.bookingId.customerIds?.some(customer => 
+                    searchRegex.test(customer.fullName) || searchRegex.test(customer.phone)
+                )) ||
+                (invoice.userId && 
+                    (searchRegex.test(invoice.userId.fullName) || searchRegex.test(invoice.userId.phone))
+                ) ||
+                (invoice.bookingId.bookingDetails?.some(detail => 
+                    detail.roomId && searchRegex.test(detail.roomId.roomName)
+                ))
+            );
+        });
+
+
+        const paginatedInvoices = filteredInvoices.slice(skip, skip + parseInt(limit));
+
+        res.status(200).json({
             success: true,
-            total,  
-            count: invoices.length, 
-            data: invoices, 
+            data: paginatedInvoices,
+            total: filteredInvoices.length, 
+            count: paginatedInvoices.length
         });
     } catch (error) {
-        console.error('Error fetching invoices:', error);
-        return res.status(500).json({
+        console.error('Error fetching bookings:', error);
+        res.status(500).json({
             success: false,
-            error: 'Server Error',
+            error: 'Failed to fetch bookings'
         });
     }
 };
