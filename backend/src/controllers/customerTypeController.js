@@ -50,7 +50,7 @@ exports.getCustomerType = async (req, res) => {
 
 /**
  * API endpoint example POST http://localhost:4000/api/customer-types
- * Required role: receptionist, manager
+ * Required role: manager, admin
  * @param {req.body = {name,coefficient}}
  */
 exports.createCustomerType = async (req, res) => {
@@ -77,7 +77,7 @@ exports.createCustomerType = async (req, res) => {
 
 /**
  * API endpoint example PATCH http://localhost:4000/api/customer-types/6761956e50ddce926994bbcf
- * Required role: receptionist, manager
+ * Required role: manager, admin
  * @param {customertype_id}
  * @param {req.body = {name,coefficient}}
  */
