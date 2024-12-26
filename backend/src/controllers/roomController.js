@@ -4,7 +4,7 @@ const BookingDetail = require('../models/BookingDetail')
 const QueryHelper = require('../utils/QueryHelper')
 /**
  * api : /api/rooms
- * required permission : view rooms
+ * required permission : all
  * possible query params : sort, limit, page , search 
  * @returns : success status, count (number of records) , total (total number of records), data 
  */
@@ -131,7 +131,7 @@ exports.createRoom = async (req, res) => {
 
 /**
  * API endpoint : PATCH http://localhost:4000/api/rooms/{roomId}
- * require : admin,manager,receptionist role
+ * require : admin,manager
  */
 exports.updateRoom = async (req, res) => {
     try {

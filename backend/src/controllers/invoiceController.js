@@ -6,7 +6,7 @@ const mongoose = require('mongoose')
  * @API_endpoint example :POST http://localhost:4000/api/invoices
  * @param {req.body = bookingId} req.body = bookingId 
  * @return {success status, data(invoice created)}
- * 
+ * @required receptionist,manager,admin
  */
 const checkoutInvoice = async(req,res)=>{
 
@@ -92,6 +92,7 @@ const checkoutInvoice = async(req,res)=>{
  * @api_endpoint example :GET http://localhost:4000/api/invoices
  * @param {page, limit, search}
  * @returns {success status, total page, count, data}
+ * @required receptionist,manager,admin
  */
 const getAllInvoices = async (req, res) => {
     try {
