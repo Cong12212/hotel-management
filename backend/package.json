@@ -18,8 +18,12 @@
     "express": "^4.21.1",
     "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
+<<<<<<< HEAD
+    "mongoose": "^8.9.1"
+=======
     "mongoose": "^8.8.3",
     "path": "^0.12.7"
+>>>>>>> 849a1700f626ef0f4eaee613b4541fef844333d6
   },
   "devDependencies": {
     "nodemon": "^3.1.7"
