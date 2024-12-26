@@ -9,7 +9,7 @@ const logIn = async(data) => {
                         const user = jwtDecode(token);
                         return {
                             data: {
-                                user,
+                                user,   
                                 token
                             }
                         };
@@ -21,6 +21,8 @@ const logIn = async(data) => {
                         };
                     });
 };
+
+
 
 // Hàm gọi API lấy tất cả phòng
 const getAllRooms = async (queryParams) => {
