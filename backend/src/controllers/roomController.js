@@ -5,122 +5,63 @@ const QueryHelper = require("../utils/QueryHelper");
 /**
  * api : /api/rooms
  * required permission : view rooms
- * possible query params : sort, limit, page , search
- * @returns : success status, count (number of records) , total (total number of records), data
+ * possible query params : sort, limit, page , search 
+ * @returns : success status, count (number of records) , total (total number of records), data 
  */
 
 exports.getAllRooms = async (req, res) => {
-<<<<<<< HEAD
   try {
-    const total = await Room.countDocuments();
-    const roomQuery = Room.find().populate("roomTypeId");
+    const { sort, search, page = 1, limit = 10 } = req.query;
+    const filter = {};
 
-    const queryHelper = new QueryHelper(roomQuery, req.query).executeQuery();
-    let rooms = await queryHelper.query;
-
-    const { sort, search, searchField } = req.query;
-
-    if (sort === "roomTypeId.price" || sort === "-roomTypeId.price") {
-      const order = sort.startsWith("-") ? -1 : 1;
-
-      rooms = rooms.sort((a, b) => {
-        const valA = a.roomTypeId["price"];
-        const valB = b.roomTypeId["price"];
-        if (valA < valB) return -order;
-        if (valA > valB) return order;
-        return 0;
-      });
-=======
-    try {
-
-        const { sort, search, page = 1, limit = 10 } = req.query;
-
-        const filter = {};
-
-        if (search) {
-            const searchTerm = new RegExp(search, 'i'); 
-            filter.$or = [
-                { roomName: searchTerm },
-                { 'roomTypeId.name': searchTerm },
-                { notes: searchTerm }
-            ];
-        }
-        
-        let sortOption = {};
-        if (sort) {
-            if (sort === 'roomTypeId.price' || sort === '-roomTypeId.price') {
-                sortOption = { 'roomTypeId.price': sort.startsWith('-') ? -1 : 1 };
-            } else {
-                sortOption[sort.replace('-', '')] = sort.startsWith('-') ? -1 : 1;
-            }
-        }
-
-        const total = await Room.countDocuments(filter);
-        
-        const skip = (page - 1) * limit; 
-        const rooms = await Room.find(filter)
-            .populate('roomTypeId')
-            .sort(sortOption)
-            .skip(skip)
-            .limit(Number(limit));
-
-        res.status(200).json({
-            success: true,
-            count: rooms.length,
-            total,
-            data: rooms
-        });
-    } catch (error) {
-        console.error('Get all rooms error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Server Error'
-        });
->>>>>>> f23f10dd657574a2fb1bc997f2bc521a6814b7ac
+    if (search) {
+      const searchTerm = new RegExp(search, 'i');
+      filter.$or = [
+        { roomName: searchTerm },
+        { 'roomTypeId.name': searchTerm },
+        { notes: searchTerm }
+      ];
     }
+
+    let sortOption = {};
+    if (sort) {
+      if (sort === 'roomTypeId.price' || sort === '-roomTypeId.price') {
+        sortOption = { 'roomTypeId.price': sort.startsWith('-') ? -1 : 1 };
+      } else {
+        sortOption[sort.replace('-', '')] = sort.startsWith('-') ? -1 : 1;
+      }
+    }
+
+    const total = await Room.countDocuments(filter);
+    const skip = (page - 1) * limit;
+
+    let rooms = await Room.find(filter)
+      .populate('roomTypeId')
+      .sort(sortOption)
+      .skip(skip)
+      .limit(Number(limit));
+
     if (search) {
       const searchTerm = search.toLowerCase();
       rooms = rooms.filter((room) => {
         const roomName = String(room.roomName || "").toLowerCase();
         const roomTypeName = String(room.roomTypeId.name || "").toLowerCase();
-        return (
-          roomName.includes(searchTerm) || roomTypeName.includes(searchTerm)
-        );
+        return roomName.includes(searchTerm) || roomTypeName.includes(searchTerm);
       });
     }
-    // if (searchField && search) {
-    //     const searchValue = new RegExp(search, "i"); // Tạo regex không phân biệt hoa thường
-      
-    //     // Kiểm tra nếu `searchField` là trường lồng (e.g., `roomTypeId.name`)
-    //     if (searchField.includes(".")) {
-    //       const [relation, field] = searchField.split("."); // Tách `roomTypeId.name` thành `roomTypeId` và `name`
-      
-    //       rooms = rooms.filter((room) => {
-    //         // Lấy giá trị từ trường lồng, sử dụng truy cập động
-    //         const nestedFieldValue = room[relation]?.[field] || ""; 
-    //         return searchValue.test(String(nestedFieldValue));
-    //       });
-    //     } else {
-    //       // Trường hợp `searchField` là trường cơ bản
-    //       rooms = rooms.filter((room) => {
-    //         // Truy cập động vào trường cơ bản
-    //         const fieldValue = room[searchField] || ""; 
-    //         return searchValue.test(String(fieldValue));
-    //       });
-    //     }
-    //   }
 
     res.status(200).json({
       success: true,
       count: rooms.length,
       total,
-      data: rooms,
+      data: rooms
     });
+
   } catch (error) {
-    console.error("Get all rooms error:", error);
+    console.error('Get all rooms error:', error);
     res.status(500).json({
       success: false,
-      error: "Server Error",
+      error: 'Server Error'
     });
   }
 };
@@ -199,7 +140,7 @@ exports.createRoom = async (req, res) => {
 
 /**
  * API endpoint : PATCH http://localhost:4000/api/rooms/{roomId}
- * require : admin,manager,receptionist role
+ * require : admin,manager
  */
 exports.updateRoom = async (req, res) => {
   try {
