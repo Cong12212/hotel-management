@@ -2,43 +2,7 @@ import React from "react";
 import { Bar } from "react-chartjs-2";
 
 const DashBoard = () => {
-  // Dữ liệu doanh thu giả lập
-  const monthlyRevenueData = {
-    labels: [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ],
-    datasets: [
-      {
-        label: "Monthly Revenue (USD)",
-        data: [5000, 4000, 8000, 10000, 7000, 9000, 11000, 12000, 9500, 8000, 10500, 13000],
-        backgroundColor: [
-          "#4caf50",
-          "#2196f3",
-          "#ff9800",
-          "#f44336",
-          "#9c27b0",
-          "#3f51b5",
-          "#00bcd4",
-          "#8bc34a",
-          "#ffc107",
-          "#ff5722",
-          "#607d8b",
-          "#e91e63",
-        ],
-      },
-    ],
-  };
+  
 
   const options = {
     responsive: true,

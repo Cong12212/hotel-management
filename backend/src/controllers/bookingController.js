@@ -7,15 +7,18 @@ const mongoose = require('mongoose');
 const QueryHelper = require('../utils/QueryHelper')
 
 /**
- * Example API endpoint : http://localhost:4000/api/bookings?sort=totalAmount&page=1&limit=2
- * @param possible query params : sort, page, limit
+ * Example API endpoint : http://localhost:4000/api/bookings?sort=totalAmount&page=1&limit=2&startDate=2025-06-01&endDate=2025-12-01
+ * @param possible query params : sort, page, limit,search, startDate, endDate
  * Required role : admin, manager, receptionist
  * @return success status, count , total, data
  */
 exports.getAllBookings = async (req, res) => {
     try {
-        const {sort,search} = req.query
+        const {sort,search,startDate,endDate } = req.query
+
+       
         const total = await Booking.countDocuments()
+
         const bookingQuery = Booking.find()
             .populate('customerIds', 'fullName phone email')
             .populate('userId', 'username')
@@ -30,6 +33,26 @@ exports.getAllBookings = async (req, res) => {
         const queryHelper = new QueryHelper(bookingQuery,req.query).executeQuery()
 
         let bookings = await queryHelper.query 
+
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+
+            if (isNaN(start) || isNaN(end)) {
+                throw new Error("startDate or endDate is not valid.");
+            }
+            bookings = bookings.filter(booking =>
+                booking.bookingDetails.some(detail => {
+                    const checkInDate = new Date(detail.checkInDate);
+                    if (isNaN(checkInDate)) {
+                        console.warn("checkInDate is not valid:", detail);
+                        return false;
+                    }
+        
+                    return checkInDate >= start && checkInDate <= end;
+                })
+            );
+        }
 
         if (search) {
             const searchTerm = search.toLowerCase();
@@ -77,6 +100,99 @@ exports.getAllBookings = async (req, res) => {
     }
 };
 
+/**
+ * Example API endpoint : http://localhost:4000/api/bookings/uncompleted?sort=totalAmount&page=1&limit=2&startDate=2025-06-01&endDate=2025-12-01
+ * @param possible query params : sort, page, limit,search, startDate, endDate
+ * Required role : admin, manager, receptionist
+ * @return success status, count , total, data
+ */
+exports.getAllUncomletedBookings = async (req, res) => {
+    try {
+        const {sort,search,startDate,endDate } = req.query
+
+       
+        const total = await Booking.countDocuments()
+
+        const bookingQuery = Booking.find({ status: { $ne: "completed" } })
+            .populate('customerIds', 'fullName phone email')
+            .populate('userId', 'username')
+            .populate({
+                path: 'bookingDetails',
+                populate: {
+                    path: 'roomId',
+                    select: 'roomName roomTypeId'
+                }
+            })
+
+        const queryHelper = new QueryHelper(bookingQuery,req.query).executeQuery()
+
+        let bookings = await queryHelper.query 
+
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+
+            if (isNaN(start) || isNaN(end)) {
+                throw new Error("startDate or endDate is not valid.");
+            }
+            bookings = bookings.filter(booking =>
+                booking.bookingDetails.some(detail => {
+                    const checkInDate = new Date(detail.checkInDate);
+                    if (isNaN(checkInDate)) {
+                        console.warn("checkInDate is not valid:", detail);
+                        return false;
+                    }
+        
+                    return checkInDate >= start && checkInDate <= end;
+                })
+            );
+        }
+
+        if (search) {
+            const searchTerm = search.toLowerCase();
+            bookings = bookings.filter(booking => 
+                booking.bookingDetails.some(detail => 
+                    detail.roomId && 
+                    detail.roomId.roomName && 
+                    detail.roomId.roomName.toLowerCase().includes(searchTerm)
+                )
+            );
+        }
+
+        // if (sort === 'checkInDate' || sort === '-checkInDate') {
+
+        //     const order = sort.startsWith('-') ? -1 : 1;
+    
+        //     bookings = bookings.sort((a, b) => {
+        //         const valA = Array.isArray(a.bookingDetails)
+        //             ? Math.min(...a.bookingDetails.map(detail => new Date(detail.checkInDate).getTime()))
+        //             : new Date(a.bookingDetails?.checkInDate).getTime();
+        
+        //         const valB = Array.isArray(b.bookingDetails)
+        //             ? Math.min(...b.bookingDetails.map(detail => new Date(detail.checkInDate).getTime()))
+        //             : new Date(b.bookingDetails?.checkInDate).getTime();
+        
+        //         if (valA < valB) return -order;
+        //         if (valA > valB) return order;
+        //         return 0;
+        //     });
+        // }
+
+
+        res.status(200).json({
+            success: true,
+            count: bookings.length,
+            total,
+            data: bookings
+        });
+    } catch (error) {
+        console.error('Get all bookings error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server Error'
+        });
+    }
+};
 // Get single booking
 exports.getBooking = async (req, res) => {
     try {
@@ -247,8 +363,11 @@ exports.createBooking = async (req, res) => {
                 throw new Error(`Room ${detail.roomId} is not available for selected dates`);
             }
 
-
-            price += room.roomTypeId.price
+            const checkIn = new Date(detail.checkInDate);
+            const checkOut = new Date(detail.checkOutDate);
+            const days = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24))
+            
+            price += room.roomTypeId.price * days;
             if(detail.numberOfGuests > room.roomTypeId.maxOccupancy)
             {
                 additionalFees.push({amount: room.roomTypeId.price*room.roomTypeId.surchargeRate,description: "Surcharge fee"})
@@ -281,11 +400,7 @@ exports.createBooking = async (req, res) => {
 
             totalAmount += bookingDetail.totalPrice
 
-            // Update room status
-            // await Room.findByIdAndUpdate(
-            //     detail.roomId,
-            //     { status: 'occupied' }
-            // );
+
         }
 
         // Create main booking

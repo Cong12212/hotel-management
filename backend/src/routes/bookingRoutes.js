@@ -9,7 +9,8 @@ const {
     updateBookingStatus,
     deleteBooking,
     getBookingsByUser,
-    getBookingStats
+    getBookingStats,
+    getAllUncomletedBookings
 } = require('../controllers/bookingController');
 
 // Protect all routes
@@ -18,10 +19,11 @@ router.use(protect);
 // Routes cho staff/receptionist 
 router.post('/',authorize(Permission.CREATE_BOOKINGS), createBooking);
 router.get('/my-bookings',authorize(Permission.VIEW_BOOKINGS), getBookingsByUser);
-router.get('/:id',authorize(Permission.VIEW_BOOKINGS) ,getBooking);
 
 // Admin routes
 router.get('/',authorize(Permission.VIEW_BOOKINGS), getAllBookings);
+router.get('/uncompleted',authorize(Permission.VIEW_BOOKINGS), getAllUncomletedBookings);
+
 router.get('/stats/summary',authorize(Permission.VIEW_REPORTS) ,getBookingStats);
 router.put('/:id/status',authorize(Permission.UPDATE_BOOKINGS), updateBookingStatus);
 router.delete('/:id',authorize(Permission.DELETE_BOOKINGS), deleteBooking);  // Xóa booking

@@ -1,5 +1,6 @@
 const RoomType = require('../models/RoomType');
 const Room = require('../models/Room');
+const BookingDetail = require('../models/BookingDetail')
 const QueryHelper = require('../utils/QueryHelper')
 /**
  * api : /api/rooms
@@ -13,13 +14,11 @@ exports.getAllRooms = async (req, res) => {
 
         const roomQuery = Room.find()
             .populate('roomTypeId')
-            .sort('roomName');
         const queryHelper = new QueryHelper(roomQuery,req.query).executeQuery()
         let rooms = await queryHelper.query 
 
         const {sort,search} = req.query 
 
-        
         if (sort === 'roomTypeId.price' || sort === '-roomTypeId.price') {
 
             const order = sort.startsWith('-') ? -1 : 1;
@@ -189,8 +188,9 @@ exports.updateRoom = async (req, res) => {
 };
 
 /**
- * api : /api/rooms
+ * API endpoint example DELETE : /api/rooms/:room_id
  * require : admin,manager role
+ * @param {req.params = {room_id}}
  */
 exports.deleteRoom = async (req, res) => {
     try {
@@ -203,14 +203,14 @@ exports.deleteRoom = async (req, res) => {
             });
         }
 
-        if (room.status === 'occupied') {
+        if (!checkRoomAvailability(room._id)) {
             return res.status(400).json({
                 success: false,
                 error: 'Cannot delete occupied room'
             });
         }
 
-        await room.remove();
+        await room.deleteOne();
 
         res.status(200).json({
             success: true,
@@ -271,4 +271,15 @@ exports.getAvailableRooms = async (req, res) => {
             error: 'Server Error'
         });
     }
+};
+
+// Helper function to check room availability
+const checkRoomAvailability = async (roomId) => {
+    const now = new Date()
+    const overlappingBookings = await BookingDetail.find({
+        roomId,
+        checkOutDate: { $gte: now }
+    });
+
+    return overlappingBookings.length === 0;
 };

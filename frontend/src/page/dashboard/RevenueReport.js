@@ -1,118 +1,122 @@
-import React, { useState } from "react";
-import DataTable from "react-data-table-component";
+import React, { useState, useEffect } from 'react';
+import { fetchMonthlyReport } from "../../service/apiServices";
 
-const RevenueReport = ({ data }) => {
-  // State lưu trữ giá trị của form
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [bookingStatus, setBookingStatus] = useState("");
-  const [paymentStatus, setPaymentStatus] = useState("");
-  const [filteredData, setFilteredData] = useState(data); // Dữ liệu đã lọc
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-  // Hàm xử lý khi nhấn nút "Search"
-  const handleSearch = () => {
-    const filtered = data.filter((item) => {
-      const withinDateRange =
-        (!startDate || new Date(item.date) >= new Date(startDate)) &&
-        (!endDate || new Date(item.date) <= new Date(endDate));
-      const matchesBookingStatus =
-        !bookingStatus || item.bookingStatus === bookingStatus;
-      const matchesPaymentStatus =
-        !paymentStatus || item.paymentStatus === paymentStatus;
+const MonthlyRevenueReport = () => {
+    const [data, setData] = useState(null);
+    const [month, setMonth] = useState('12'); // Default to December
+    const [year, setYear] = useState('2024'); // Default to 2024
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-      return withinDateRange && matchesBookingStatus && matchesPaymentStatus;
-    });
-    setFilteredData(filtered);
-  };
+    const fetchReportData = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const reportData = await fetchMonthlyReport(`${month}-${year}`);
+            setData(reportData);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  // Định nghĩa cột cho bảng
-  const columns = [
-    {
-      name: "Month",
-      selector: (row) => row.month,
-      sortable: true,
-    },
-    {
-      name: "Revenue",
-      selector: (row) => `$${row.revenue.toLocaleString()}`,
-      sortable: true,
-      right: true,
-    },
-  ];
+    useEffect(() => {
+        fetchReportData();
+    }, [month, year]);
 
-  return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      {/* Form tìm kiếm */}
-      <h2 className="text-xl font-semibold mb-4">Search Reports Here</h2>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        {/* Ngày bắt đầu */}
-        <div>
-          <label className="block text-sm font-medium mb-1">From</label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="w-full p-2 border rounded"
-          />
+    const handleMonthChange = (e) => setMonth(e.target.value);
+    const handleYearChange = (e) => setYear(e.target.value);
+
+    return (
+        <div className="container mt-5">
+            <h2 className="text-center mb-4">Monthly Revenue Report</h2>
+
+            <div className="row mb-4">
+                <div className="col-md-4">
+                    <label htmlFor="month" className="form-label">Select Month:</label>
+                    <select id="month" className="form-select" value={month} onChange={handleMonthChange}>
+                        {Array.from({ length: 12 }, (_, i) => (
+                            <option key={i + 1} value={String(i + 1).padStart(2, '0')}>
+                                {new Date(0, i).toLocaleString('en', { month: 'long' })}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className="col-md-4">
+                    <label htmlFor="year" className="form-label">Enter Year:</label>
+                    <input
+                        type="number"
+                        id="year"
+                        className="form-control"
+                        value={year}
+                        onChange={handleYearChange}
+                        min="2000"
+                        max="2100"
+                    />
+                </div>
+                <div className="col-md-4 d-flex align-items-end">
+                    <button className="btn btn-primary w-100" onClick={fetchReportData}>
+                        Fetch Report
+                    </button>
+                </div>
+            </div>
+
+            {loading && <p className="text-center">Loading...</p>}
+            {error && <p className="text-danger text-center">{error}</p>}
+
+            {data && (
+                <div className="table-responsive">
+                    <table className="table table-bordered">
+                        <thead className="thead-dark">
+                            <tr>
+                                <th>Total Bookings</th>
+                                <th>Total Amount (VND)</th>
+                                <th>Total New Customers</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{data.totalBookings || 0}</td>
+                                <td>{data.totalAmount?.toLocaleString('en-US') || '0'}</td>
+                                <td>{data.totalNewCustomer || 0}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4 className="mt-4">Daily Data</h4>
+                    <table className="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Total Amount (VND)</th>
+                                <th>Total Bookings</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {data.dailyData && data.dailyData.length > 0 ? (
+                                data.dailyData.map((day, index) => (
+                                    <tr key={index}>
+                                        <td>{new Date(day.date).toLocaleDateString('en-US')}</td>
+                                        <td>{day.totalAmount.toLocaleString('en-US')}</td>
+                                        <td>{day.totalBookings}</td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="3" className="text-center">
+                                        No data available for the selected month and year.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </div>
-        {/* Ngày kết thúc */}
-        <div>
-          <label className="block text-sm font-medium mb-1">To</label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="w-full p-2 border rounded"
-          />
-        </div>
-        {/* Trạng thái booking */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Booking Status</label>
-          <select
-            value={bookingStatus}
-            onChange={(e) => setBookingStatus(e.target.value)}
-            className="w-full p-2 border rounded"
-          >
-            <option value="">Find Booking Status</option>
-            <option value="Pending">Pending</option>
-            <option value="Confirmed">Confirmed</option>
-          </select>
-        </div>
-        {/* Trạng thái thanh toán */}
-        <div>
-          <label className="block text-sm font-medium mb-1">Payment Status</label>
-          <select
-            value={paymentStatus}
-            onChange={(e) => setPaymentStatus(e.target.value)}
-            className="w-full p-2 border rounded"
-          >
-            <option value="">Find Payment Status</option>
-            <option value="Success">Success</option>
-            <option value="Pending">Pending</option>
-          </select>
-        </div>
-      </div>
-      {/* Nút tìm kiếm */}
-      <button
-        onClick={handleSearch}
-        className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-      >
-        Search
-      </button>
-
-      {/* Hiển thị bảng doanh thu */}
-      <div className="mt-6">
-        <DataTable
-          columns={columns}
-          data={filteredData}
-          pagination
-          highlightOnHover
-          striped
-          responsive
-        />
-      </div>
-    </div>
-  );
+    );
 };
 
-export default RevenueReport;
+export default MonthlyRevenueReport;

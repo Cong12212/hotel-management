@@ -9,6 +9,14 @@ const Permission = Object.freeze({
     DELETE_CUSTOMERS: 'delete_customers',
     VIEW_CUSTOMERS: 'view_customers',
 
+    // Manage customer types
+    CREATE_CUSTOMERTYPES : 'create_customertypes',
+    UPDATE_CUSTOMERTYPES : 'update_customertypes',
+    DELETE_CUSTOMERTYPES : 'delete_customertypes',
+    VIEW_CUSTOMERTYPES : 'view_customertypes',
+
+
+
     // Manage rooms
     CREATE_ROOMS : 'create_rooms',
     UPDATE_ROOMS: 'update_rooms',
