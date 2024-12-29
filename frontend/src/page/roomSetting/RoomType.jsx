@@ -9,7 +9,7 @@ function RoomConfigure() {
   const [roomtypes, setRoomTypes] = useState([]);
   const [totalRooms, setTotalRooms] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState(null); //
@@ -129,7 +129,7 @@ function RoomConfigure() {
         if (!isRoomChanged) {
           toast.info('No changes detected.', { autoClose: 2000 });
         } else {
-          res = await patchUpdateRoomType({ ...newRoomType, id: editingRoomType._id });
+          res = await patchUpdateRoomType( editingRoomType._id, newRoomType);
         }
       } else {
         res = await postAddRoomType(newRoomType);
@@ -213,7 +213,7 @@ function RoomConfigure() {
               onSelect={handleRowsPerPageChange}
               variant="outline-secondary"
             >
-              {[10, 25, 50].map((value) => (
+              {[5, 10, 25, 50].map((value) => (
                 <Dropdown.Item eventKey={value} key={value}>
                   {value} rows
                 </Dropdown.Item>
@@ -262,18 +262,6 @@ function RoomConfigure() {
                 </th>
                 <th>
                   Price
-                  <button
-                    onClick={() => handleSort('price', 'asc')}
-                    className="ml-1 text-l"
-                  >
-                    ▲
-                  </button>
-                  <button
-                    onClick={() => handleSort('price', 'desc')}
-                    className=" text-l"
-                  >
-                    ▼
-                  </button>
                 </th>
                 <th>Actions</th>
               </tr>

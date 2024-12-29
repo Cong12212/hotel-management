@@ -10,27 +10,6 @@ const QueryHelper = require("../utils/QueryHelper");
  */
 
 exports.getAllRooms = async (req, res) => {
-<<<<<<< HEAD
-  try {
-    const total = await Room.countDocuments();
-    const roomQuery = Room.find().populate("roomTypeId");
-
-    const queryHelper = new QueryHelper(roomQuery, req.query).executeQuery();
-    let rooms = await queryHelper.query;
-
-    const { sort, search, searchField } = req.query;
-
-    if (sort === "roomTypeId.price" || sort === "-roomTypeId.price") {
-      const order = sort.startsWith("-") ? -1 : 1;
-
-      rooms = rooms.sort((a, b) => {
-        const valA = a.roomTypeId["price"];
-        const valB = b.roomTypeId["price"];
-        if (valA < valB) return -order;
-        if (valA > valB) return order;
-        return 0;
-      });
-=======
     try {
 
         const { sort, search, page = 1, limit = 10 } = req.query;
@@ -76,53 +55,7 @@ exports.getAllRooms = async (req, res) => {
             success: false,
             error: 'Server Error'
         });
->>>>>>> f23f10dd657574a2fb1bc997f2bc521a6814b7ac
     }
-    if (search) {
-      const searchTerm = search.toLowerCase();
-      rooms = rooms.filter((room) => {
-        const roomName = String(room.roomName || "").toLowerCase();
-        const roomTypeName = String(room.roomTypeId.name || "").toLowerCase();
-        return (
-          roomName.includes(searchTerm) || roomTypeName.includes(searchTerm)
-        );
-      });
-    }
-    // if (searchField && search) {
-    //     const searchValue = new RegExp(search, "i"); // Tạo regex không phân biệt hoa thường
-      
-    //     // Kiểm tra nếu `searchField` là trường lồng (e.g., `roomTypeId.name`)
-    //     if (searchField.includes(".")) {
-    //       const [relation, field] = searchField.split("."); // Tách `roomTypeId.name` thành `roomTypeId` và `name`
-      
-    //       rooms = rooms.filter((room) => {
-    //         // Lấy giá trị từ trường lồng, sử dụng truy cập động
-    //         const nestedFieldValue = room[relation]?.[field] || ""; 
-    //         return searchValue.test(String(nestedFieldValue));
-    //       });
-    //     } else {
-    //       // Trường hợp `searchField` là trường cơ bản
-    //       rooms = rooms.filter((room) => {
-    //         // Truy cập động vào trường cơ bản
-    //         const fieldValue = room[searchField] || ""; 
-    //         return searchValue.test(String(fieldValue));
-    //       });
-    //     }
-    //   }
-
-    res.status(200).json({
-      success: true,
-      count: rooms.length,
-      total,
-      data: rooms,
-    });
-  } catch (error) {
-    console.error("Get all rooms error:", error);
-    res.status(500).json({
-      success: false,
-      error: "Server Error",
-    });
-  }
 };
 
 /**

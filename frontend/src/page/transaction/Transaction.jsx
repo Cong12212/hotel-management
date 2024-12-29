@@ -10,7 +10,7 @@ const Transaction = () => {
     const [expandedRow, setExpandedRow] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortField, setSortField] = useState(null); //
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
     const [currentPage, setCurrentPage] = useState(1);
     const [pageInput, setPageInput] = useState(currentPage);
     const [totalPages, setTotalPages] = useState(1);
@@ -123,7 +123,7 @@ const Transaction = () => {
                             onSelect={(value) => handleRowsPerPageChange(Number(value))}
                             variant="outline-secondary"
                         >
-                            {[10, 25, 50].map((value) => (
+                            {[5, 10, 25, 50].map((value) => (
                                 <Dropdown.Item key={value} eventKey={value}>
                                     {value} rows
                                 </Dropdown.Item>
@@ -131,7 +131,7 @@ const Transaction = () => {
                         </DropdownButton>
                     </div>
                 </div>
-                <Table className="align-middle text-left" bordered-y="true" hover>
+                <Table className="align-middle text-center" bordered-y="true" hover>
                     <colgroup>
                         <col style={{ width: '5%' }} />
                         <col style={{ width: '20%' }} />

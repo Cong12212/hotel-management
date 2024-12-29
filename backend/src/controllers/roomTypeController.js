@@ -1,92 +1,62 @@
-const RoomType = require("../models/RoomType");
-const Room = require("../models/Room");
-const QueryHelper = require("../utils/QueryHelper");
+const RoomType = require('../models/RoomType');
+const Room = require('../models/Room');
+const QueryHelper = require('../utils/QueryHelper')
 /**
  * API endpoint example GET http://localhost:4000/api/room-types
  * required Role : admin,manager,receptionist
- *
+ * 
  */
 exports.getAllRoomTypes = async (req, res) => {
-  try {
-    const total = await RoomType.countDocuments();
-    const roomTypeQuery = RoomType.find().sort("name");
+    try {
+        const roomTypeQuery = RoomType.find().sort('name');
 
-    const queryHelper = new QueryHelper(
-      roomTypeQuery,
-      req.query
-    ).executeQuery();
+        const queryHelper = new QueryHelper(roomTypeQuery,req.query).executeQuery()
 
-    let roomTypes = await queryHelper.query;
+        const roomTypes = await queryHelper.query
 
-    const { sort, search } = req.query;
+        const total = await RoomType.countDocuments()
 
-    if (sort === "price" || sort === "-price") {
-      const order = sort.startsWith("-") ? -1 : 1;
-
-      roomTypes = roomTypes.sort((a, b) => {
-        const valA = a.price;
-        const valB = b.price;
-        if (valA < valB) return -order;
-        if (valA > valB) return order;
-        return 0;
-      });
+        res.status(200).json({
+            success: true,
+            count: roomTypes.length,
+            total: total,
+            data: roomTypes
+        });
+    } catch (error) {
+        console.error('Get all room types error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server Error'
+        });
     }
-
-    if (search) {
-      const searchTerm = search.toLowerCase();
-      roomTypes = roomTypes.filter((roomType) => {
-        const typeName = String(roomType.name || "").toLowerCase();
-        const maxOccupancy =
-          roomType.maxOccupancy !== undefined
-            ? String(roomType.maxOccupancy)
-            : "";
-        return (
-          typeName.includes(searchTerm) || maxOccupancy.includes(searchTerm)
-        );
-      });
-    }
-    
-    res.status(200).json({
-      success: true,
-      count: roomTypes.length,
-      total,
-      data: roomTypes,
-    });
-  } catch (error) {
-    console.error("Get all room types error:", error);
-    res.status(500).json({
-      success: false,
-      error: "Server Error",
-    });
-  }
 };
 
 /**
  * API endpoint : /api/rooms
- * required Role : admin,manager,receptionist
+ * required Role : admin,manager,receptionist 
  */
 exports.getRoomType = async (req, res) => {
-  try {
-    const roomType = await RoomType.findById(req.params.id);
+    try {
+        const roomType = await RoomType.findById(req.params.id);
 
-    if (!roomType) {
-      return res.status(404).json({
-        success: false,
-        error: "Room type not found",
-      });
+        if (!roomType) {
+            return res.status(404).json({
+                success: false,
+                error: 'Room type not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: roomType
+        });
+    } catch (error) {
+        console.error('Get room type error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server Error'
+        });
     }
-
-    res.status(200).json({
-      success: true,
-      data: roomType,
-    });
-  } catch (error) {
-    console.error("Get room type error:", error);
-    res.status(500).json({
-      success: false,
-      error: "Server Error",
-    });
-  }
 };
 
 /**
@@ -95,26 +65,26 @@ exports.getRoomType = async (req, res) => {
  * @param req.body Body of RoomType need to be created
  */
 exports.createRoomType = async (req, res) => {
-  try {
-    const roomType = await RoomType.create(req.body);
+    try {
+        const roomType = await RoomType.create(req.body);
 
-    res.status(201).json({
-      success: true,
-      data: roomType,
-    });
-  } catch (error) {
-    console.error("Create room type error:", error);
-    if (error.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        error: "Room type name already exists",
-      });
+        res.status(201).json({
+            success: true,
+            data: roomType
+        });
+    } catch (error) {
+        console.error('Create room type error:', error);
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                error: 'Room type name already exists'
+            });
+        }
+        res.status(500).json({
+            success: false,
+            error: 'Server Error'
+        });
     }
-    res.status(500).json({
-      success: false,
-      error: "Server Error",
-    });
-  }
 };
 
 /**
@@ -124,36 +94,40 @@ exports.createRoomType = async (req, res) => {
  * @param req.body Body of RoomType need to update
  */
 exports.updateRoomType = async (req, res) => {
-  try {
-    const roomType = await RoomType.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    try {
+        const roomType = await RoomType.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            {
+                new: true,
+                runValidators: true
+            }
+        );
 
-    if (!roomType) {
-      return res.status(404).json({
-        success: false,
-        error: "Room type not found",
-      });
-    }
+        if (!roomType) {
+            return res.status(404).json({
+                success: false,
+                error: 'Room type not found'
+            });
+        }
 
-    res.status(200).json({
-      success: true,
-      data: roomType,
-    });
-  } catch (error) {
-    console.error("Update room type error:", error);
-    if (error.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        error: "Room type name already exists",
-      });
+        res.status(200).json({
+            success: true,
+            data: roomType
+        });
+    } catch (error) {
+        console.error('Update room type error:', error);
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                error: 'Room type name already exists'
+            });
+        }
+        res.status(500).json({
+            success: false,
+            error: 'Server Error'
+        });
     }
-    res.status(500).json({
-      success: false,
-      error: "Server Error",
-    });
-  }
 };
 
 /**
@@ -162,16 +136,10 @@ exports.updateRoomType = async (req, res) => {
  * @params req.params.id ID of the room need to delete
  */
 exports.deleteRoomType = async (req, res) => {
-  try {
-    const roomType = await RoomType.findByIdAndDelete(req.params.id);
+    try {
+        
+        const roomType = await RoomType.findByIdAndDelete(req.params.id);
 
-<<<<<<< HEAD
-    if (!roomType) {
-      return res.status(404).json({
-        success: false,
-        error: "Room type not found",
-      });
-=======
         if (!roomType) {0
             return res.status(404).json({
                 success: false,
@@ -198,27 +166,5 @@ exports.deleteRoomType = async (req, res) => {
             success: false,
             error: 'Server Error'
         });
->>>>>>> f23f10dd657574a2fb1bc997f2bc521a6814b7ac
     }
-
-    // Check if any rooms are using this room type
-    const hasRooms = await Room.exists({ roomTypeId: req.params.id });
-    if (hasRooms) {
-      return res.status(400).json({
-        success: false,
-        error: "Cannot delete room type that has rooms",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Room type deleted successfully",
-    });
-  } catch (error) {
-    console.error("Delete room type error:", error);
-    res.status(500).json({
-      success: false,
-      error: "Server Error",
-    });
-  }
 };

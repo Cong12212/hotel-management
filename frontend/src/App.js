@@ -11,6 +11,7 @@ import RoomCheckout from "./page/roomBook/RoomCheckout";
 import RoomStatus from "./page/roomBook/RoomStatus";
 import RoomType from "./page/roomSetting/RoomType";
 import CustomerType from "./page/roomSetting/CustomerType";
+import RoomBook from "./ui/BookingForm";
 import LogIn from "./page/auth/LogIn";
 import { AuthProvider } from "./hook/useAuth";
 // import SignUp from './page/auth/SignUp';
@@ -38,6 +39,7 @@ function App() {
                 <Route path="/room-status" element={<RoomStatus />} />
                 <Route path="/roomtypes" element={<RoomType />} />
                 <Route path="/customertypes" element={<CustomerType />} />
+                <Route path="/room-book" element={<RoomBook />} />
               </Route>
             </Routes>
           </NavBarItemProvider>
