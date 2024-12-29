@@ -6,7 +6,7 @@ const mongoose = require('mongoose')
  * @API_endpoint example :POST http://localhost:4000/api/invoices
  * @param {req.body = bookingId} req.body = bookingId 
  * @return {success status, data(invoice created)}
- * 
+ * @required receptionist,manager,admin
  */
 const checkoutInvoice = async(req,res)=>{
 
@@ -90,67 +90,83 @@ const checkoutInvoice = async(req,res)=>{
 
 /**
  * @api_endpoint example :GET http://localhost:4000/api/invoices
- * @param {sort, page, limit, search}
+ * @param {page, limit, search}
  * @returns {success status, total page, count, data}
+ * @required receptionist,manager,admin
  */
-const getAllInvoices = async(req,res)=>{
-
-    const {search} = req.query 
-
-    const total = await Invoice.countDocuments()
-    const invoiceQuery = Invoice.find().populate({
-        path: 'bookingId',
-        select: 'customerIds userId bookingDetails',
-        populate: [
-            {
-                path: 'customerIds',
-                select: 'fullName idNumber phone address '
-            },
-            {
-                path: 'userId',
-                select: 'fullName phone role'
-            },
-            {
-                path: 'bookingDetails',
-                populate: {
-                    path: 'roomId',
-                    select: '_id roomName'
-                }
-            }             
-
-
-        ]
-    })
-    const queryHelper = new QueryHelper(invoiceQuery, req.query).executeQuery()
-
-    let invoices = await queryHelper.query 
-
-    // Handle search by roomName
-    if (search){
-        const searchTerm = search.toLowerCase()
-        invoices = invoices.filter(invoice=>{
-            if(invoice.bookingId.bookingDetails)
-            {
-                return invoice.bookingId.bookingDetails.some(bookingDetail=>{
-                    if(bookingDetail.roomId && bookingDetail.roomId.roomName)
+const getAllInvoices = async (req, res) => {
+    try {
+        const { sort, search, page = 1, limit = 10 } = req.query;
+        
+        const searchRegex = new RegExp(search, 'i'); 
+        
+        const skip = (page - 1) * limit;
+        
+        const allInvoices = await Invoice.find({})
+            .populate({
+                path: 'bookingId', 
+                select: 'customerIds userId bookingDetails ',  
+                populate: [
                     {
-                        return bookingDetail.roomId.roomName.toLowerCase().includes(searchTerm)
-                    }
-                })
-            }
-            return false
+                        path: 'customerIds',  
+                        select: 'fullName idNumber phone address -_id',
+                    },
+                    {
+                        path: 'userId', 
+                        select: 'fullName phone -_id',
+                    },
+                    {
+                        path: 'bookingDetails', 
+                        select: 'roomId numberOfGuests checkInDate checkOutDate roomPrice additionalFees totalPrice' ,
+                        populate: [
+                            {
+                                path: 'roomId',
+                                select: '-_id roomName',  
+                            },
+                            {
+                                path: 'additionalFees',
+                                select: '-_id amount description',
+                            }
+                        ],
+                    },
+                ],
+            })
+            .sort(sort || 'createdAt')
+            .exec();
 
-        })
+
+            const filteredInvoices = allInvoices.filter(invoice => {
+            return (
+                (invoice.bookingId.customerIds?.some(customer => 
+                    searchRegex.test(customer.fullName) || searchRegex.test(customer.phone)
+                )) ||
+                (invoice.userId && 
+                    (searchRegex.test(invoice.userId.fullName) || searchRegex.test(invoice.userId.phone))
+                ) ||
+                (invoice.bookingId.bookingDetails?.some(detail => 
+                    detail.roomId && searchRegex.test(detail.roomId.roomName)
+                ))
+            );
+        });
+
+
+        const paginatedInvoices = filteredInvoices.slice(skip, skip + parseInt(limit));
+
+        res.status(200).json({
+            success: true,
+            data: paginatedInvoices,
+            total: filteredInvoices.length, 
+            count: paginatedInvoices.length
+        });
+    } catch (error) {
+        console.error('Error fetching bookings:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch bookings'
+        });
     }
+};
 
 
-    return res.status(200).json({
-        success: true,
-        total,
-        count: invoices.length,
-        data: invoices,
 
-    })
-    
-}
 module.exports = {checkoutInvoice,getAllInvoices}

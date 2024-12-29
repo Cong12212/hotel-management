@@ -14,185 +14,130 @@ const QueryHelper = require('../utils/QueryHelper')
  */
 exports.getAllBookings = async (req, res) => {
     try {
-        const {sort,search,startDate,endDate } = req.query
-
-       
-        const total = await Booking.countDocuments()
-
-        const bookingQuery = Booking.find()
-            .populate('customerIds', 'fullName phone email')
-            .populate('userId', 'username')
+        const { sort, search, page = 1, limit = 10 } = req.query;
+        const searchRegex = new RegExp(search, 'i'); 
+        
+        const skip = (page - 1) * limit;
+        
+        const allBookings = await Booking.find({})
+            .populate({
+                path: 'customerIds',
+                select: 'fullName phone idNumber address -_id'
+            })
+            .populate({
+                path: 'userId',
+                select: 'fullName phone address -_id'
+            })
             .populate({
                 path: 'bookingDetails',
+                select: '-_id -additionalFees._id',
                 populate: {
                     path: 'roomId',
-                    select: 'roomName roomTypeId'
+                    select: 'roomName price -_id'
                 }
             })
+            .sort(sort)
+            .exec();
 
-        const queryHelper = new QueryHelper(bookingQuery,req.query).executeQuery()
 
-        let bookings = await queryHelper.query 
-
-        if (startDate && endDate) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-
-            if (isNaN(start) || isNaN(end)) {
-                throw new Error("startDate or endDate is not valid.");
-            }
-            bookings = bookings.filter(booking =>
-                booking.bookingDetails.some(detail => {
-                    const checkInDate = new Date(detail.checkInDate);
-                    if (isNaN(checkInDate)) {
-                        console.warn("checkInDate is not valid:", detail);
-                        return false;
-                    }
-        
-                    return checkInDate >= start && checkInDate <= end;
-                })
+            const filteredBookings = allBookings.filter(booking => {
+            return (
+                (booking.customerIds?.some(customer => 
+                    searchRegex.test(customer.fullName) || searchRegex.test(customer.phone)
+                )) ||
+                (booking.userId && 
+                    (searchRegex.test(booking.userId.fullName) || searchRegex.test(booking.userId.phone))
+                ) ||
+                (booking.bookingDetails?.some(detail => 
+                    detail.roomId && searchRegex.test(detail.roomId.roomName)
+                ))
             );
-        }
+        });
 
-        if (search) {
-            const searchTerm = search.toLowerCase();
-            bookings = bookings.filter(booking => 
-                booking.bookingDetails.some(detail => 
-                    detail.roomId && 
-                    detail.roomId.roomName && 
-                    detail.roomId.roomName.toLowerCase().includes(searchTerm)
-                )
-            );
-        }
 
-        // if (sort === 'checkInDate' || sort === '-checkInDate') {
-
-        //     const order = sort.startsWith('-') ? -1 : 1;
-    
-        //     bookings = bookings.sort((a, b) => {
-        //         const valA = Array.isArray(a.bookingDetails)
-        //             ? Math.min(...a.bookingDetails.map(detail => new Date(detail.checkInDate).getTime()))
-        //             : new Date(a.bookingDetails?.checkInDate).getTime();
-        
-        //         const valB = Array.isArray(b.bookingDetails)
-        //             ? Math.min(...b.bookingDetails.map(detail => new Date(detail.checkInDate).getTime()))
-        //             : new Date(b.bookingDetails?.checkInDate).getTime();
-        
-        //         if (valA < valB) return -order;
-        //         if (valA > valB) return order;
-        //         return 0;
-        //     });
-        // }
-
+        const paginatedBookings = filteredBookings.slice(skip, skip + parseInt(limit));
 
         res.status(200).json({
             success: true,
-            count: bookings.length,
-            total,
-            data: bookings
+            data: paginatedBookings,
+            total: filteredBookings.length, 
+            count: paginatedBookings.length
         });
     } catch (error) {
-        console.error('Get all bookings error:', error);
+        console.error('Error fetching bookings:', error);
         res.status(500).json({
             success: false,
-            error: 'Server Error'
+            error: 'Failed to fetch bookings'
         });
     }
 };
-
 /**
  * Example API endpoint : http://localhost:4000/api/bookings/uncompleted?sort=totalAmount&page=1&limit=2&startDate=2025-06-01&endDate=2025-12-01
  * @param possible query params : sort, page, limit,search, startDate, endDate
  * Required role : admin, manager, receptionist
  * @return success status, count , total, data
  */
-exports.getAllUncomletedBookings = async (req, res) => {
+exports.getAllUncompletedBookings = async (req, res) => {
     try {
-        const {sort,search,startDate,endDate } = req.query
-
-       
-        const total = await Booking.countDocuments()
-
-        const bookingQuery = Booking.find({ status: { $ne: "completed" } })
-            .populate('customerIds', 'fullName phone email')
-            .populate('userId', 'username')
+        const { sort, search, page = 1, limit = 10 } = req.query;
+        const searchRegex = new RegExp(search, 'i'); // Tìm kiếm không phân biệt chữ hoa/thường
+        
+        const skip = (page - 1) * limit;
+        
+        // Lấy tất cả bookings và populate
+        const allBookings = await Booking.find({ status: { $ne: "completed" } })
+            .populate({
+                path: 'customerIds',
+                select: 'fullName phone idNumber address -_id'
+            })
+            .populate({
+                path: 'userId',
+                select: 'fullName phone address -_id'
+            })
             .populate({
                 path: 'bookingDetails',
+                select: '-_id -additionalFees._id',
                 populate: {
                     path: 'roomId',
-                    select: 'roomName roomTypeId'
+                    select: 'roomName price -_id'
                 }
             })
+            .sort(sort)
+            .exec();
 
-        const queryHelper = new QueryHelper(bookingQuery,req.query).executeQuery()
 
-        let bookings = await queryHelper.query 
-
-        if (startDate && endDate) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-
-            if (isNaN(start) || isNaN(end)) {
-                throw new Error("startDate or endDate is not valid.");
-            }
-            bookings = bookings.filter(booking =>
-                booking.bookingDetails.some(detail => {
-                    const checkInDate = new Date(detail.checkInDate);
-                    if (isNaN(checkInDate)) {
-                        console.warn("checkInDate is not valid:", detail);
-                        return false;
-                    }
-        
-                    return checkInDate >= start && checkInDate <= end;
-                })
+            const filteredBookings = allBookings.filter(booking => {
+            return (
+                (booking.customerIds?.some(customer => 
+                    searchRegex.test(customer.fullName) || searchRegex.test(customer.phone)
+                )) ||
+                (booking.userId && 
+                    (searchRegex.test(booking.userId.fullName) || searchRegex.test(booking.userId.phone))
+                ) ||
+                (booking.bookingDetails?.some(detail => 
+                    detail.roomId && searchRegex.test(detail.roomId.roomName)
+                ))
             );
-        }
+        });
 
-        if (search) {
-            const searchTerm = search.toLowerCase();
-            bookings = bookings.filter(booking => 
-                booking.bookingDetails.some(detail => 
-                    detail.roomId && 
-                    detail.roomId.roomName && 
-                    detail.roomId.roomName.toLowerCase().includes(searchTerm)
-                )
-            );
-        }
 
-        // if (sort === 'checkInDate' || sort === '-checkInDate') {
-
-        //     const order = sort.startsWith('-') ? -1 : 1;
-    
-        //     bookings = bookings.sort((a, b) => {
-        //         const valA = Array.isArray(a.bookingDetails)
-        //             ? Math.min(...a.bookingDetails.map(detail => new Date(detail.checkInDate).getTime()))
-        //             : new Date(a.bookingDetails?.checkInDate).getTime();
-        
-        //         const valB = Array.isArray(b.bookingDetails)
-        //             ? Math.min(...b.bookingDetails.map(detail => new Date(detail.checkInDate).getTime()))
-        //             : new Date(b.bookingDetails?.checkInDate).getTime();
-        
-        //         if (valA < valB) return -order;
-        //         if (valA > valB) return order;
-        //         return 0;
-        //     });
-        // }
-
+        const paginatedBookings = filteredBookings.slice(skip, skip + parseInt(limit));
 
         res.status(200).json({
             success: true,
-            count: bookings.length,
-            total,
-            data: bookings
+            data: paginatedBookings,
+            total: filteredBookings.length, 
+            count: paginatedBookings.length
         });
     } catch (error) {
-        console.error('Get all bookings error:', error);
+        console.error('Error fetching bookings:', error);
         res.status(500).json({
             success: false,
-            error: 'Server Error'
+            error: 'Failed to fetch bookings'
         });
     }
 };
+
 // Get single booking
 exports.getBooking = async (req, res) => {
     try {
