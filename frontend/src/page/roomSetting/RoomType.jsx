@@ -12,8 +12,8 @@ function RoomConfigure() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [sortField, setSortField] = useState(null); //
-  const [pageInput, setPageInput] = useState(currentPage); // Input để người dùng nhập
+  const [sortField, setSortField] = useState(null);
+  const [pageInput, setPageInput] = useState(currentPage);
   const [showModal, setShowModal] = useState(false);
   const [newRoomType, setNewRoomType] = useState({ name: '', maxOccupancy: '', surchargeRate: '', price: '' });
   const [editingRoomType, setEditingRoomType] = useState(null);
@@ -37,7 +37,7 @@ function RoomConfigure() {
       const res = await getAllRoomTypes(queryParams);
       if (res && res.data && res.data.data) {
         setRoomTypes(res.data.data);
-        
+
         handlePagination(res.data.total);
       }
     } catch (error) {
@@ -114,7 +114,7 @@ function RoomConfigure() {
       const emptyFields = requiredFields.filter((field) => {
         const fieldValue = newRoomType[field];
         return fieldValue == null || (typeof fieldValue === 'string' && fieldValue.trim() === '');
-    });
+      });
       if (emptyFields.length > 0) {
         const readableFieldNames = emptyFields.map((field) => fieldNamesMap[field]);
         toast.error(`The following fields are required: ${readableFieldNames.join(', ')}`, { autoClose: 2000 });
@@ -125,11 +125,11 @@ function RoomConfigure() {
       if (editingRoomType) {
         isRoomChanged = fieldsToCompare.some(
           (field) => newRoomType[field] !== editingRoomType[field]
-        ) 
+        )
         if (!isRoomChanged) {
           toast.info('No changes detected.', { autoClose: 2000 });
         } else {
-          res = await patchUpdateRoomType( editingRoomType._id, newRoomType);
+          res = await patchUpdateRoomType(editingRoomType._id, newRoomType);
         }
       } else {
         res = await postAddRoomType(newRoomType);
@@ -145,7 +145,7 @@ function RoomConfigure() {
         toast.error(res.error || 'Operation failed', { autoClose: 2000 });
       }
     } catch (error) {
-      
+
       toast.error('Error while saving room type', { autoClose: 2000 });
       console.error(error);
     }
@@ -169,7 +169,7 @@ function RoomConfigure() {
         toast.success('Room type deleted successfully!', { autoClose: 2000 });
         fetchListRoomTypes();
       } else {
-        toast.error(res.error || 'Failed to delete room' , { autoClose: 2000 });
+        toast.error(res.error || 'Failed to delete room', { autoClose: 2000 });
       }
     }
   };

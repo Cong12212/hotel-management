@@ -15,10 +15,10 @@ const QueryHelper = require('../utils/QueryHelper')
 exports.getAllBookings = async (req, res) => {
     try {
         const { sort, search, page = 1, limit = 10 } = req.query;
-        const searchRegex = new RegExp(search, 'i'); 
-        
+        const searchRegex = new RegExp(search, 'i');
+
         const skip = (page - 1) * limit;
-        
+
         const allBookings = await Booking.find({})
             .populate({
                 path: 'customerIds',
@@ -40,15 +40,15 @@ exports.getAllBookings = async (req, res) => {
             .exec();
 
 
-            const filteredBookings = allBookings.filter(booking => {
+        const filteredBookings = allBookings.filter(booking => {
             return (
-                (booking.customerIds?.some(customer => 
+                (booking.customerIds?.some(customer =>
                     searchRegex.test(customer.fullName) || searchRegex.test(customer.phone)
                 )) ||
-                (booking.userId && 
+                (booking.userId &&
                     (searchRegex.test(booking.userId.fullName) || searchRegex.test(booking.userId.phone))
                 ) ||
-                (booking.bookingDetails?.some(detail => 
+                (booking.bookingDetails?.some(detail =>
                     detail.roomId && searchRegex.test(detail.roomId.roomName)
                 ))
             );
@@ -60,7 +60,7 @@ exports.getAllBookings = async (req, res) => {
         res.status(200).json({
             success: true,
             data: paginatedBookings,
-            total: filteredBookings.length, 
+            total: filteredBookings.length,
             count: paginatedBookings.length
         });
     } catch (error) {
@@ -81,40 +81,57 @@ exports.getAllUncompletedBookings = async (req, res) => {
     try {
         const { sort, search, page = 1, limit = 10 } = req.query;
         const searchRegex = new RegExp(search, 'i'); // Tìm kiếm không phân biệt chữ hoa/thường
-        
+
         const skip = (page - 1) * limit;
-        
+
         // Lấy tất cả bookings và populate
-        const allBookings = await Booking.find({ status: { $ne: "completed" } })
+        // const allBookings = await Booking.find({ status: { $ne: "completed" } })
+        //     .populate({
+        //         path: 'customerIds',
+        //         select: 'fullName phone idNumber address -_id'
+        //     })
+        //     .populate({
+        //         path: 'userId',
+        //         select: 'fullName phone address -_id'
+        //     })
+        //     .populate({
+        //         path: 'bookingDetails',
+        //         select: '-_id -additionalFees._id',
+        //         populate: {
+        //             path: 'roomId',
+        //             select: 'roomName price -_id'
+        //         }
+        //     })
+        //     .sort(sort)
+        //     .exec();
+        const allBookings = await Booking.find({})
             .populate({
                 path: 'customerIds',
-                select: 'fullName phone idNumber address -_id'
+                select: 'fullName phone idNumber address' // Bỏ -_id
             })
             .populate({
                 path: 'userId',
-                select: 'fullName phone address -_id'
+                select: 'username'
             })
             .populate({
                 path: 'bookingDetails',
-                select: '-_id -additionalFees._id',
                 populate: {
                     path: 'roomId',
-                    select: 'roomName price -_id'
+                    select: 'roomName price'
                 }
             })
             .sort(sort)
             .exec();
 
-
-            const filteredBookings = allBookings.filter(booking => {
+        const filteredBookings = allBookings.filter(booking => {
             return (
-                (booking.customerIds?.some(customer => 
+                (booking.customerIds?.some(customer =>
                     searchRegex.test(customer.fullName) || searchRegex.test(customer.phone)
                 )) ||
-                (booking.userId && 
+                (booking.userId &&
                     (searchRegex.test(booking.userId.fullName) || searchRegex.test(booking.userId.phone))
                 ) ||
-                (booking.bookingDetails?.some(detail => 
+                (booking.bookingDetails?.some(detail =>
                     detail.roomId && searchRegex.test(detail.roomId.roomName)
                 ))
             );
@@ -126,7 +143,7 @@ exports.getAllUncompletedBookings = async (req, res) => {
         res.status(200).json({
             success: true,
             data: paginatedBookings,
-            total: filteredBookings.length, 
+            total: filteredBookings.length,
             count: paginatedBookings.length
         });
     } catch (error) {
@@ -275,7 +292,7 @@ exports.createBooking = async (req, res) => {
         const { customerIds, bookingDetails } = req.body;
 
         // Validate input
-        if (!customerIds || !Array.isArray(customerIds) || customerIds.length === 0 || !bookingDetails ) {
+        if (!customerIds || !Array.isArray(customerIds) || customerIds.length === 0 || !bookingDetails) {
             return res.status(400).json({
                 success: false,
                 error: 'Please provide all required fields.'
@@ -292,11 +309,11 @@ exports.createBooking = async (req, res) => {
 
             // Check room exists
             const room = await Room.findById((detail.roomId)).populate("roomTypeId")
-            if(!room) throw new Error(`Room ${detail.roomId} is not exist`);
+            if (!room) throw new Error(`Room ${detail.roomId} is not exist`);
             if (new Date(detail.checkInDate) >= new Date(detail.checkOutDate)) {
                 throw new Error('Check-out date must be after check-in date');
             }
-            
+
 
             // Check room available 
             const isRoomAvailable = await checkRoomAvailability(
@@ -311,36 +328,34 @@ exports.createBooking = async (req, res) => {
             const checkIn = new Date(detail.checkInDate);
             const checkOut = new Date(detail.checkOutDate);
             const days = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24))
-            
+
             price += room.roomTypeId.price * days;
-            if(detail.numberOfGuests > room.roomTypeId.maxOccupancy)
-            {
-                additionalFees.push({amount: room.roomTypeId.price*room.roomTypeId.surchargeRate,description: "Surcharge fee"})
-                price+= price*room.roomTypeId.surchargeRate
+            if (detail.numberOfGuests > room.roomTypeId.maxOccupancy) {
+                additionalFees.push({ amount: room.roomTypeId.price * room.roomTypeId.surchargeRate, description: "Surcharge fee" })
+                price += price * room.roomTypeId.surchargeRate
             }
             const guests = await Customer.find({
-                '_id': {$in: customerIds}
+                '_id': { $in: customerIds }
             }).populate("customerTypeId")
-            
+
             const hasForeignGuest = guests.some(guest => guest.customerTypeId && guest.customerTypeId.name.toLowerCase() === 'foreign');
-            
-            if(hasForeignGuest) {
+
+            if (hasForeignGuest) {
                 const foreignCustomerType = await CustomerType.findOne({
                     'name': "Foreign"
                 })
-                if(foreignCustomerType.coefficient > 1)
-                {
-                    additionalFees.push({amount: price*(foreignCustomerType.coefficient-1),description: "Foreign customer fee"})
+                if (foreignCustomerType.coefficient > 1) {
+                    additionalFees.push({ amount: price * (foreignCustomerType.coefficient - 1), description: "Foreign customer fee" })
                     price *= foreignCustomerType.coefficient
 
                 }
 
 
             }
-            
-            const bookingDetail = await BookingDetail.create({...detail,additionalFees,totalPrice:price,roomPrice:room.roomTypeId.price});
 
-            
+            const bookingDetail = await BookingDetail.create({ ...detail, additionalFees, totalPrice: price, roomPrice: room.roomTypeId.price });
+
+
             bookingDetailsIds.push(bookingDetail._id);
 
             totalAmount += bookingDetail.totalPrice
@@ -353,7 +368,7 @@ exports.createBooking = async (req, res) => {
             customerIds,
             userId: req.user.id,
             bookingDetails: bookingDetailsIds,
-            totalAmount : totalAmount,
+            totalAmount: totalAmount,
             status: 'confirmed'
         });
 

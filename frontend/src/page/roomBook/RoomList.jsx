@@ -143,9 +143,12 @@ function RoomList() {
             }
             let res;
             if (editingRoom) {
+                // isRoomChanged = fieldsToCompare.some(
+                //     (field) => newRoom[field] !== editingRoom[field]
+                // ) || newRoom.roomTypeId !== editingRoom.roomTypeId._id;
                 isRoomChanged = fieldsToCompare.some(
                     (field) => newRoom[field] !== editingRoom[field]
-                ) || newRoom.roomTypeId !== editingRoom.roomTypeId._id;
+                ) || newRoom.roomTypeId !== editingRoom.roomTypeId._id || newRoom.notes !== (editingRoom.notes ?? '');
                 if (!isRoomChanged) {
                     toast.info('No changes detected.', { autoClose: 2000 });
 
@@ -204,9 +207,6 @@ function RoomList() {
     };
 
     const handleModalShow = () => setShowModal(true);
-
-    // Other unchanged functions: handleSearch, handleSort, etc.
-   
     return (
         <div className="pt-16 pb-8 pr-8 mt-2 ">
             <ToastContainer />
@@ -241,7 +241,7 @@ function RoomList() {
                         </DropdownButton> */}
                         <InputGroup>
                             <input
-                                placeholder= "Search" //{/*`Enter ${searchField ? (searchField === 'roomName' ? 'Room Name' : 'Room Type') : ''}`*/}
+                                placeholder="Search" //{/*`Enter ${searchField ? (searchField === 'roomName' ? 'Room Name' : 'Room Type') : ''}`*/}
                                 className="outline-none focus:outline-dashed focus:outline-2 focus:outline-violet-500 border border-gray-300 rounded-md p-2"
                                 value={search}
                                 onChange={handleSearch}

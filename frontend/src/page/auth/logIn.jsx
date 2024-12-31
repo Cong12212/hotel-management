@@ -30,10 +30,10 @@ const Login = () => {
     localStorage.setItem('user', JSON.stringify(result.data));
     if (result.data) {
       toast.success('Login successful!', { autoClose: 2000 });
-      userLogin(result.data); // Update user state
+      userLogin(result.data);
       setTimeout(() => {
-        navigate('/dashboard'); // Redirect to dashboard or another page after a delay
-      }, 1500); // Delay for 2 seconds (adjust if needed)
+        navigate('/dashboard');
+      }, 1500);
     } else {
       if (result.err.status === 401) {
         toast.error('Username or password is incorrect!', { autoClose: 2000 });

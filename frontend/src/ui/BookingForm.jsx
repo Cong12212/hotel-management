@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
 import { Button, Form, FormControl } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
-import { getAllRooms, postAddRoom, patchUpdateRoom, delDeleteRoom, getAllRoomTypes, getAllCustomerTypes, addBooking, postAddCustomer,getAllCustomer } from '../service/apiServices';
+import { getAllRooms, postAddRoom, patchUpdateRoom, delDeleteRoom, getAllRoomTypes, getAllCustomerTypes, addBooking, postAddCustomer, getAllCustomer } from '../service/apiServices';
 
 const RoomBookingForm = () => {
 
@@ -174,7 +174,7 @@ const RoomBookingForm = () => {
             toast.error(`Maximum number of customers reached.(${maxGuests})`, { autoClose: 2000 });
             return;
         }
-    
+
         // Thêm một bộ trường mới với dữ liệu mặc định
         setCustomers([
             ...customers,
@@ -190,77 +190,79 @@ const RoomBookingForm = () => {
     };
 
     const handleSubmit = async () => {
-    try {
-        // Kiểm tra dữ liệu khách hàng trước khi thêm
-        const customerIds = [];
+        try {
+            const customerIds = [];
 
-        for (const customer of customers) {
-          
-            const existingCustomer = listCustomer.find(
-                (c) => c.idNumber === listCustomer.idNumber && c.phone === listCustomer.phone
-            );
+            for (const customer of customers) {
+                // Kiểm tra khách hàng tồn tại thông qua idNumber
+                const existingCustomer = listCustomer.find(
+                    (c) => c.idNumber === customer.idNumber
+                );
 
-            let customerId;
+                let customerId;
 
-            if (existingCustomer) {
-                // Khách hàng đã tồn tại
-                customerId = existingCustomer._id; // Hoặc dùng field phù hợp
-            } else {
-                // Thêm mới khách hàng
-                const customerData = {
-                    fullName: customer.fullName || "Default Name",
-                    idNumber: customer.idNumber || "000000000",
-                    customerTypeId: customer.customerTypeId,
-                    phone: customer.phone,
-                    address: customer.address || "Unknown",
-                };
-
-                const response = await postAddCustomer(customerData);
-
-                if (response && response.data && response.data._id) {
-                    customerId = response.data._id;
+                if (existingCustomer) {
+                    // Nếu khách hàng đã tồn tại, sử dụng ID của khách hàng đó
+                    customerId = existingCustomer._id;
                 } else {
-                    throw new Error(`Failed to create customer: ${customer.fullName}`);
-                }
-            }
+                    // Nếu chưa tồn tại, tạo khách hàng mới
+                    const customerData = {
+                        fullName: customer.fullName,
+                        customerTypeId: customer.customerTypeId,
+                        idNumber: customer.idNumber,
+                        phone: customer.phone,
+                        address: customer.address || "Vietnam",
+                    };
 
-            if (customerId) {
+                    const response = await postAddCustomer(customerData);
+
+                    if (response && response.data && response.data.data) {
+                        customerId = response.data.data._id;
+                    } else {
+                        throw new Error(`Failed to create customer: ${customer.fullName}`);
+                    }
+                }
+
                 customerIds.push(customerId);
             }
-        }
- 
-        // Xử lý thông tin đặt phòng sau khi thêm khách hàng
-        const bookingDetails = [
-            {
+
+            // Kiểm tra thông tin đặt phòng
+            const checkInDate = document.getElementById("checkIn").value;
+            const checkOutDate = document.getElementById("checkOut").value;
+
+            if (!newBooking.roomId || !checkInDate || !checkOutDate) {
+                toast.error("Please select room and dates", { autoClose: 2000 });
+                return;
+            }
+
+            // Tạo booking details
+            const bookingDetails = [{
                 roomId: newBooking.roomId,
-                checkInDate: document.getElementById("checkIn").value,
-                checkOutDate: document.getElementById("checkOut").value,
-                numberOfGuests: customers.length,
-            },
-        ];
-   
-        // Kiểm tra dữ liệu trước khi gửi đặt phòng
-        if (!bookingDetails[0].roomId || !bookingDetails[0].checkInDate || !bookingDetails[0].checkOutDate) {
-            toast.error("Please fill all required fields for booking.", { autoClose: 2000 });
-            return;
-        }
+                checkInDate: checkInDate,
+                checkOutDate: checkOutDate,
+                numberOfGuests: customers.length
+            }];
 
-        const payload = { customerIds, bookingDetails };
-  
+            // Gửi yêu cầu đặt phòng
+            const bookingResponse = await addBooking({ customerIds, bookingDetails });
 
-        // Gọi API thêm đặt phòng
-        const bookingResponse = await addBooking(payload);
-        if (bookingResponse?.data?.success) {
-            toast.success("Room booking added successfully!", { autoClose: 2000 });
-        } else {
-            throw new Error("Failed to add room booking.");
+            if (bookingResponse?.data?.success) {
+                toast.success("Booking successfully created!", { autoClose: 2000 });
+                // Reset form sau khi đặt phòng thành công
+                setCustomers([]);
+                setNewBooking({});
+                document.getElementById("checkIn").value = '';
+                document.getElementById("checkOut").value = '';
+            } else {
+                throw new Error("Failed to create booking");
+            }
+
+        } catch (error) {
+            console.error("Error submitting booking:", error);
+            toast.error(error.message || "An error occurred while processing the booking", { autoClose: 2000 });
         }
-    } catch (error) {
-        console.error("Error submitting booking:", error);
-        toast.error("An error occurred while processing the booking.", { autoClose: 2000 });
-    }
-};
-    
+    };
+
 
     return (
         <div className="pt-16 pb-8 pr-8 mt-2 ">
@@ -288,7 +290,7 @@ const RoomBookingForm = () => {
                             />
                         </Form.Group>
                     </div>
-                   
+
                 </div>
             </div>
 
@@ -326,7 +328,7 @@ const RoomBookingForm = () => {
                             <Form.Select
                                 name="room"
                                 value={newBooking.roomId}
-                                onChange = {(e) => { setNewBooking({ ...newBooking, roomId: e.target.value }) }}
+                                onChange={(e) => { setNewBooking({ ...newBooking, roomId: e.target.value }) }}
                                 isInvalid={!!errors.roomId}
                             >
                                 <option value="">Select room</option>

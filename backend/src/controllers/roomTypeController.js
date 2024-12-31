@@ -8,64 +8,48 @@ const QueryHelper = require('../utils/QueryHelper')
  */
 exports.getAllRoomTypes = async (req, res) => {
     try {
-        const roomTypeQuery = RoomType.find().sort('name');
+        // Lấy tham số search từ query parameters
+        const { search } = req.query;
 
-        const queryHelper = new QueryHelper(roomTypeQuery,req.query).executeQuery()
+        // Tạo query cơ bản
+        let roomTypeQuery = RoomType.find().sort('name');
 
-        const roomTypes = await queryHelper.query
+        // Nếu có tham số search, thêm điều kiện tìm kiếm
+        if (search) {
+            const searchRegex = new RegExp(search, 'i'); // Case insensitive search
+            roomTypeQuery = roomTypeQuery.or([
+                { name: searchRegex },
+                { maxOccupancy: searchRegex }
+            ]);
+        }
 
-        const total = await RoomType.countDocuments()
+        // Sử dụng QueryHelper để xử lý các tham số query khác (nếu có)
+        const queryHelper = new QueryHelper(roomTypeQuery, req.query).executeQuery();
 
-        res.status(200).json({
+        // Thực thi query
+        const roomTypes = await queryHelper.query;
+
+        // Đếm tổng số document (không áp dụng điều kiện search)
+        const total = await RoomType.countDocuments();
+
+        // Trả về kết quả
+        return res.status(200).json({
             success: true,
             count: roomTypes.length,
             total: total,
             data: roomTypes
         });
+
     } catch (error) {
         console.error('Get all room types error:', error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             error: 'Server Error'
         });
     }
-<<<<<<< HEAD
-=======
-
-    if (search) {
-      const searchTerm = search.toLowerCase();
-      roomTypes = roomTypes.filter((roomType) => {
-        const typeName = String(roomType.name || "").toLowerCase();
-        const maxOccupancy =
-          roomType.maxOccupancy !== undefined
-            ? String(roomType.maxOccupancy)
-            : "";
-        return (
-          typeName.includes(searchTerm) || maxOccupancy.includes(searchTerm)
-        );
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      count: roomTypes.length,
-      total,
-      data: roomTypes,
-    });
-  } catch (error) {
-    console.error("Get all room types error:", error);
-    res.status(500).json({
-      success: false,
-      error: "Server Error",
-    });
-  }
->>>>>>> 0a64b30123363e97c3fec4550bbd9cf6ad188686
 };
 
-/**
- * API endpoint : /api/rooms
- * required Role : admin,manager,receptionist 
- */
+
 exports.getRoomType = async (req, res) => {
     try {
         const roomType = await RoomType.findById(req.params.id);
@@ -168,18 +152,46 @@ exports.updateRoomType = async (req, res) => {
  */
 exports.deleteRoomType = async (req, res) => {
     try {
-        
+
         const roomType = await RoomType.findByIdAndDelete(req.params.id);
 
-<<<<<<< HEAD
-        if (!roomType) {0
+        // <<<<<<< HEAD
+        //         if (!roomType) {
+        //             0
+        //             return res.status(404).json({
+        //                 success: false,
+        //                 error: 'Room type not found'
+        //             });
+        //         }
+
+        //         // Check if any rooms are using this room type
+        //         const hasRooms = await Room.exists({ roomTypeId: req.params.id });
+        //         if (hasRooms) {
+        //             return res.status(400).json({
+        //                 success: false,
+        //                 error: 'Cannot delete room type that has rooms'
+        //             });
+        //         }
+
+        //         res.status(200).json({
+        //             success: true,
+        //             message: 'Room type deleted successfully'
+        //         });
+        //     } catch (error) {
+        //         console.error('Delete room type error:', error);
+        //         res.status(500).json({
+        //             success: false,
+        //             error: 'Server Error'
+        //         });
+        //     }
+        // =======
+        if (!roomType) {
             return res.status(404).json({
                 success: false,
                 error: 'Room type not found'
             });
         }
 
-        // Check if any rooms are using this room type
         const hasRooms = await Room.exists({ roomTypeId: req.params.id });
         if (hasRooms) {
             return res.status(400).json({
@@ -192,6 +204,7 @@ exports.deleteRoomType = async (req, res) => {
             success: true,
             message: 'Room type deleted successfully'
         });
+
     } catch (error) {
         console.error('Delete room type error:', error);
         res.status(500).json({
@@ -199,33 +212,4 @@ exports.deleteRoomType = async (req, res) => {
             error: 'Server Error'
         });
     }
-=======
-    if (!roomType) {
-      return res.status(404).json({
-        success: false,
-        error: 'Room type not found'
-      });
-    }
-
-    const hasRooms = await Room.exists({ roomTypeId: req.params.id });
-    if (hasRooms) {
-      return res.status(400).json({
-        success: false,
-        error: 'Cannot delete room type that has rooms'
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Room type deleted successfully'
-    });
-
-  } catch (error) {
-    console.error('Delete room type error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Server Error'
-    });
-  }
->>>>>>> 0a64b30123363e97c3fec4550bbd9cf6ad188686
 };

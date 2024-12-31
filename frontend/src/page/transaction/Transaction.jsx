@@ -92,7 +92,7 @@ const Transaction = () => {
     };
 
     useEffect(() => {
-        setPageInput(currentPage); // Đồng bộ input khi thay đổi trang
+        setPageInput(currentPage);
 
     }, [currentPage]);
 
@@ -146,7 +146,7 @@ const Transaction = () => {
                             <th>Date
                             </th>
                             <th>Total
-                            <button
+                                <button
                                     onClick={() => handleSort('totalAmount', 'asc')}
                                     className="ml-1 text-l"
                                 >
@@ -194,7 +194,7 @@ const Transaction = () => {
                                                         <col style={{ width: '10%' }} />
                                                         <col style={{ width: '30%' }} />
                                                         <col style={{ width: '30%' }} />
-                                                        
+
                                                     </colgroup>
                                                     <thead>
                                                         <tr>
@@ -207,7 +207,7 @@ const Transaction = () => {
                                                             <tr key={i}>
                                                                 <td className="py-3">{detail.roomName}</td>
                                                                 <td className="py-3">{detail.roomPrice.toLocaleString("en-US")} VND</td>
-                                                                
+
                                                             </tr>
                                                         ))}
                                                     </tbody>

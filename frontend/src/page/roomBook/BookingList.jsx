@@ -28,6 +28,37 @@ const BookingList = () => {
         setTotalPages(Math.ceil(totalBookings / rowsPerPage));
     }, [rowsPerPage]);
 
+    // const fetchListBooking = useCallback(async () => {
+    //     try {
+    //         const queryParams = {
+    //             search: search?.trim(),
+    //             sort: sortField,
+    //             limit: rowsPerPage,
+    //             page: currentPage,
+    //         };
+
+    //         const res = await getAllBookings(queryParams);
+
+    //         if (res && res.data && res.data.data) {
+    //             const data = res.data.data;
+    //             const combinedData = data.map((booking, index) => ({
+    //                 id: booking._id, // Sequential ID
+    //                 index: index + 1,
+    //                 status: booking.status,
+    //                 customers: booking.customerIds.map(c => c.fullName).join('\n'),
+    //                 bookingDetails: booking.bookingDetails,
+    //                 employee: booking.userId.username,
+    //                 date: new Date(booking.createdAt).toLocaleString('vi-VN', { timeZone: 'UTC' }),
+    //             }));
+    //             setBookings(combinedData);
+    //             handlePagination(res.data.total);
+
+    //         }
+    //     } catch (error) {
+    //         console.error("Error fetching bookings:", error);
+    //     }
+    // }, [search, sortField, rowsPerPage, currentPage, handlePagination]);
+
     const fetchListBooking = useCallback(async () => {
         try {
             const queryParams = {
@@ -42,17 +73,18 @@ const BookingList = () => {
             if (res && res.data && res.data.data) {
                 const data = res.data.data;
                 const combinedData = data.map((booking, index) => ({
-                    id: booking._id, // Sequential ID
+                    id: booking._id,
                     index: index + 1,
                     status: booking.status,
-                    customers: booking.customerIds.map(c => c.fullName).join('\n'),
+                    customers: booking.customerIds && booking.customerIds.length > 0
+                        ? booking.customerIds.map(c => c.fullName).join('\n')
+                        : null,
                     bookingDetails: booking.bookingDetails,
-                    employee: booking.userId.username,
+                    employee: booking.userId?.username || 'N/A',
                     date: new Date(booking.createdAt).toLocaleString('vi-VN', { timeZone: 'UTC' }),
                 }));
                 setBookings(combinedData);
                 handlePagination(res.data.total);
-
             }
         } catch (error) {
             console.error("Error fetching bookings:", error);
@@ -254,7 +286,7 @@ const BookingList = () => {
                             <th>User
 
                             </th>
-                            <th>Number of Rooms</th>    
+                            <th>Number of Rooms</th>
                             <th>
                                 Date
 
@@ -270,27 +302,36 @@ const BookingList = () => {
                                 <React.Fragment key={booking.id}>
                                     <tr key={`${booking.id}`}>
                                         <td className="py-3">{booking.index}</td>
-                                        <td>
+                                        {/* <td>
                                             {booking.customers.split("\n").map((name, idx) => (
                                                 <div key={idx}>{name}</div>
                                             ))}
+                                        </td> */}
+                                        <td>
+                                            {booking.customers ?
+                                                booking.customers.split("\n").map((name, idx) => (
+                                                    <div key={idx}>{name}</div>
+                                                ))
+                                                :
+                                                "No customer data"
+                                            }
                                         </td>
                                         <td className="py-3">{booking.employee}</td>
                                         <td className="py-3">{booking.bookingDetails?.length}</td>
                                         <td className="py-3">{booking.date}</td>
                                         <td className="py-3">
-                                        <span
-                                        className={`px-2 py-2 font-medium rounded-lg text-white ${booking.status === 'completed'
-                                            ? 'bg-green-600'
-                                            : booking.status === 'confirmed'
-                                                ? 'bg-amber-600'
-                                                : booking.status === 'cancelled'
-                                                    ? 'bg-red-600'
-                                                    : 'bg-blue-600'
-                                            }`}
-                                    >
-                                        {booking.status}
-                                    </span>
+                                            <span
+                                                className={`px-2 py-2 font-medium rounded-lg text-white ${booking.status === 'completed'
+                                                    ? 'bg-green-600'
+                                                    : booking.status === 'confirmed'
+                                                        ? 'bg-amber-600'
+                                                        : booking.status === 'cancelled'
+                                                            ? 'bg-red-600'
+                                                            : 'bg-blue-600'
+                                                    }`}
+                                            >
+                                                {booking.status}
+                                            </span>
                                         </td>
                                         <td>
                                             <Button
