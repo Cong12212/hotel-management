@@ -29,37 +29,6 @@ exports.getAllRoomTypes = async (req, res) => {
             error: 'Server Error'
         });
     }
-<<<<<<< HEAD
-=======
-
-    if (search) {
-      const searchTerm = search.toLowerCase();
-      roomTypes = roomTypes.filter((roomType) => {
-        const typeName = String(roomType.name || "").toLowerCase();
-        const maxOccupancy =
-          roomType.maxOccupancy !== undefined
-            ? String(roomType.maxOccupancy)
-            : "";
-        return (
-          typeName.includes(searchTerm) || maxOccupancy.includes(searchTerm)
-        );
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      count: roomTypes.length,
-      total,
-      data: roomTypes,
-    });
-  } catch (error) {
-    console.error("Get all room types error:", error);
-    res.status(500).json({
-      success: false,
-      error: "Server Error",
-    });
-  }
->>>>>>> 0a64b30123363e97c3fec4550bbd9cf6ad188686
 };
 
 /**
@@ -171,7 +140,6 @@ exports.deleteRoomType = async (req, res) => {
         
         const roomType = await RoomType.findByIdAndDelete(req.params.id);
 
-<<<<<<< HEAD
         if (!roomType) {0
             return res.status(404).json({
                 success: false,
@@ -199,33 +167,4 @@ exports.deleteRoomType = async (req, res) => {
             error: 'Server Error'
         });
     }
-=======
-    if (!roomType) {
-      return res.status(404).json({
-        success: false,
-        error: 'Room type not found'
-      });
-    }
-
-    const hasRooms = await Room.exists({ roomTypeId: req.params.id });
-    if (hasRooms) {
-      return res.status(400).json({
-        success: false,
-        error: 'Cannot delete room type that has rooms'
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Room type deleted successfully'
-    });
-
-  } catch (error) {
-    console.error('Delete room type error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Server Error'
-    });
-  }
->>>>>>> 0a64b30123363e97c3fec4550bbd9cf6ad188686
 };

@@ -10,54 +10,6 @@ const QueryHelper = require("../utils/QueryHelper");
  */
 
 exports.getAllRooms = async (req, res) => {
-<<<<<<< HEAD
-    try {
-
-        const { sort, search, page = 1, limit = 10 } = req.query;
-
-        const filter = {};
-
-        if (search) {
-            const searchTerm = new RegExp(search, 'i'); 
-            filter.$or = [
-                { roomName: searchTerm },
-                { 'roomTypeId.name': searchTerm },
-                { notes: searchTerm }
-            ];
-        }
-        
-        let sortOption = {};
-        if (sort) {
-            if (sort === 'roomTypeId.price' || sort === '-roomTypeId.price') {
-                sortOption = { 'roomTypeId.price': sort.startsWith('-') ? -1 : 1 };
-            } else {
-                sortOption[sort.replace('-', '')] = sort.startsWith('-') ? -1 : 1;
-            }
-        }
-
-        const total = await Room.countDocuments(filter);
-        
-        const skip = (page - 1) * limit; 
-        const rooms = await Room.find(filter)
-            .populate('roomTypeId')
-            .sort(sortOption)
-            .skip(skip)
-            .limit(Number(limit));
-
-        res.status(200).json({
-            success: true,
-            count: rooms.length,
-            total,
-            data: rooms
-        });
-    } catch (error) {
-        console.error('Get all rooms error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Server Error'
-        });
-    }
-=======
   try {
     const { sort, search, page = 1, limit = 10 } = req.query;
     const filter = {};
@@ -112,7 +64,6 @@ exports.getAllRooms = async (req, res) => {
       error: 'Server Error'
     });
   }
->>>>>>> 0a64b30123363e97c3fec4550bbd9cf6ad188686
 };
 
 /**
