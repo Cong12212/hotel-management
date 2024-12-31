@@ -50,11 +50,16 @@ function CustomerType() {
 
   const handleDelete = async (id) => {
     try {
-      await deleteCustomerType(id);
-      setCustomers(customers.filter((customer) => customer.id !== id));
-      showNotification("Customer type deleted successfully!");
+      const response = await deleteCustomerType(id);
+      if (response.success) {
+        setCustomers(customers.filter((customer) => customer.id !== id));
+        showNotification("Customer type deleted successfully!");
+      } else {
+        throw new Error(response.error || "Failed to delete customer type");
+      }
     } catch (error) {
-      setError(error.response?.data?.error || "Failed to delete customer type");
+      const errorMessage = error.response?.data?.error || "You do not have permission";
+      setError(errorMessage);
     }
   };
 
@@ -95,7 +100,7 @@ function CustomerType() {
       }
       handleClose();
     } catch (error) {
-      setError(error.response?.data?.error || "Failed to save customer type");
+      setError(error.response?.data?.error || "Failed to save customer type. You do not have permission");
     }
   };
 
