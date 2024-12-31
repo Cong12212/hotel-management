@@ -122,6 +122,36 @@ const getInvoices = async (queryParams) => {
 };
 
 // Hàm gọi API lấy tất cả loại khách hàng
+const getAllCustomer = async () => {
+  try {
+    const response = await axios.get("api/customer-types");
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response ? error.response.data : "Network error",
+    };
+  }
+}
+const postAddCustomer = async (data) => {
+  try {
+    const response = await axios.post("api/customers", data);
+    console.log(response.data);
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response ? error.response.data : "Network error",
+    };
+  }
+}
+
 const getAllCustomerTypes = async () => {
   try {
     const response = await axios.get("api/customer-types");
@@ -282,6 +312,21 @@ const addInvoice = async (data) => {
   }
 };
 
+const addBooking = async (data) => {
+  try {
+    const response = await axios.post("api/bookings", data);
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response ? error.response.data : "Network error",
+    };
+  }
+}
+
 export {
   logIn,
   getAllRooms,
@@ -290,6 +335,8 @@ export {
   delDeleteRoom,
   getAllBookings,
   getInvoices,
+  getAllCustomer,
+  postAddCustomer,
   getAllCustomerTypes,
   updateCustomerType,
   createCustomerType,
@@ -299,5 +346,6 @@ export {
   patchUpdateRoomType,
   delDeleteRoomType,
   getUncompletedBookings,
+  addBooking,
   addInvoice,
 };

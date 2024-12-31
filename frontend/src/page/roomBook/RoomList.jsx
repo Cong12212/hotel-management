@@ -10,10 +10,9 @@ function RoomList() {
     const [roomtypes, setRoomTypes] = useState([]);
     const [totalRooms, setTotalRooms] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
-    const [searchField, setSearchField] = useState(null);
     const [sortField, setSortField] = useState(null); //
     const [pageInput, setPageInput] = useState(currentPage); // Input để người dùng nhập
     const [showModal, setShowModal] = useState(false);
@@ -30,13 +29,11 @@ function RoomList() {
     const fetchListRoom = useCallback(async () => {
         try {
             const queryParams = {
-                ...(searchField && { searchField }),
                 search: search?.trim(),
                 sort: sortField,
                 limit: rowsPerPage,
                 page: currentPage,
             };
-            console.log("query", queryParams);
             const res = await getAllRooms(queryParams);
             if (res && res.data && res.data.data) {
                 setRooms(res.data.data);
@@ -47,7 +44,7 @@ function RoomList() {
             console.error("Error fetching rooms:", error);
         }
 
-    }, [search, searchField, sortField, rowsPerPage, currentPage, handlePagination]);
+    }, [search, sortField, rowsPerPage, currentPage, handlePagination]);
 
     const fetchListRoomTypes = useCallback(async () => {
         try {
@@ -259,7 +256,7 @@ function RoomList() {
                             onSelect={handleRowsPerPageChange}
                             variant="outline-secondary"
                         >
-                            {[10, 25, 50].map((value) => (
+                            {[5, 10, 25, 50].map((value) => (
                                 <Dropdown.Item eventKey={value} key={value}>
                                     {value} rows
                                 </Dropdown.Item>

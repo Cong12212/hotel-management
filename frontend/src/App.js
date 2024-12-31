@@ -13,7 +13,9 @@ import RoomStatus from "./page/roomBook/RoomStatus";
 import RoomType from "./page/roomSetting/RoomType";
 import CustomerType from "./page/roomSetting/CustomerType";
 import LogIn from "./page/auth/LogIn";
+import RoomBookingForm from "./ui/BookingForm";
 import { AuthProvider } from "./hook/useAuth";
+
 // import SignUp from './page/auth/SignUp';
 // import ForgotPass from './page/auth/ForgotPass';
 
@@ -96,6 +98,7 @@ function App() {
               <Route path="/transactions" element={<Transaction />} />
               <Route path="/rooms" element={<RoomList />} />
               <Route path="/bookings" element={<BookingList />} />
+              <Route path="/room-book" element={<RoomBookingForm />} />
               <Route path="/room-checkout" element={<RoomCheckout />} />
               <Route path="/room-status" element={<RoomStatus />} />
               <Route path="/roomtypes" element={<RoomType />} />
