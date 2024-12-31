@@ -9,6 +9,7 @@ function RoomList() {
     const [rooms, setRooms] = useState([]);
     const [roomtypes, setRoomTypes] = useState([]);
     const [totalRooms, setTotalRooms] = useState(0);
+    const [totalRoomTypes, setTotalRoomTypes] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [currentPage, setCurrentPage] = useState(1);
@@ -16,7 +17,7 @@ function RoomList() {
     const [sortField, setSortField] = useState(null); //
     const [pageInput, setPageInput] = useState(currentPage); // Input để người dùng nhập
     const [showModal, setShowModal] = useState(false);
-    const [newRoom, setNewRoom] = useState({ roomName: '', roomTypeId: '', status: '', notes: '' });
+    const [newRoom, setNewRoom] = useState({ roomName: '', roomTypeId: '', status: "available", notes: '' });
     const [editingRoom, setEditingRoom] = useState(null);
     const [errors, setErrors] = useState({});
 
@@ -49,22 +50,20 @@ function RoomList() {
     const fetchListRoomTypes = useCallback(async () => {
         try {
             const queryParams = {
-                search: search.trim(),
-                sort: sortField,
-                limit: rowsPerPage,
-                page: currentPage,
+                limit: totalRoomTypes,
+                page: 1,
 
             };
             const res = await getAllRoomTypes(queryParams);
             if (res && res.data && res.data.data) {
                 setRoomTypes(res.data.data);
-                handlePagination(res.data.count);
+                setTotalRoomTypes(res.data.count);
 
             }
         } catch (error) {
             console.error("Error fetching roomtypes:", error);
         }
-    }, [search, sortField, rowsPerPage, currentPage, handlePagination]);
+    }, [totalRoomTypes]);
 
 
     useEffect(() => {
@@ -125,7 +124,7 @@ function RoomList() {
     const handleAddRoom = async () => {
 
         try {
-            const requiredFields = ['roomName', 'roomTypeId', 'status'];
+            const requiredFields = ['roomName', 'roomTypeId'];
             const fieldsToCompare = ['roomName', 'status', 'notes'];
 
             const fieldNamesMap = {
@@ -164,11 +163,10 @@ function RoomList() {
                 handleModalClose();
 
             } else {
-                toast.error(res.error || 'Operation failed', { autoClose: 2000 });
+                toast.error(res.error.error || 'Operation failed', { autoClose: 2000 });
             }
         } catch (error) {
             toast.error('Error while saving room', { autoClose: 2000 });
-            console.error(error);
         }
     };
 
@@ -190,7 +188,7 @@ function RoomList() {
                 toast.success('Room deleted successfully!');
                 fetchListRoom();
             } else {
-                toast.error(res.error || 'Failed to delete room');
+                toast.error(res.error.error || 'Failed to delete room');
             }
         }
     };
@@ -297,18 +295,6 @@ function RoomList() {
                             <th>Room Type</th>
                             <th>
                                 Room Price
-                                <button
-                                    onClick={() => handleSort('roomTypeId.price', 'asc')}
-                                    className="ml-1 text-l"
-                                >
-                                    ▲
-                                </button>
-                                <button
-                                    onClick={() => handleSort('roomTypeId.price', 'desc')}
-                                    className=" text-l"
-                                >
-                                    ▼
-                                </button>
                             </th>
                             <th>Note</th>
                             <th>Actions</th>
@@ -319,8 +305,8 @@ function RoomList() {
                             <tr key={room._id}>
                                 <td >{index + 1}</td>
                                 <td >{room.roomName}</td>
-                                <td >{room.roomTypeId.name}</td>
-                                <td >{room.roomTypeId.price}</td>
+                                <td>{room.roomTypeId ? room.roomTypeId.name : 'N/A'}</td>
+                                <td>{room.roomTypeId ? room.roomTypeId.price : 'N/A'}</td>
                                 <td >{room.notes}</td>
                                 <td className="flex justify-center gap-2 p-3">
                                     <button className="hover:text-blue-800 text-blue-500 text-xl" onClick={() => handleEditClick(room)}>✎</button>
@@ -405,21 +391,17 @@ function RoomList() {
 
                         <Form.Group controlId="formRoomStatus">
                             <Form.Label className="text-muted">
-                                Status <span style={{ color: 'red' }}>*</span>
+                                Status
                             </Form.Label>
                             <Form.Select
-                                placeholder="Select room status"
                                 name="status"
                                 value={newRoom.status}
                                 onChange={handleInputChange}
                                 isInvalid={!!errors.status}
                                 className="mb-3"
                             >
-                                <option value="">Select room status</option>
+                                <option value="">available</option>
                                 <>
-                                    <option>
-                                        available
-                                    </option>
                                     <option>
                                         occupied
                                     </option>

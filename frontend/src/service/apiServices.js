@@ -1,6 +1,7 @@
 import axios from "../service/utils/axiosCustomize"; // Import axios đã customize
 import { jwtDecode } from "jwt-decode"; // Sửa lại import
 
+
 // Hàm gọi API đăng nhập
 const logIn = async (data) => {
   return await axios
@@ -8,10 +9,12 @@ const logIn = async (data) => {
     .then((response) => {
       const token = response.data.data.token;
       const user = jwtDecode(token);
+      const userInfo = response.data.data.user;
       return {
         data: {
           user,
           token,
+          userInfo,
         },
       };
     })
@@ -46,7 +49,6 @@ const getAllRooms = async (queryParams) => {
 const postAddRoom = async (data) => {
   try {
     const response = await axios.post("api/rooms", data);
-    console.log(response.data);
     return {
       success: true,
       data: response.data,
@@ -141,7 +143,6 @@ const getAllCustomer = async () => {
 const postAddCustomer = async (data) => {
   try {
     const response = await axios.post("api/customers", data);
-    console.log(response.data);
     return {
       success: true,
       data: response.data,

@@ -1,13 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hook/useAuth';
-import { toast } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Header = ({ toggleNavBar, isNavBarOpen }) => {
-    const { userLogout } = useAuth();
+    const { userLogout, user } = useAuth();
     const navigate = useNavigate();
-
     const handleLogOut = () => {
         userLogout();
         toast.success('Logout successful!', { autoClose: 2000 });
@@ -19,6 +18,7 @@ const Header = ({ toggleNavBar, isNavBarOpen }) => {
 
     return (
         <div className=" w-full bg-gray-50 z-50 fixed  ">
+            <ToastContainer />
             <div className=" flex justify-start items-center py-2 ">
                 <div>
                     {/* Toggle NavBar Button */}
@@ -79,7 +79,7 @@ const Header = ({ toggleNavBar, isNavBarOpen }) => {
                                 src="https://hotelair-react.pixelwibes.in/static/media/profile_av.387360c31abf06d6cc50.png" alt="" />
                         </div>
                         <span className="text-gray-600 bg-clip-text hover:bg-gradient-to-r hover:from-violet-800 hover:to-pink-800 hover:text-transparent">
-                            Michelle
+                            {user && user.userInfo ? user.userInfo.fullName : 'Guest'}
                         </span>
                     </div>
                 </div>

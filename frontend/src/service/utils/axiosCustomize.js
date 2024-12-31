@@ -12,6 +12,7 @@ const instance = axios.create({
 instance.interceptors.request.use((config) => {
     let token = null
     const data = localStorage.getItem('user')
+    
     if (data) {
         const user = JSON.parse(data)
         if (user) {

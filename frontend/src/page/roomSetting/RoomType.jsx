@@ -142,7 +142,7 @@ function RoomConfigure() {
         fetchListRoomTypes();
         handleModalClose();
       } else {
-        toast.error(res.error || 'Operation failed', { autoClose: 2000 });
+        toast.error(res.error.error || 'Operation failed', { autoClose: 2000 });
       }
     } catch (error) {
       
@@ -169,7 +169,7 @@ function RoomConfigure() {
         toast.success('Room type deleted successfully!', { autoClose: 2000 });
         fetchListRoomTypes();
       } else {
-        toast.error(res.error || 'Failed to delete room' , { autoClose: 2000 });
+        toast.error(res.error.error || 'Failed to delete room' , { autoClose: 2000 });
       }
     }
   };

@@ -102,8 +102,6 @@ const BookingList = () => {
         setPageInput(currentPage); // Đồng bộ input khi thay đổi trang
     }, [currentPage]);
 
-
-    console.log(bookings);
     return (
         <div className="pt-16 pb-8 pr-8 mt-2 ">
             <ToastContainer />
@@ -162,7 +160,7 @@ const BookingList = () => {
                             <th>User
 
                             </th>
-                            <th>Number of Rooms</th>    
+                            <th>Number of Rooms</th>
                             <th>
                                 Date
 
@@ -187,18 +185,18 @@ const BookingList = () => {
                                         <td className="py-3">{booking.bookingDetails?.length}</td>
                                         <td className="py-3">{booking.date}</td>
                                         <td className="py-3">
-                                        <span
-                                        className={`px-2 py-2 font-medium rounded-lg text-white ${booking.status === 'completed'
-                                            ? 'bg-green-600'
-                                            : booking.status === 'confirmed'
-                                                ? 'bg-amber-600'
-                                                : booking.status === 'cancelled'
-                                                    ? 'bg-red-600'
-                                                    : 'bg-blue-600'
-                                            }`}
-                                    >
-                                        {booking.status}
-                                    </span>
+                                            <span
+                                                className={`px-2 py-2 font-medium rounded-lg text-white ${booking.status === 'completed'
+                                                    ? 'bg-green-600'
+                                                    : booking.status === 'confirmed'
+                                                        ? 'bg-amber-600'
+                                                        : booking.status === 'cancelled'
+                                                            ? 'bg-red-600'
+                                                            : 'bg-blue-600'
+                                                    }`}
+                                            >
+                                                {booking.status}
+                                            </span>
                                         </td>
                                         <td>
                                             <Button
@@ -235,15 +233,20 @@ const BookingList = () => {
                                                         </thead>
                                                         <tbody>
                                                             {booking.bookingDetails.map((detail, index) => (
-                                                                <tr key={detail._id}>
+                                                                <tr key={detail._id || index}>
                                                                     <td className="py-3">{index + 1}</td>
-                                                                    <td className="py-3">{detail.roomId.roomName}</td>
-                                                                    <td className="py-3">{detail.roomPrice.toLocaleString("en-US")} VND</td>
-                                                                    <td className="py-3">{detail.numberOfGuests}</td>
-                                                                    <td className="py-3">{new Date(detail.checkInDate).toLocaleString('vi-VN', { timeZone: 'UTC' })}</td>
-                                                                    <td className="py-3">{new Date(detail.checkOutDate).toLocaleString('vi-VN', { timeZone: 'UTC' })}</td>
+                                                                    <td className="py-3">{detail.roomId?.roomName || "N/A"}</td>
+                                                                    <td className="py-3">{detail.roomPrice ? detail.roomPrice.toLocaleString("en-US") + " VND" : "N/A"}</td>
+                                                                    <td className="py-3">{detail.numberOfGuests ?? "N/A"}</td>
+                                                                    <td className="py-3">
+                                                                        {detail.checkInDate ? new Date(detail.checkInDate).toLocaleString("vi-VN", { timeZone: "UTC" }) : "N/A"}
+                                                                    </td>
+                                                                    <td className="py-3">
+                                                                        {detail.checkOutDate ? new Date(detail.checkOutDate).toLocaleString("vi-VN", { timeZone: "UTC" }) : "N/A"}
+                                                                    </td>
                                                                 </tr>
                                                             ))}
+
                                                         </tbody>
                                                     </Table>
                                                 </div>
