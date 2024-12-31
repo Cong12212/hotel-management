@@ -14,7 +14,7 @@ const DashBoard = () => {
         <h2 className="text-xl font-semibold mb-4">Monthly Revenue Report</h2>
         <RevenueReport />
       </div>
-
+ 
       {/* Bảng Room Type Monthly Revenue Report */}
       <div className="bg-white p-6 rounded-lg shadow-md mb-8">
         <h2 className="text-xl font-semibold mb-4">Room Type Monthly Revenue Report</h2>
@@ -28,8 +28,7 @@ const DashBoard = () => {
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold mb-4">Room Usage Density Monthly Report</h2>
         <UsageDensityMonthlyReport />
-      </div> 
-      
+      </div>
     </div>
   );
 };

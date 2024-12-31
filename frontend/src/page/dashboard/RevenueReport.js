@@ -2,62 +2,73 @@ import React, { useState, useEffect, useCallback } from "react";
 import { fetchMonthlyReport } from "../../service/apiServices";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const MonthlyRevenueReport = () => {
-    const [data, setData] = useState(null);
-    const [month, setMonth] = useState("12");
-    const [year, setYear] = useState("2024");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [sortConfig, setSortConfig] = useState({ key: "date", direction: "asc" });
+    const MonthlyRevenueReport = () => {
+        const [data, setData] = useState(null); // Dữ liệu báo cáo
+        const [month, setMonth] = useState("12"); // Tháng mặc định
+        const [year, setYear] = useState("2024"); // Năm mặc định
+        const [loading, setLoading] = useState(false); // Trạng thái đang tải
+        const [error, setError] = useState(null); // Lỗi (nếu có)
+        const [sortConfig, setSortConfig] = useState({ key: "date", direction: "asc" }); // Cấu hình sắp xếp
 
-    const fetchReportData = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-
-        try {
-            const response = await fetchMonthlyReport(month, year);
-            if (response.success && response.data) {
-                setData(response.data);
-            } else {
-                setError(response.error || "No data available.");
+        const fetchReportData = useCallback(async () => {
+            setLoading(true);
+            setError(null);
+        
+            try {
+                const response = await fetchMonthlyReport(month, year);
+                if (response.success && response.data) {
+                    setData(response.data);
+                } else {
+                    throw new Error(response.error || "No data available.");
+                }
+            } catch (err) {
+                if (err.response && err.response.status === 403) {
+                    setError("You do not have permission");
+                } else {
+                    setError(err.message || "Network error");
+                }
                 setData(null);
+            } finally {
+                setLoading(false);
             }
-        } catch (err) {
-            setError(err.message || "Network error");
-            setData(null);
-        } finally {
-            setLoading(false);
-        }
-    }, [month, year]);
+        }, [month, year]);
+    
 
     useEffect(() => {
-        fetchReportData();
+        fetchReportData(); // Tự động fetch dữ liệu khi component mount
     }, [fetchReportData]);
 
     const handleMonthChange = (e) => setMonth(e.target.value);
     const handleYearChange = (e) => setYear(e.target.value);
 
     const handleSort = (key) => {
+        if (!data || !Array.isArray(data.dailyData)) return;
+
         const direction = sortConfig.key === key && sortConfig.direction === "asc" ? "desc" : "asc";
         setSortConfig({ key, direction });
 
-        if (data && data.dailyData) {
-            const sortedData = [...data.dailyData].sort((a, b) => {
-                if (key === "date") {
-                    return direction === "asc"
-                        ? new Date(a.date) - new Date(b.date)
-                        : new Date(b.date) - new Date(a.date);
-                } else {
-                    return direction === "asc" ? a[key] - b[key] : b[key] - a[key];
-                }
-            });
-            setData({ ...data, dailyData: sortedData });
+        const sortedData = [...data.dailyData].sort((a, b) => {
+            if (key === "date") {
+                return direction === "asc"
+                    ? new Date(a.date) - new Date(b.date)
+                    : new Date(b.date) - new Date(a.date);
+            } else {
+                return direction === "asc" ? a[key] - b[key] : b[key] - a[key];
+            }
+        });
+        setData({ ...data, dailyData: sortedData });
+    };
+
+    const getSortIndicator = (key) => {
+        if (sortConfig.key === key) {
+            return sortConfig.direction === "asc" ? "↑" : "↓";
         }
+        return "";
     };
 
     return (
         <div className="container mt-5">
-
+            {/* Bộ lọc */}
             <div className="row mb-4">
                 <div className="col-md-4">
                     <label htmlFor="month" className="form-label">Select Month:</label>
@@ -88,10 +99,14 @@ const MonthlyRevenueReport = () => {
                 </div>
             </div>
 
+            {/* Trạng thái đang tải */}
             {loading && <p>Loading...</p>}
+
+            {/* Hiển thị lỗi */}
             {error && <p className="text-danger">{error}</p>}
 
-            {data && (
+            {/* Hiển thị dữ liệu */}
+            {data && typeof data === "object" && (
                 <div>
                     <h4>Summary:</h4>
                     <table className="table table-bordered">
@@ -112,18 +127,18 @@ const MonthlyRevenueReport = () => {
                     </table>
 
                     <h4 className="mt-4">Daily Revenue Data:</h4>
-                    {data.dailyData?.length > 0 ? (
+                    {Array.isArray(data.dailyData) && data.dailyData.length > 0 ? (
                         <table className="table table-bordered mt-3">
                             <thead>
                                 <tr>
                                     <th onClick={() => handleSort("date")} style={{ cursor: "pointer" }}>
-                                        Date {sortConfig.key === "date" && (sortConfig.direction === "asc" ? "▲" : "▼")}
+                                        Date {getSortIndicator("date")}
                                     </th>
                                     <th onClick={() => handleSort("totalAmount")} style={{ cursor: "pointer" }}>
-                                        Total Amount (VND) {sortConfig.key === "totalAmount" && (sortConfig.direction === "asc" ? "▲" : "▼")}
+                                        Total Amount (VND) {getSortIndicator("totalAmount")}
                                     </th>
                                     <th onClick={() => handleSort("totalBookings")} style={{ cursor: "pointer" }}>
-                                        Total Bookings {sortConfig.key === "totalBookings" && (sortConfig.direction === "asc" ? "▲" : "▼")}
+                                        Total Bookings {getSortIndicator("totalBookings")}
                                     </th>
                                 </tr>
                             </thead>
@@ -143,6 +158,7 @@ const MonthlyRevenueReport = () => {
                 </div>
             )}
 
+            {/* Khi không có dữ liệu */}
             {!loading && !data && !error && (
                 <p className="text-warning">No data available for the selected month and year.</p>
             )}
