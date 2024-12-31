@@ -1,15 +1,16 @@
 import NavBarItem from '../feature/NavBar/NavBarItem';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 const NavBar = ({ isOpen }) => {
     const navigate = useNavigate();
 
-    const [navState, setNavState] = React.useState([
+    const [navState, setNavState] = useState([
         {
             title: 'Dashboard',
             icon: '/home.svg',
-            redirect: '/',
+            redirect: '/dashboard',
             subItems: [],
         },
         {
@@ -68,10 +69,11 @@ const NavBar = ({ isOpen }) => {
         }
     ]);
 
-    const [selectedItem, setSelectedItem] = React.useState(null);
+    const [selectedItem, setSelectedItem] = useState(null);
 
     const handleClick = (index) => {
         if (selectedItem === index) return setSelectedItem(null);
+        
         setSelectedItem(index);
         if ('redirect' in navState[index]) {
             navigate(navState[index].redirect ? navState[index].redirect : '/');

@@ -29,7 +29,7 @@ const NavBarItem = ({isOpen,title,imgSrc,subItems})=>{
                                     className={`p-1 mt-1 hover:bg-custom-pink-1 hover:text-custom-pink-2 text-gray-500 text-base cursor-pointer`}>
                                     <Link to={item.ref}>
                                         {item.title}
-                                    </Link>
+                                    </Link>             
                                 </li>
                             );
                         })

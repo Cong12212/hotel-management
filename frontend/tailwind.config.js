@@ -9,7 +9,7 @@ module.exports = {
     extend: {
       colors: {
         'custom-pink-1': '#EEC6CC', 
-        'custom-pink-2': 'rgb(224, 81, 112)',
+        'custom-pink-2': '#e05170',
         'custom-gray': 'rgb(204, 206, 199)', 
       },
       fontFamily: {

@@ -1,17 +1,40 @@
-import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { Table, Button, Form, Offcanvas } from 'react-bootstrap';
+import React, { useState, useEffect } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { Table, Button, Form, Offcanvas, Alert } from "react-bootstrap";
+import { getAllCustomerTypes, createCustomerType, updateCustomerType, deleteCustomerType } from "../../service/apiServices";
 
 function CustomerType() {
-  const [customers, setCustomers] = useState([
-    { id: 1, type: 'Inland', coefficient: 1.0 },
-    { id: 2, type: 'Foreign', coefficient: 1.5 },
-  ]);
+  const [customers, setCustomers] = useState([]);
   const [show, setShow] = useState(false);
   const [editData, setEditData] = useState(null);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [error, setError] = useState(null);
+  const [notification, setNotification] = useState(null);
 
-  const handleClose = () => setShow(false);
+  useEffect(() => {
+    const fetchCustomerTypes = async () => {
+      try {
+        const response = await getAllCustomerTypes();
+        if (response.data.success) {
+          const formattedData = response.data.data.map((item) => ({
+            id: item._id,
+            type: item.name,
+            coefficient: item.coefficient,
+          }));
+          setCustomers(formattedData);
+        }
+      } catch (error) {
+        console.error("Failed to fetch customer types:", error);
+      }
+    };
+
+    fetchCustomerTypes();
+  }, []);
+
+  const handleClose = () => {
+    setShow(false);
+    setError(null);
+  };
+
   const handleShow = () => setShow(true);
 
   const handleAddCustomer = () => {
@@ -24,79 +47,93 @@ function CustomerType() {
     handleShow();
   };
 
-  const handleDelete = (id) => {
-    setCustomers(customers.filter((customer) => customer.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      await deleteCustomerType(id);
+      setCustomers(customers.filter((customer) => customer.id !== id));
+      showNotification("Customer type deleted successfully!");
+    } catch (error) {
+      setError(error.response?.data?.error || "Failed to delete customer type");
+    }
   };
 
-  const handleSave = (event) => {
+  const handleSave = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const newCustomer = {
-      id: editData ? editData.id : customers.length + 1,
-      type: formData.get('type'),
-      coefficient: parseFloat(formData.get('coefficient')),
+      name: formData.get("type"),
+      coefficient: parseFloat(formData.get("coefficient")),
     };
 
-    if (editData) {
-      setCustomers(customers.map((customer) => (customer.id === editData.id ? newCustomer : customer)));
-    } else {
-      setCustomers([...customers, newCustomer]);
+    try {
+      if (editData) {
+        // Update existing customer type
+        const response = await updateCustomerType(editData.id, newCustomer);
+        if (response.data.success) {
+          setCustomers((prevCustomers) =>
+            prevCustomers.map((customer) =>
+              customer.id === editData.id
+                ? { ...customer, type: newCustomer.name, coefficient: newCustomer.coefficient }
+                : customer
+            )
+          );
+          showNotification("Customer type updated successfully!");
+        }
+      } else {
+        // Create new customer type
+        const response = await createCustomerType(newCustomer);
+        if (response.data.success) {
+          const newCustomerData = {
+            id: response.data.data._id,
+            type: response.data.data.name,
+            coefficient: response.data.data.coefficient,
+          };
+          setCustomers((prevCustomers) => [...prevCustomers, newCustomerData]);
+          showNotification("Customer type added successfully!");
+        }
+      }
+      handleClose();
+    } catch (error) {
+      setError(error.response?.data?.error || "Failed to save customer type");
     }
-
-    handleClose();
   };
 
-  const handleSort = (key) => {
-    let direction = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfig({ key, direction });
-
-    const sortedData = [...customers].sort((a, b) => {
-      if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
-      if (a[key] > b[key]) return direction === 'asc' ? 1 : -1;
-      return 0;
-    });
-    setCustomers(sortedData);
+  const showNotification = (message) => {
+    setNotification(message);
+    setTimeout(() => setNotification(null), 3000); // Hide notification after 3 seconds
   };
 
   return (
     <div className="pt-16 pb-8 pr-8 mt-2">
       <div className="flex items-center mb-3 justify-between">
         <h2 className="font-bold text-3xl font-sans">Customer Configure</h2>
-        <Button
-          variant="dark" // Màu đen
-          onClick={handleAddCustomer}
-          className="text-white">
+        <Button variant="dark" onClick={handleAddCustomer} className="text-white">
           Add Customer
         </Button>
       </div>
 
-      {/* Nút Add Customer bên phải */}
+      {notification && (
+        <Alert variant="success" onClose={() => setNotification(null)} dismissible>
+          {notification}
+        </Alert>
+      )}
 
+      {error && <Alert variant="danger">{error}</Alert>}
 
-      {/* Bảng có hiệu ứng đổ bóng */}
       <div className="bg-white font-dm-sans rounded-md shadow-sm p-3">
         <Table bordered-y="true" hover>
           <thead>
             <tr>
-              <th onClick={() => handleSort('id')}>
-                ID {sortConfig.key === 'id' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-              </th>
-              <th onClick={() => handleSort('type')}>
-                Customer Type {sortConfig.key === 'type' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-              </th>
-              <th onClick={() => handleSort('coefficient')}>
-                Coefficient {sortConfig.key === 'coefficient' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-              </th>
+              <th>ID</th>
+              <th>Customer Type</th>
+              <th>Coefficient</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {customers.map((customer) => (
+            {customers.map((customer, index) => (
               <tr key={customer.id}>
-                <td>{customer.id}</td>
+                <td>{index + 1}</td>
                 <td>{customer.type}</td>
                 <td>{customer.coefficient}</td>
                 <td>
@@ -119,10 +156,9 @@ function CustomerType() {
         </Table>
       </div>
 
-      {/* Offcanvas cho Add/Edit */}
-      <Offcanvas show={show} onHide={handleClose} placement="end"> {/* Hiện bên phải */}
+      <Offcanvas show={show} onHide={handleClose} placement="end">
         <Offcanvas.Header closeButton>
-          <Offcanvas.Title>{editData ? 'Edit Customer' : 'Add Customer'}</Offcanvas.Title>
+          <Offcanvas.Title>{editData ? "Edit Customer" : "Add Customer"}</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>
           <Form onSubmit={handleSave}>
@@ -131,7 +167,7 @@ function CustomerType() {
               <Form.Control
                 type="text"
                 name="type"
-                defaultValue={editData ? editData.type : ''}
+                defaultValue={editData ? editData.type : ""}
                 required
               />
             </Form.Group>
@@ -141,7 +177,7 @@ function CustomerType() {
                 type="number"
                 step="0.1"
                 name="coefficient"
-                defaultValue={editData ? editData.coefficient : ''}
+                defaultValue={editData ? editData.coefficient : ""}
                 required
               />
             </Form.Group>
