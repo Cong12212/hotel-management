@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrap
-import { getBookings } from "../../service/apiServices";
+import { getUncompletedBookings, addInvoice } from "../../service/apiServices";
 
 const RoomCheckout = () => {
     const [roomID, setRoomID] = useState("");
@@ -19,7 +19,7 @@ const RoomCheckout = () => {
         }
 
         try {
-            const response = await getBookings({
+            const response = await getUncompletedBookings({
                 search: roomID,
                 sort: "roomName",
                 page: 1,
@@ -38,9 +38,18 @@ const RoomCheckout = () => {
         }
     };
 
-    const handleCheckout = (id) => {
-        setSuccessMessage(`Checkout successful for booking ID: ${id}`);
-        setFoundBills(foundBills.filter((bill) => bill._id !== id));
+    const handleCheckout = async (id) => {
+        try {
+            const response = await addInvoice({ bookingId: id });
+            if (response.success) {
+                setSuccessMessage(`Checkout successful for booking ID: ${id}`);
+                setFoundBills(foundBills.filter((bill) => bill._id !== id));
+            } else {
+                setError("Failed to checkout. Please try again later.");
+            }
+        } catch (err) {
+            setError("Failed to checkout. Please try again later.");
+        }
     };
 
     const handleKeyDown = (e) => {

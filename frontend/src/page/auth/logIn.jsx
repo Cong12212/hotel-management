@@ -18,25 +18,28 @@ const Login = () => {
   const handleLogin = async (event) => {
     event.preventDefault();
     if (!username.trim()) {
-      toast.error("Username cannot be empty!",{ autoClose: 2000 });
+      toast.error("Username cannot be empty!", { autoClose: 2000 });
       return;
     }
     if (!password.trim()) {
-      toast.error("Password cannot be empty!",{ autoClose: 2000 });
+      toast.error("Password cannot be empty!", { autoClose: 2000 });
       return;
     }
 
     const result = await logIn({ username, password });
     localStorage.setItem('user', JSON.stringify(result.data));
-
-    if (result) {
-      toast.success('Login successful!',{ autoClose: 2000 });
+    if (result.data) {
+      toast.success('Login successful!', { autoClose: 2000 });
       userLogin(result.data); // Update user state
       setTimeout(() => {
         navigate('/dashboard'); // Redirect to dashboard or another page after a delay
       }, 1500); // Delay for 2 seconds (adjust if needed)
     } else {
-      toast.error(result.error || 'Login failed!',{ autoClose: 2000 });
+      if (result.err.status === 401) {
+        toast.error('Username or password is incorrect!', { autoClose: 2000 });
+      } else {
+        toast.error(result.error || 'Login failed!', { autoClose: 2000 });
+      }
     }
   };
 

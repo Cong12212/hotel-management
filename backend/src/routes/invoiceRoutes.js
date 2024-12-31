@@ -6,8 +6,8 @@ const invoiceController = require('../controllers/invoiceController')
 
 router.use(protect);
 
-router.get('/',authorize(Permission.VIEW_BOOKINGS),invoiceController.getAllInvoices)
+router.get('/',authorize(Permission.VIEW_INVOICES),invoiceController.getAllInvoices)
 
-router.post('/',authorize(Permission.CREATE_BOOKINGS),invoiceController.checkoutInvoice)
+router.post('/',authorize(Permission.CREATE_INVOICES),invoiceController.checkoutInvoice)
 
 module.exports = router;

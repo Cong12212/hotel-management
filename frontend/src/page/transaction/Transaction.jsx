@@ -1,36 +1,70 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { getInvoices } from "../../service/apiServices";
-import './Transaction.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { Table, Button, InputGroup, DropdownButton, Dropdown } from 'react-bootstrap';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Transaction = () => {
     const [data, setData] = useState([]);
     const [expandedRow, setExpandedRow] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [sortField, setSortField] = useState(null); //
+    const [rowsPerPage, setRowsPerPage] = useState(5);
     const [currentPage, setCurrentPage] = useState(1);
+    const [pageInput, setPageInput] = useState(currentPage);
     const [totalPages, setTotalPages] = useState(1);
-    const [sort, setSort] = useState('totalAmount'); // Default sort by totalAmount
-    const [sortOrder, setSortOrder] = useState('asc'); // Default ascending order
-    const itemsPerPage = 10;
+    const [totalData, setTotalData] = useState(0);
 
+    const handlePagination = useCallback((totalData) => {
+        setTotalData(totalData);
+        setTotalPages(Math.ceil(totalData / rowsPerPage));
+    }, [rowsPerPage]);
+
+    const handleRowsPerPageChange = (value) => {
+        setRowsPerPage(Number(value));
+        setCurrentPage(1); // Reset về trang 1 khi thay đổi số dòng trên 1 trang
+    };
+
+    const handlePageChange = (type) => {
+        if (type === 'prev') {
+            setCurrentPage((prev) => prev - 1);
+        } else {
+            setCurrentPage((prev) => prev + 1);
+        }
+    };
+    const handlePageInput = (e) => {
+        setPageInput(e.target.value);
+    };
+
+    const handleGoToPage = () => {
+        const page = parseInt(pageInput, 10);
+        if (!isNaN(page) && page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        } else {
+            toast.error("Invalid page number!", { autoClose: 2000 });
+            setPageInput(currentPage); // Reset input về trang hiện tại nếu không hợp lệ
+        }
+    };
+    const handleSort = (field, order) => {
+        setSortField(order === 'asc' ? field : `-${field}`);
+    };
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const params = {
                     page: currentPage,
-                    limit: itemsPerPage,
+                    limit: rowsPerPage,
                     search: searchTerm || undefined,
-                    sort: `${sortOrder === 'asc' ? '' : '-'}${sort}`, // Dynamic sort parameter
+                    sort: sortField, // Dynamic sort parameter
                 };
 
                 const response = await getInvoices(params);
                 const invoicesData = response.data.data;
-                const totalItems = response.data.total;
-
                 const combinedData = invoicesData.map((invoice, index) => ({
-                    id: (currentPage - 1) * itemsPerPage + index + 1, // Sequential ID
+                    id: (currentPage - 1) * rowsPerPage + index + 1, // Sequential ID
                     customers: invoice.bookingId.customerIds.map(c => c.fullName).join('\n'),
-                    date: new Date(invoice.createdAt).toLocaleString('en-US', { timeZone: 'UTC' }),
+                    date: new Date(invoice.createdAt).toLocaleString('vi-VN', { timeZone: 'UTC' }),
                     total: invoice.totalAmount,
                     details: invoice.bookingId.bookingDetails.map(detail => ({
                         roomName: detail.roomId?.roomName || 'N/A',
@@ -39,94 +73,129 @@ const Transaction = () => {
                 }));
 
                 setData(combinedData);
-                setTotalPages(Math.ceil(totalItems / itemsPerPage));
+                handlePagination(response.data.total);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
         };
 
         fetchData();
-    }, [currentPage, searchTerm, sort, sortOrder]);
+    }, [currentPage, rowsPerPage, searchTerm, sortField, handlePagination]);
 
     const toggleDetails = (id) => {
         setExpandedRow(expandedRow === id ? null : id);
     };
 
-    const handleSortChange = (field) => {
-        if (sort === field) {
-            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-        } else {
-            setSort(field);
-            setSortOrder('asc');
-        }
+    const handleSearch = (e) => {
+        setSearchTerm(e.target.value);
+        setCurrentPage(1);
     };
 
+    useEffect(() => {
+        setPageInput(currentPage); // Đồng bộ input khi thay đổi trang
+
+    }, [currentPage]);
+
     return (
-        <div className="pt-16 pb-8 pr-8 mt-2">
+        <div className="pt-16 pb-8 pr-8 mt-2 ">
+            <ToastContainer />
             <div className="flex items-center mb-3 justify-between">
                 <h2 className="font-bold text-3xl font-sans">Transaction</h2>
             </div>
 
-            <div className="search-bar mb-3">
-                <label htmlFor="search" className="me-2 fw-bold">Search:</label>
-                <input
-                    type="text"
-                    id="search"
-                    className="form-control d-inline-block w-auto"
-                    placeholder="Search..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
-
-            <div className="table-responsive table-wrapper">
-                <table className="table table-bordered custom-table">
-                    <thead className="thead-light">
+            <div className="bg-white rounded-md shadow-sm p-3">
+                <div className="flex justify-between ">
+                    <div className="d-flex items-center">
+                        <InputGroup>
+                            <input
+                                type="text"
+                                placeholder="Search"
+                                className="outline-none focus:outline-dashed focus:outline-2 focus:outline-violet-500 border border-gray-300 rounded-md p-2"
+                                value={searchTerm}
+                                onChange={handleSearch}
+                            />
+                        </InputGroup>
+                    </div>
+                    <div>
+                        <DropdownButton
+                            id="dropdownRowsPerPage"
+                            title={`${rowsPerPage} rows`}
+                            onSelect={(value) => handleRowsPerPageChange(Number(value))}
+                            variant="outline-secondary"
+                        >
+                            {[5, 10, 25, 50].map((value) => (
+                                <Dropdown.Item key={value} eventKey={value}>
+                                    {value} rows
+                                </Dropdown.Item>
+                            ))}
+                        </DropdownButton>
+                    </div>
+                </div>
+                <Table className="align-middle text-center" bordered-y="true" hover>
+                    <colgroup>
+                        <col style={{ width: '5%' }} />
+                        <col style={{ width: '20%' }} />
+                        <col style={{ width: '25%' }} />
+                        <col style={{ width: '20%' }} />
+                        <col style={{ width: '15%' }} />
+                    </colgroup>
+                    <thead>
                         <tr>
-                            <th scope="col">ID</th>
-                            <th scope="col">Customer</th>
-                            <th
-                                scope="col"
-                                onClick={() => handleSortChange('createdAt')}
-                                className="sortable-column"
-                            >
-                                Date {sort === 'createdAt' && (sortOrder === 'asc' ? '▲' : '▼')}
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Date
                             </th>
-                            <th
-                                scope="col"
-                                onClick={() => handleSortChange('totalAmount')}
-                                className="sortable-column"
-                            >
-                                Total {sort === 'totalAmount' && (sortOrder === 'asc' ? '▲' : '▼')}
+                            <th>Total
+                            <button
+                                    onClick={() => handleSort('totalAmount', 'asc')}
+                                    className="ml-1 text-l"
+                                >
+                                    ▲
+                                </button>
+                                <button
+                                    onClick={() => handleSort('totalAmount', 'desc')}
+                                    className=" text-l"
+                                >
+                                    ▼
+                                </button>
                             </th>
-                            <th scope="col">Details</th>
+                            <th>Details</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {data.map((item) => (
+                        {data.map((item, index) => (
                             <React.Fragment key={item.id}>
-                                <tr className="border-bottom"> {/* Using Bootstrap's border-bottom */}
+                                <tr className={index % 2 === 0 ? "bg-light" : ""}>
                                     <td>{item.id}</td>
-                                    <td>{item.customers.split('\n').map((name, idx) => (
-                                        <div key={idx}>{name}</div>
-                                    ))}</td>
-                                    <td>{item.date}</td>
-                                    <td>{item.total.toLocaleString('en-US')} VND</td>
                                     <td>
-                                        <button
-                                            className="btn btn-link"
-                                            style={{ fontWeight: 'bold', textDecoration: 'underline', color: 'black' }}
+                                        {item.customers.split("\n").map((name, idx) => (
+                                            <div key={idx}>{name}</div>
+                                        ))}
+                                    </td>
+                                    <td>{item.date}</td>
+                                    <td>{item.total.toLocaleString("en-US")} VND</td>
+                                    <td>
+                                        <Button
+                                            variant="link"
+                                            className="p-0 text-decoration-none"
                                             onClick={() => toggleDetails(item.id)}
                                         >
-                                            {expandedRow === item.id ? 'Hide Details' : 'Show Details'}
-                                        </button>
+                                            {expandedRow === item.id ? "Hide Details" : "Show Details"}
+                                        </Button>
                                     </td>
                                 </tr>
                                 {expandedRow === item.id && (
                                     <tr>
-                                        <td colSpan="5">
-                                            <div className="details-table p-3 bg-white shadow rounded">
-                                                <table className="table">
+                                        <td colSpan="5" className='p-0'>
+                                            <div className="p-3 bg-white shadow-md">
+                                                <Table bordered-y="true" className="mx-60 text-left align-middle mb-10">
+                                                    <colgroup>
+                                                        <col style={{ width: '30%' }} />
+                                                        <col style={{ width: '10%' }} />
+                                                        <col style={{ width: '30%' }} />
+                                                        <col style={{ width: '30%' }} />
+                                                        
+                                                    </colgroup>
                                                     <thead>
                                                         <tr>
                                                             <th>Room Name</th>
@@ -136,12 +205,13 @@ const Transaction = () => {
                                                     <tbody>
                                                         {item.details.map((detail, i) => (
                                                             <tr key={i}>
-                                                                <td>{detail.roomName}</td>
-                                                                <td>{detail.roomPrice.toLocaleString('en-US')} VND</td>
+                                                                <td className="py-3">{detail.roomName}</td>
+                                                                <td className="py-3">{detail.roomPrice.toLocaleString("en-US")} VND</td>
+                                                                
                                                             </tr>
                                                         ))}
                                                     </tbody>
-                                                </table>
+                                                </Table>
                                             </div>
                                         </td>
                                     </tr>
@@ -149,25 +219,36 @@ const Transaction = () => {
                             </React.Fragment>
                         ))}
                     </tbody>
-                </table>
-                <nav aria-label="Pagination">
-                    <ul className="pagination justify-content-center">
-                        <li className={`page-item ${currentPage === 1 && 'disabled'}`}>
-                            <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>Previous</button>
-                        </li>
-                        {[...Array(totalPages)].map((_, i) => (
-                            <li key={i} className={`page-item ${currentPage === i + 1 && 'active'}`}>
-                                <button className="page-link" onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
-                            </li>
-                        ))}
-                        <li className={`page-item ${currentPage === totalPages && 'disabled'}`}>
-                            <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
-                        </li>
-                    </ul>
-                </nav>
+                </Table>
+
+                <div className="flex items-center justify-end gap-3">
+                    <Button variant="dark"
+                        disabled={currentPage === 1}
+                        onClick={() => handlePageChange('prev')}>
+                        Previous
+                    </Button>
+
+                    <span>Page </span>
+                    <input
+                        type="number"
+                        value={pageInput}
+                        onChange={handlePageInput}
+                        className="text-center px-1 py-2 text-sm rounded-md border border-gray-500 w-12"
+                        onKeyPress={(e) => e.key === "Enter" && handleGoToPage()}
+                        onBlur={handleGoToPage}
+                    />
+                    <span> of {Math.ceil(totalData / rowsPerPage)}</span>
+
+                    <Button variant="dark"
+                        disabled={currentPage === totalPages}
+                        onClick={() => handlePageChange('next')}>
+                        Next
+                    </Button>
+                </div>
             </div>
         </div>
     );
 };
+
 
 export default Transaction;

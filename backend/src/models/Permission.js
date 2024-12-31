@@ -3,6 +3,12 @@ const Permission = Object.freeze({
     MANAGE_USERS: 'manage_users',
     MANAGE_ROLES: 'manage_roles',
 
+    // Manage invoice
+    VIEW_INVOICES: 'view_invoices',
+    CREATE_INVOICES: 'create_invoices',
+
+
+
     // Manage customers
     CREATE_CUSTOMERS: 'create_customers',
     UPDATE_CUSTOMERS: 'update_customers',
