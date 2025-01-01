@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 import React, { useState, useCallback, useEffect } from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
@@ -148,7 +146,7 @@ const RoomBookingForm = () => {
         try {
             // Kiểm tra dữ liệu khách hàng trước khi thêm
             const customerIds = [];
-           
+
             for (const customer of customers) {
 
                 const existingCustomer = listCustomer.find(
@@ -156,7 +154,7 @@ const RoomBookingForm = () => {
                 );
 
                 let customerId;
-            
+
                 if (existingCustomer) {
                     // Khách hàng đã tồn tại
                     customerId = existingCustomer._id; // Hoặc dùng field phù hợp
@@ -169,18 +167,18 @@ const RoomBookingForm = () => {
                         phone: customer.phone,
                         address: customer.address || "Unknown",
                     };
-                   
+
                     const response = await postAddCustomer(customerData);
-                    
+
                     if (response && response.data && response.data._id) {
                         console.log("Add customer response:", response.data);
                         customerId = response.data._id;
-                     
+
                     } else {
                         console.log("Failed to add customer:", response);
                     }
                 }
-               
+
                 if (customerId) {
                     customerIds.push(customerId);
                 }
@@ -201,8 +199,8 @@ const RoomBookingForm = () => {
                 toast.error("Please fill all required fields for booking.", { autoClose: 2000 });
                 return;
             }
-           
-            const payload = {customerIds, bookingDetails };
+
+            const payload = { customerIds, bookingDetails };
 
             console.log("Booking payload:", payload);
             // Gọi API thêm đặt phòng
@@ -426,4 +424,3 @@ const RoomBookingForm = () => {
 };
 
 export default RoomBookingForm;
->>>>>>> 70d36c70b69be72b45ac480eab40ab2df1447440
