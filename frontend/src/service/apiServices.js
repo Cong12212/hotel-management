@@ -1,7 +1,6 @@
 import axios from "../service/utils/axiosCustomize"; // Import axios đã customize
 import { jwtDecode } from "jwt-decode"; // Sửa lại import
 
-
 // Hàm gọi API đăng nhập
 const logIn = async (data) => {
   return await axios
@@ -25,8 +24,6 @@ const logIn = async (data) => {
       };
     });
 };
-
-
 
 // Hàm gọi API lấy tất cả phòng
 const getAllRooms = async (queryParams) => {
@@ -323,12 +320,63 @@ const addBooking = async (data) => {
       data: response.data,
     };
   } catch (error) {
+   
     return {
       success: false,
       error: error.response ? error.response.data : "Network error",
     };
   }
-}
+};
+
+const fetchMonthlyReport = async (month, year) => {
+  try {
+      const time = `${month}-${year}`; // Tạo format "MM-YYYY"
+      const response = await axios.get(`http://localhost:4000/api/reports/general-monthly?time=${time}`);
+      return {
+          success: true,
+          data: response.data.data, // Lấy `data` từ response
+      };
+  } catch (error) {
+  
+      return {
+          success: false,
+          error: error.response ? error.response.data : "Network error",
+      };
+  }
+};
+  
+
+
+// Hàm fetch dữ liệu RoomType Monthly
+const fetchRoomTypeMonthlyReport = async (month, year) => {
+  try {
+      // Tạo đường dẫn với tham số tháng và năm
+      const time = `${month}-${year}`;
+      const response = await axios.get(`http://localhost:4000/api/reports/roomtype-monthly?time=${time}`);
+      return response.data; // Trả về dữ liệu từ API
+  } catch (error) {
+      
+      return {
+          success: false,
+          error: error.response.data || "Failed to fetch data",
+      };
+  }
+};
+  
+const fetchRoomDensityMonthlyReport = async (month, year) => {
+  try {
+      const response = await axios.get(
+          `http://localhost:4000/api/reports/room-density-monthly?time=${month}-${year}`
+      );
+      return response.data;
+  } catch (error) {
+      return {
+          success: false,
+          error: error.response.data || "Failed to fetch data",
+      };
+  }
+};
+
 
 export {
   logIn,
@@ -351,4 +399,7 @@ export {
   getUncompletedBookings,
   addBooking,
   addInvoice,
+  fetchMonthlyReport,
+  fetchRoomTypeMonthlyReport,
+  fetchRoomDensityMonthlyReport
 };

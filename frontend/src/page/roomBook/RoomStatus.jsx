@@ -156,18 +156,6 @@ function RoomStatus() {
                             <th>Room Type</th>
                             <th>
                                 Room Price
-                                <button
-                                    onClick={() => handleSort('roomTypeId.price', 'asc')}
-                                    className="ml-1 text-l"
-                                >
-                                    ▲
-                                </button>
-                                <button
-                                    onClick={() => handleSort('roomTypeId.price', 'desc')}
-                                    className=" text-l"
-                                >
-                                    ▼
-                                </button>
                             </th>
                             <th>Status
                             </th>

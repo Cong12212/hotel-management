@@ -124,7 +124,7 @@ function RoomList() {
     const handleAddRoom = async () => {
 
         try {
-            const requiredFields = ['roomName', 'roomTypeId'];
+            const requiredFields = ['roomName', 'roomTypeId', 'status'];
             const fieldsToCompare = ['roomName', 'status', 'notes'];
 
             const fieldNamesMap = {
@@ -139,6 +139,7 @@ function RoomList() {
             if (emptyFields.length > 0) {
                 const readableFieldNames = emptyFields.map((field) => fieldNamesMap[field]);
                 toast.error(`The following fields are required: ${readableFieldNames.join(', ')}`, { autoClose: 2000 });
+                return;
             }
             let res;
             if (editingRoom) {
@@ -175,7 +176,7 @@ function RoomList() {
         setNewRoom({
             roomName: room.roomName,
             roomTypeId: room.roomTypeId,
-            status: room.roomTypeId,
+            status: room.status,
             notes: room.notes || '',
         });
         setShowModal(true);
@@ -204,7 +205,7 @@ function RoomList() {
     const handleModalShow = () => setShowModal(true);
 
     // Other unchanged functions: handleSearch, handleSort, etc.
-   
+
     return (
         <div className="pt-16 pb-8 pr-8 mt-2 ">
             <ToastContainer />
@@ -239,7 +240,7 @@ function RoomList() {
                         </DropdownButton> */}
                         <InputGroup>
                             <input
-                                placeholder= "Search" //{/*`Enter ${searchField ? (searchField === 'roomName' ? 'Room Name' : 'Room Type') : ''}`*/}
+                                placeholder="Search" //{/*`Enter ${searchField ? (searchField === 'roomName' ? 'Room Name' : 'Room Type') : ''}`*/}
                                 className="outline-none focus:outline-dashed focus:outline-2 focus:outline-violet-500 border border-gray-300 rounded-md p-2"
                                 value={search}
                                 onChange={handleSearch}
@@ -391,7 +392,7 @@ function RoomList() {
 
                         <Form.Group controlId="formRoomStatus">
                             <Form.Label className="text-muted">
-                                Status
+                                Status <span style={{ color: 'red' }}>*</span>
                             </Form.Label>
                             <Form.Select
                                 name="status"
@@ -399,16 +400,12 @@ function RoomList() {
                                 onChange={handleInputChange}
                                 isInvalid={!!errors.status}
                                 className="mb-3"
-                            >
-                                <option value="">available</option>
-                                <>
-                                    <option>
-                                        occupied
-                                    </option>
-                                    <option>
-                                        maintenance
-                                    </option>
-                                </>
+                            >   
+                                <option value="">Select room status</option>
+                                <option value="available">Available</option>
+                                <option value="occupied">Occupied</option>
+                                <option value="maintenance">Maintenance</option>
+
                             </Form.Select>
                             <Form.Control.Feedback type="invalid">
                                 {errors.status}

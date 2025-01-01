@@ -80,10 +80,6 @@ const BookingList = () => {
         }
     };
 
-    const handleSort = (field, order) => {
-        setSortField(order === 'asc' ? field : `-${field}`);
-    };
-
     const handlePageInput = (e) => {
         setPageInput(e.target.value);
     };
