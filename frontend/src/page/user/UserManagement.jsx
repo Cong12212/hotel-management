@@ -239,8 +239,8 @@ function UserManagement() {
                                                     <colgroup>
                                                         <col style={{ width: '20%' }} />
                                                         <col style={{ width: '30%' }} />
-                                                        <col style={{ width: '20%' }} />
-                                                        <col style={{ width: '30%' }} />
+                                                        <col style={{ width: '50%' }} />
+                                                    
                                                     </colgroup>
                                                     <thead>
                                                         <tr>
