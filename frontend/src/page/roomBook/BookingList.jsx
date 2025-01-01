@@ -41,13 +41,14 @@ const BookingList = () => {
 
             if (res && res.data && res.data.data) {
                 const data = res.data.data;
+                console.log(data);
                 const combinedData = data.map((booking, index) => ({
                     id: booking._id, // Sequential ID
                     index: index + 1,
                     status: booking.status,
                     customers: booking.customerIds.map(c => c.fullName).join('\n'),
                     bookingDetails: booking.bookingDetails,
-                    employee: booking.userId.username,
+                    employee: booking.userId?.fullName || "N/A",
                     date: new Date(booking.createdAt).toLocaleString('vi-VN', { timeZone: 'UTC' }),
                 }));
                 setBookings(combinedData);
