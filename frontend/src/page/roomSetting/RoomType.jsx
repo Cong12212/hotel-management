@@ -23,6 +23,7 @@ function RoomConfigure() {
   const handlePagination = useCallback((totalRooms) => {
     setTotalRooms(totalRooms);
     setTotalPages(Math.ceil(totalRooms / rowsPerPage));
+   
   }, [rowsPerPage]);
 
 
@@ -37,7 +38,7 @@ function RoomConfigure() {
       const res = await getAllRoomTypes(queryParams);
       if (res && res.data && res.data.data) {
         setRoomTypes(res.data.data);
-
+   
         handlePagination(res.data.total);
       }
       else {
@@ -199,14 +200,6 @@ function RoomConfigure() {
           <div className="d-flex">
             {/* Search Input */}
 
-            <InputGroup>
-              <input
-                placeholder="Search"
-                className="outline-none focus:outline-dashed focus:outline-2 focus:outline-violet-500 border border-gray-300 rounded-md p-2"
-                value={search}
-                onChange={handleSearch}
-              />
-            </InputGroup>
           </div>
           <div className="flex ">
             {/* Rows Per Page Dropdown */}

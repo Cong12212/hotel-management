@@ -38,7 +38,7 @@ function UserManagement() {
     const fetchRoles = async () => {
         try {
             const response = await getAllRoles();
-            console.log('role', response);
+       
             if (response.success) {
                 setRoles(response.data.data);
             } else {
@@ -55,7 +55,7 @@ function UserManagement() {
                 limit: rowsPerPage,
                 page: currentPage,
             })
-            console.log('user', response);
+      
             if (response.success) {
                 setUsers(response.data.data);
                 handlePagination(response.data.total);
@@ -85,7 +85,7 @@ function UserManagement() {
 
     const handleEditClick = (user) => {
         setEditData(user);
-        console.log('useredit', user);
+   
 
         setFullName(user.fullName);
         setPhone(user.phone);
@@ -143,7 +143,7 @@ function UserManagement() {
                     address: address,
                     role: formData.role, // Gửi danh sách role
                 });
-                console.log('update', response);
+          
                 if (response.success === true) {
                     setUsers(users.map((user) => (user._id === editData._id ? response.data : user)));
                     toast.success(response.data.message, { autoClose: 2000 });
@@ -151,7 +151,7 @@ function UserManagement() {
                     handleModalClose();
                 }
                 else {
-                    console.log('update', response);
+           
                     toast.error(response.error.message, { autoClose: 2000 });
                 }
             }

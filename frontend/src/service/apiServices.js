@@ -27,7 +27,7 @@ const logIn = async (data) => {
 const logOut = async () => {
   try {
     const response = await axios.post("api/users/logout");
-    console.log(response);
+
     return {
       success: true,
       data: response.data,
@@ -89,7 +89,7 @@ const getAllRoles = async () => {
 const updateUser = async (id, data) => {
   try {
     const response = await axios.patch(`api/users/${id}`, data);
-    console.log('update',response);
+
     return {
       success: true,
       data: response.data,
@@ -105,7 +105,7 @@ const updateUser = async (id, data) => {
 const deleteUser = async (id) => {
   try {
     const response = await axios.delete(`api/users/${id}`);
-    console.log('del',response);
+ 
     return {
       success: true,
       data: response.data,

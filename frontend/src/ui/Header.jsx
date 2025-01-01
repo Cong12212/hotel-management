@@ -19,7 +19,7 @@ const Header = ({ toggleNavBar, isNavBarOpen }) => {
                 limit: totalUsers,
                 page: 1,
             })
-            console.log('user', response);
+          
             if (response.success) {
                 setUsers(response.data.data);
                 setTotalUsers(response.data.total);
@@ -33,11 +33,11 @@ const Header = ({ toggleNavBar, isNavBarOpen }) => {
     useEffect(() => {
         fetchUsers();
     }, []);
-    console.log('user',);
+    
     const handleLogOut = () => {
         logOut()
             .then((res) => {
-                console.log(res);
+               
                 if (res.data.success) {
                     userLogout();
                     navigate('/');

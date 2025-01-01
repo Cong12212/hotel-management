@@ -39,10 +39,10 @@ const BookingList = () => {
             };
 
             const res = await getAllBookings(queryParams);
-            console.log(res);
+ 
             if (res && res.data && res.data.data) {
                 const data = res.data.data;
-                console.log(data);
+        
                 const combinedData = data.map((booking, index) => ({
                     id: booking._id, // Sequential ID
                     index: index + 1,

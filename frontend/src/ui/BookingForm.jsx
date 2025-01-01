@@ -171,11 +171,11 @@ const RoomBookingForm = () => {
                     const response = await postAddCustomer(customerData);
                     
                     if (response && response.data && response.data._id) {
-                        console.log("Add customer response:", response.data);
+                 
                         customerId = response.data._id;
                      
                     } else {
-                        console.log("Failed to add customer:", response);
+                        console.error("Failed to add customer:", response);
                     }
                 }
                
@@ -202,7 +202,6 @@ const RoomBookingForm = () => {
            
             const payload = {customerIds, bookingDetails };
 
-            console.log("Booking payload:", payload);
             // Gọi API thêm đặt phòng
             const bookingResponse = await addBooking(payload);
             if (bookingResponse?.data?.success) {
