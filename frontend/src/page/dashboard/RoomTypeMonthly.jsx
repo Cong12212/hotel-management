@@ -25,7 +25,7 @@ const RoomTypeMonthly = () => {
             }
         } catch (err) {
             if (err.response && err.response.status === 403) {
-                setError("You do not have permission");
+                setError("You do not have permission to access this resource");
             } else {
                 setError(err.message || "Network error");
             }

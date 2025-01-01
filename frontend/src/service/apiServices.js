@@ -336,10 +336,8 @@ const fetchMonthlyReport = async (month, year) => {
           data: response.data.data, // Lấy `data` từ response
       };
   } catch (error) {
-      return {
-          success: false,
-          error: error.response ? error.response.data : "Network error",
-      };
+    console.error("Error fetching room monthly report:", error);
+    throw error;
   }
 };
   
@@ -351,11 +349,8 @@ const fetchRoomTypeMonthlyReport = async (month, year) => {
       const response = await axios.get(`/api/reports/roomtype-monthly?time=${time}`);
       return response.data; // Trả về dữ liệu từ API
   } catch (error) {
-      console.error("Error fetching RoomTypeMonthlyReport:", error);
-      return {
-          success: false,
-          error: error.message || "Failed to fetch data",
-      };
+      console.error("Error fetching roomtype monthly report:", error);
+      throw error;
   }
 };
   
@@ -370,7 +365,6 @@ const fetchRoomDensityMonthlyReport = async (month, year) => {
       throw error;
   }
 };
-
 
 export {
   logIn,
