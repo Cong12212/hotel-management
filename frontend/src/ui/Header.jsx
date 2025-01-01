@@ -1,12 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hook/useAuth';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { logOut } from '../service/apiServices';
+import { logOut, getAllUsers } from '../service/apiServices';
+
 const Header = ({ toggleNavBar, isNavBarOpen }) => {
+    const [users, setUsers] = useState([]);
+    const [currentUser, setCurrentUser] = useState({});
+    const [totalUsers, setTotalUsers] = useState(NaN);
+    const [errors, setErrors] = useState({});
     const { userLogout, user } = useAuth();
     const navigate = useNavigate();
+    const [showUserInfo, setShowUserInfo] = useState(false);
+    const fetchUsers = async () => {
+        try {
+            const response = await getAllUsers({
+                limit: totalUsers,
+                page: 1,
+            })
+            console.log('user', response);
+            if (response.success) {
+                setUsers(response.data.data);
+                setTotalUsers(response.data.total);
+            } else {
+                setErrors(response.error.error);
+            }
+        } catch (err) {
+            console.error(err.message || "Error fetching users", err);
+        }
+    };
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+    console.log('user',);
     const handleLogOut = () => {
         logOut()
             .then((res) => {
@@ -19,17 +46,21 @@ const Header = ({ toggleNavBar, isNavBarOpen }) => {
             .catch((err) => {
                 toast.error(err.response.data.message || 'Failed to logout');
             });
+    };
 
-    }
     const handleLogIn = () => {
         navigate('/');
-    }
+    };
+
+    const toggleUserInfo = () => {
+        setShowUserInfo((prev) => !prev);
+    };
+
     return (
-        <div className=" w-full bg-gray-50 z-50 fixed  ">
+        <div className="w-full bg-gray-50 z-50 fixed">
             <ToastContainer />
-            <div className=" flex justify-start items-center py-2 ">
+            <div className="flex justify-start items-center py-2">
                 <div>
-                    {/* Toggle NavBar Button */}
                     <button
                         onClick={toggleNavBar}
                         className="bg-gradient-to-r from-violet-500 to-pink-500 hover:bg-gradient-to-r hover:from-violet-700 hover:to-pink-700 focus:outline-dashed focus:outline-2 focus:outline-violet-500 cursor-pointer px-2 py-1.5 rounded-md mr-4 ml-2">
@@ -40,12 +71,10 @@ const Header = ({ toggleNavBar, isNavBarOpen }) => {
                         </svg>
                     </button>
                 </div>
-                <div className="">
+                <div>
                     <a href="/" className="focus:outline-dashed focus:outline-2 focus:outline-violet-500 cursor-pointer font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-violet-800 to-pink-800 mr-8">
                         Hotel Air
                     </a>
-                </div>
-                <div>
                 </div>
                 <div
                     className={`transition-all duration-300 ease-in-out ${isNavBarOpen ? 'w-1/2' : 'w-2/3'
@@ -72,7 +101,6 @@ const Header = ({ toggleNavBar, isNavBarOpen }) => {
                     />
                 </div>
                 <div className="flex-1 flex items-center fixed right-0">
-
                     <div className="flex items-center gap-2 mr-4">
                         {user ? (
                             <button
@@ -87,9 +115,41 @@ const Header = ({ toggleNavBar, isNavBarOpen }) => {
                                 LogIn
                             </button>
                         )}
-                        <div className="w-10 h-10 ">
-                            <img className="rounded-full hover:shadow-lg"
-                                src="https://hotelair-react.pixelwibes.in/static/media/profile_av.387360c31abf06d6cc50.png" alt="" />
+                        <div className="w-10 h-10 relative">
+                            <button onClick={toggleUserInfo}>
+                                <img className="rounded-full hover:shadow-lg"
+                                    src="https://hotelair-react.pixelwibes.in/static/media/profile_av.387360c31abf06d6cc50.png" alt="Profile" />
+                            </button>
+                            {showUserInfo && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-md p-2 flex flex-col">
+                                    {users.map((userItem) => (
+                                        user && user.userInfo && userItem._id === user.userInfo.id && (
+                                            <div key={userItem._id}>
+                                                <div className="font-bold text-center">{userItem.fullName}</div>
+                                                <div className="flex items-center gap-2">
+                                                    <label className="font-bold">Roles: </label>
+                                                    {userItem.role && userItem.role.length > 0
+                                                        ? userItem.role.map((role) => role.name).join(", ")
+                                                        : "No roles assigned"}
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                    <label className="font-bold">UserName: </label>
+                                                    {userItem.username}
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <label className="font-bold">Phone: </label>
+                                                    {userItem.phone || "N/A"}
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <label className="font-bold">Address: </label>
+                                                    {userItem.address || "N/A"}
+                                                </div>
+                                            </div>
+                                        )
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         <span className="text-gray-600 bg-clip-text hover:bg-gradient-to-r hover:from-violet-800 hover:to-pink-800 hover:text-transparent">
                             {user && user.userInfo ? user.userInfo.fullName : 'Guest'}

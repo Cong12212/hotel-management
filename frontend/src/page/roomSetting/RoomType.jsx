@@ -366,7 +366,7 @@ function RoomConfigure() {
                 </Form.Label>
                 <Form.Control
                   type="number"
-                  placeholder="Entet surcharge rate"
+                  placeholder="Enter surcharge rate"
                   name="surchargeRate"
                   value={newRoomType.surchargeRate}
                   onChange={handleInputChange}

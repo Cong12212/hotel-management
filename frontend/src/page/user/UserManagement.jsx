@@ -3,12 +3,11 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Table, Button, Form, Offcanvas, InputGroup, FormControl, DropdownButton, Dropdown } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getAllUsers, updateUser, deleteUser, signUp, getAllRoles } from "../../service/apiServices";
+import { getAllUsers, updateUser, deleteUser, getAllRoles } from "../../service/apiServices";
 
 function UserManagement() {
     const [users, setUsers] = useState([]);
     const [roles, setRoles] = useState([]);
-    const [chosenRole, setChosenRole] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [editData, setEditData] = useState({});
     const [formData, setFormData] = useState({});
@@ -246,7 +245,7 @@ function UserManagement() {
                                                     <thead>
                                                         <tr>
                                                             <th>Username</th>
-                                                            <th>Password</th>
+                                                            
 
                                                             <th>Phone</th>
                                                             <th>Address</th>
@@ -257,7 +256,7 @@ function UserManagement() {
                                                         <tr>
 
                                                             <td>{user.username}</td>
-                                                            <td>{user.password}</td>
+                                                          
 
 
                                                             <td>{user.phone || "N/A"}</td>

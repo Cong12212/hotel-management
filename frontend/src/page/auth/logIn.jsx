@@ -27,7 +27,7 @@ const Login = () => {
     }
 
     const result = await logIn({ username, password });
-    console.log(result);
+
     localStorage.setItem('user', JSON.stringify(result.data));
     if (result.data) {
       toast.success('Login successful!', { autoClose: 2000 });
