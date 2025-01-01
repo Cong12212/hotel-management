@@ -143,8 +143,10 @@ exports.logout = async (req, res) => {
         });
     }
 };
-
-// Get all users
+/**
+ * API Endpoint: GET http://localhost:4000/api/users?limit=5&page=1
+ * @param {limit,page} params 
+ */
 exports.getAllUsers = async (req, res) => {
     try {
         
@@ -200,17 +202,19 @@ exports.getUser = async (req, res) => {
 };
 
 /**
- * API endpoint : 
- * @param {*} req 
- * @param {*} res 
- * @returns 
+ * API endpoint : http://localhost:4000/api/users/6774d3edc41de323ef8b386f
+ * @param {params: userId}
+ * @param {body: data need to change}} 
  */
 exports.updateUser = async (req, res) => {
     try {
         const { password, fullName, phone, address, role } = req.body;
-        const updateData = { fullName, phone, address, role };
+        let updateData = { fullName, phone, address, role };
 
-        // If password is provided, hash it
+        updateData = Object.fromEntries(
+            Object.entries(updateData).filter(([key, value]) => value !== undefined)
+        );
+
         if (password) {
             const salt = await bcrypt.genSalt(10);
             updateData.password = await bcrypt.hash(password, salt);
@@ -221,9 +225,9 @@ exports.updateUser = async (req, res) => {
             updateData,
             {
                 new: true,
-                runValidators: true
+                runValidators: true 
             }
-        ).select('-password');
+        ).select('-password'); 
 
         if (!user) {
             return res.status(404).json({
@@ -245,7 +249,6 @@ exports.updateUser = async (req, res) => {
         });
     }
 };
-
 // Delete user
 exports.deleteUser = async (req, res) => {
     try {
