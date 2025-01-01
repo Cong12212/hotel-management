@@ -4,6 +4,7 @@ import { Table, Button, Form, InputGroup, DropdownButton, Dropdown, Offcanvas } 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { getAllRooms, postAddRoom, patchUpdateRoom, delDeleteRoom, getAllRoomTypes } from '../../service/apiServices';
+import { getAllRooms, postAddRoom, patchUpdateRoom, delDeleteRoom, getAllRoomTypes } from '../../service/apiServices';
 
 function RoomList() {
     const [rooms, setRooms] = useState([]);
@@ -143,29 +144,12 @@ function RoomList() {
             }
             let res;
             if (editingRoom) {
-                // isRoomChanged = fieldsToCompare.some(
-                //     (field) => newRoom[field] !== editingRoom[field]
-                // ) || newRoom.roomTypeId !== editingRoom.roomTypeId._id;
-                isRoomChanged = fieldsToCompare.some(
-                    (field) => newRoom[field] !== editingRoom[field]
-                ) || newRoom.roomTypeId !== editingRoom.roomTypeId._id || newRoom.notes !== (editingRoom.notes ?? '');
-                if (!isRoomChanged) {
-                    toast.info('No changes detected.', { autoClose: 2000 });
-
-                } else {
-                    res = await patchUpdateRoom({ ...newRoom, id: editingRoom._id });
-                }
-            } else {
-                res = await postAddRoom(newRoom);
-                if (res.error && res.error.error.toLowerCase().includes('already exists')) {
-                    toast.error('Room already exists. Please use a different name.', { autoClose: 2000 });
-                }
-            }
-            if (res.success) {
-                toast.success(`${editingRoom ? 'Room updated' : 'Room added'} successfully!`, { autoClose: 2000 });
-                fetchListRoom();
-                handleModalClose();
-
+                setRooms(
+                    rooms.map((room) =>
+                        room.id === editingRoom.id ? { ...editingRoom, ...newRoom, price: Number(newRoom.price) } : room
+                    )
+                );
+                toast.success('Room updated successfully', { autoClose: 1000 });
             } else {
                 toast.error(res.error || 'Operation failed', { autoClose: 2000 });
             }
@@ -207,6 +191,9 @@ function RoomList() {
     };
 
     const handleModalShow = () => setShowModal(true);
+
+    // Other unchanged functions: handleSearch, handleSort, etc.
+
     return (
         <div className="pt-16 pb-8 pr-8 mt-2 ">
             <ToastContainer />
@@ -241,7 +228,7 @@ function RoomList() {
                         </DropdownButton> */}
                         <InputGroup>
                             <input
-                                placeholder="Search" //{/*`Enter ${searchField ? (searchField === 'roomName' ? 'Room Name' : 'Room Type') : ''}`*/}
+                                placeholder="Search"
                                 className="outline-none focus:outline-dashed focus:outline-2 focus:outline-violet-500 border border-gray-300 rounded-md p-2"
                                 value={search}
                                 onChange={handleSearch}

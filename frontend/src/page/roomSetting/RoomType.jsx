@@ -6,183 +6,48 @@ import 'react-toastify/dist/ReactToastify.css';
 import { getAllRoomTypes, postAddRoomType, patchUpdateRoomType, delDeleteRoomType } from '../../service/apiServices';
 
 function RoomConfigure() {
-  const [roomtypes, setRoomTypes] = useState([]);
-  const [totalRooms, setTotalRooms] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [sortField, setSortField] = useState(null);
-  const [pageInput, setPageInput] = useState(currentPage);
-  const [showModal, setShowModal] = useState(false);
-  const [newRoomType, setNewRoomType] = useState({ name: '', maxOccupancy: '', surchargeRate: '', price: '' });
-  const [editingRoomType, setEditingRoomType] = useState(null);
-  const [errors, setErrors] = useState({});
+  const [rooms, setRooms] = useState([
+    { id: 1, roomId: 'A101', maxCustomers: 2, surcharge: 10.0 },
+    { id: 2, roomId: 'B202', maxCustomers: 4, surcharge: 20.0 },
+  ]);
+  const [show, setShow] = useState(false);
+  const [editData, setEditData] = useState(null);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
 
-  const handlePagination = useCallback((totalRooms) => {
-    setTotalRooms(totalRooms);
-    setTotalPages(Math.ceil(totalRooms / rowsPerPage));
-  }, [rowsPerPage]);
+  const handleEditClick = (room) => {
+    setEditData(room); // Set data for editing
+    handleShow();
+  };
+  const handleSave = (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const updatedRoom = {
+      ...editData,
+      maxCustomers: parseInt(formData.get('maxCustomers'), 10),
+      surcharge: parseFloat(formData.get('surcharge')),
+    };
 
+    setRooms(rooms.map((room) => (room.id === editData.id ? updatedRoom : room))); // Update the room
+    handleClose();
+  };
 
-  const fetchListRoomTypes = useCallback(async () => {
-    try {
-      const queryParams = {
-        search: search.trim(),
-        sort: sortField,
-        limit: rowsPerPage,
-        page: currentPage,
-      };
-      const res = await getAllRoomTypes(queryParams);
-      if (res && res.data && res.data.data) {
-        setRoomTypes(res.data.data);
-
-        handlePagination(res.data.total);
-      }
-    } catch (error) {
-      console.error("Error fetching roomtypes:", error);
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
     }
-  }, [search, sortField, rowsPerPage, currentPage, handlePagination]);
+    setSortConfig({ key, direction });
 
-  useEffect(() => {
-    fetchListRoomTypes();
-
-  }, [fetchListRoomTypes]);
-
-  const handleSearch = (e) => {
-    setSearch(e.target.value);
-    setCurrentPage(1);
-  };
-
-  const handleRowsPerPageChange = (value) => {
-    setRowsPerPage(Number(value));
-    setCurrentPage(1); // Reset về trang 1 khi thay đổi số dòng trên 1 trang
-  };
-
-  const handlePageChange = (type) => {
-    if (type === 'prev') {
-      setCurrentPage((prev) => prev - 1);
-    } else {
-      setCurrentPage((prev) => prev + 1);
-    }
-  };
-
-  const handleSort = (field, order) => {
-    setSortField(order === 'asc' ? field : `-${field}`);
-  };
-
-  const handlePageInput = (e) => {
-    setPageInput(e.target.value);
-  };
-
-  const handleGoToPage = () => {
-    const page = parseInt(pageInput, 10);
-    if (!isNaN(page) && page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    } else {
-      toast.error("Invalid page number!", { autoClose: 2000 });
-      setPageInput(currentPage); // Reset input về trang hiện tại nếu không hợp lệ
-    }
-  };
-
-  useEffect(() => {
-    setPageInput(currentPage); // Đồng bộ input khi thay đổi trang
-  }, [currentPage]);
-
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewRoomType((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-
-  const handleAddRoomType = async () => {
-    try {
-      const requiredFields = ['name', 'maxOccupancy', 'surchargeRate', 'price'];
-      const fieldsToCompare = ['name', 'maxOccupancy', 'surchargeRate', 'price'];
-
-      const fieldNamesMap = {
-        name: 'Type Name',
-        maxOccupancy: 'Max Occupancy',
-        surchargeRate: 'Surcharge Rate',
-        price: 'Price',
-      };
-      const emptyFields = requiredFields.filter((field) => {
-        const fieldValue = newRoomType[field];
-        return fieldValue == null || (typeof fieldValue === 'string' && fieldValue.trim() === '');
-      });
-      if (emptyFields.length > 0) {
-        const readableFieldNames = emptyFields.map((field) => fieldNamesMap[field]);
-        toast.error(`The following fields are required: ${readableFieldNames.join(', ')}`, { autoClose: 2000 });
-      }
-      let isRoomChanged = false;
-
-      let res;
-      if (editingRoomType) {
-        isRoomChanged = fieldsToCompare.some(
-          (field) => newRoomType[field] !== editingRoomType[field]
-        )
-        if (!isRoomChanged) {
-          toast.info('No changes detected.', { autoClose: 2000 });
-        } else {
-          res = await patchUpdateRoomType(editingRoomType._id, newRoomType);
-        }
-      } else {
-        res = await postAddRoomType(newRoomType);
-      }
-      if (res.error && res.error.error.toLowerCase().includes('already exists')) {
-        toast.error('Type name already exists. Please use a different type name.', { autoClose: 2000 });
-      }
-      if (res.success) {
-        toast.success(`${editingRoomType ? 'RoomType updated' : 'RoomType added'} successfully! `, { autoClose: 2000 });
-        fetchListRoomTypes();
-        handleModalClose();
-      } else {
-        toast.error(res.error || 'Operation failed', { autoClose: 2000 });
-      }
-    } catch (error) {
-
-      toast.error('Error while saving room type', { autoClose: 2000 });
-      console.error(error);
-    }
-  };
-
-  const handleEditClick = (roomtype) => {
-    setEditingRoomType(roomtype);
-    setNewRoomType({
-      name: roomtype.name,
-      maxOccupancy: roomtype.maxOccupancy,
-      surchargeRate: roomtype.surchargeRate,
-      price: roomtype.price,
+    const sortedData = [...rooms].sort((a, b) => {
+      if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
+      if (a[key] > b[key]) return direction === 'asc' ? 1 : -1;
+      return 0;
     });
-    setShowModal(true);
+    setRooms(sortedData);
   };
-
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this room type?')) {
-      const res = await delDeleteRoomType(id);
-      if (res.success) {
-        toast.success('Room type deleted successfully!', { autoClose: 2000 });
-        fetchListRoomTypes();
-      } else {
-        toast.error(res.error || 'Failed to delete room', { autoClose: 2000 });
-      }
-    }
-  };
-
-
-  const handleModalClose = () => {
-    setShowModal(false);
-    setEditingRoomType(null);
-    setNewRoomType({ name: '', maxOccupancy: '', surchargeRate: '', price: '' });
-    setErrors({});
-  };
-
-  const handleModalShow = () => setShowModal(true);
 
   return (
     <div className="pt-16 pb-8 pr-8 mt-2">

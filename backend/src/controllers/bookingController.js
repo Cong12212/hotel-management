@@ -115,6 +115,7 @@ exports.getAllUncompletedBookings = async (req, res) => {
             })
             .populate({
                 path: 'bookingDetails',
+                select: '-_id -additionalFees._id',
                 populate: {
                     path: 'roomId',
                     select: 'roomName price'
@@ -122,6 +123,72 @@ exports.getAllUncompletedBookings = async (req, res) => {
             })
             .sort(sort)
             .exec();
+
+        const filteredBookings = allBookings.filter(booking => {
+            return (
+                (booking.customerIds?.some(customer =>
+                    searchRegex.test(customer.fullName) || searchRegex.test(customer.phone)
+                )) ||
+                (booking.userId &&
+                    (searchRegex.test(booking.userId.fullName) || searchRegex.test(booking.userId.phone))
+                ) ||
+                (booking.bookingDetails?.some(detail =>
+                    detail.roomId && searchRegex.test(detail.roomId.roomName)
+                ))
+            );
+        });
+
+
+        const paginatedBookings = filteredBookings.slice(skip, skip + parseInt(limit));
+
+        res.status(200).json({
+            success: true,
+            data: paginatedBookings,
+            total: filteredBookings.length,
+            count: paginatedBookings.length
+        });
+    } catch (error) {
+        console.error('Error fetching bookings:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch bookings'
+        });
+    }
+};
+/**
+ * Example API endpoint : http://localhost:4000/api/bookings/uncompleted?sort=totalAmount&page=1&limit=2&startDate=2025-06-01&endDate=2025-12-01
+ * @param possible query params : sort, page, limit,search, startDate, endDate
+ * Required role : admin, manager, receptionist
+ * @return success status, count , total, data
+ */
+exports.getAllUncompletedBookings = async (req, res) => {
+    try {
+        const { sort, search, page = 1, limit = 10 } = req.query;
+        const searchRegex = new RegExp(search, 'i'); // Tìm kiếm không phân biệt chữ hoa/thường
+
+        const skip = (page - 1) * limit;
+
+        // Lấy tất cả bookings và populate
+        const allBookings = await Booking.find({ status: { $ne: "completed" } })
+            .populate({
+                path: 'customerIds',
+                select: 'fullName phone idNumber address -_id'
+            })
+            .populate({
+                path: 'userId',
+                select: 'fullName phone address -_id'
+            })
+            .populate({
+                path: 'bookingDetails',
+                select: '-_id -additionalFees._id',
+                populate: {
+                    path: 'roomId',
+                    select: 'roomName price -_id'
+                }
+            })
+            .sort(sort)
+            .exec();
+
 
         const filteredBookings = allBookings.filter(booking => {
             return (

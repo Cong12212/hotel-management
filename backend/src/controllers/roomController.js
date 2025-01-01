@@ -2,64 +2,17 @@ const RoomType = require("../models/RoomType");
 const Room = require("../models/Room");
 const BookingDetail = require("../models/BookingDetail");
 const QueryHelper = require("../utils/QueryHelper");
+
 /**
  * api : /api/rooms
- * required permission : view rooms
+ * required permission : all
  * possible query params : sort, limit, page , search 
  * @returns : success status, count (number of records) , total (total number of records), data 
  */
-
 exports.getAllRooms = async (req, res) => {
-  // <<<<<<< HEAD
-  //     try {
-
-  //         const { sort, search, page = 1, limit = 10 } = req.query;
-
-  //         const filter = {};
-
-  //         if (search) {
-  //             const searchTerm = new RegExp(search, 'i'); 
-  //             filter.$or = [
-  //                 { roomName: searchTerm },
-  //                 { 'roomTypeId.name': searchTerm },
-  //                 { notes: searchTerm }
-  //             ];
-  //         }
-
-  //         let sortOption = {};
-  //         if (sort) {
-  //             if (sort === 'roomTypeId.price' || sort === '-roomTypeId.price') {
-  //                 sortOption = { 'roomTypeId.price': sort.startsWith('-') ? -1 : 1 };
-  //             } else {
-  //                 sortOption[sort.replace('-', '')] = sort.startsWith('-') ? -1 : 1;
-  //             }
-  //         }
-
-  //         const total = await Room.countDocuments(filter);
-
-  //         const skip = (page - 1) * limit; 
-  //         const rooms = await Room.find(filter)
-  //             .populate('roomTypeId')
-  //             .sort(sortOption)
-  //             .skip(skip)
-  //             .limit(Number(limit));
-
-  //         res.status(200).json({
-  //             success: true,
-  //             count: rooms.length,
-  //             total,
-  //             data: rooms
-  //         });
-  //     } catch (error) {
-  //         console.error('Get all rooms error:', error);
-  //         res.status(500).json({
-  //             success: false,
-  //             error: 'Server Error'
-  //         });
-  //     }
-  // =======
   try {
     const { sort, search, page = 1, limit = 10 } = req.query;
+
     const filter = {};
 
     if (search) {
@@ -83,20 +36,11 @@ exports.getAllRooms = async (req, res) => {
     const total = await Room.countDocuments(filter);
     const skip = (page - 1) * limit;
 
-    let rooms = await Room.find(filter)
+    const rooms = await Room.find(filter)
       .populate('roomTypeId')
       .sort(sortOption)
       .skip(skip)
       .limit(Number(limit));
-
-    if (search) {
-      const searchTerm = search.toLowerCase();
-      rooms = rooms.filter((room) => {
-        const roomName = String(room.roomName || "").toLowerCase();
-        const roomTypeName = String(room.roomTypeId.name || "").toLowerCase();
-        return roomName.includes(searchTerm) || roomTypeName.includes(searchTerm);
-      });
-    }
 
     res.status(200).json({
       success: true,
@@ -104,7 +48,6 @@ exports.getAllRooms = async (req, res) => {
       total,
       data: rooms
     });
-
   } catch (error) {
     console.error('Get all rooms error:', error);
     res.status(500).json({
@@ -116,7 +59,7 @@ exports.getAllRooms = async (req, res) => {
 
 /**
  * api : /api/rooms
- * require : admin,manager,receptionist role
+ * require : admin, manager, receptionist role
  */
 exports.getRoom = async (req, res) => {
   try {
@@ -144,14 +87,13 @@ exports.getRoom = async (req, res) => {
 
 /**
  * API endpoint example POST http://localhost:4000/api/rooms
- * require : admin,manager role
- * @param {roomName,roomTypeId,notes,status(optional)}
+ * require : admin, manager role
+ * @param {roomName, roomTypeId, notes, status (optional)}
  */
 exports.createRoom = async (req, res) => {
   try {
     const { roomTypeId, roomName, status, notes } = req.body;
 
-    // Verify room type exists
     const roomType = await RoomType.findById(roomTypeId);
     if (!roomType) {
       return res.status(404).json({
@@ -188,13 +130,12 @@ exports.createRoom = async (req, res) => {
 
 /**
  * API endpoint : PATCH http://localhost:4000/api/rooms/{roomId}
- * require : admin,manager
+ * require : admin, manager
  */
 exports.updateRoom = async (req, res) => {
   try {
     const { roomTypeId, roomName, status, notes } = req.body;
 
-    // If roomTypeId is provided, verify it exists
     if (roomTypeId) {
       const roomType = await RoomType.findById(roomTypeId);
       if (!roomType) {
@@ -242,7 +183,7 @@ exports.updateRoom = async (req, res) => {
 
 /**
  * API endpoint example DELETE : /api/rooms/:room_id
- * require : admin,manager role
+ * require : admin, manager role
  * @param {req.params = {room_id}}
  */
 exports.deleteRoom = async (req, res) => {
@@ -252,7 +193,7 @@ exports.deleteRoom = async (req, res) => {
     if (!room) {
       return res.status(404).json({
         success: false,
-        error: "Room not found",
+        error: "Room not found"
       });
     }
 
@@ -280,7 +221,7 @@ exports.deleteRoom = async (req, res) => {
 
 /**
  * api : /api/rooms
- * require : admin,manager,receptionist role
+ * require : admin, manager, receptionist role
  */
 exports.getAvailableRooms = async (req, res) => {
   try {
@@ -298,7 +239,6 @@ exports.getAvailableRooms = async (req, res) => {
       });
     }
 
-    // Find rooms not booked in the date range
     const bookedRoomIds = await BookingDetail.distinct("roomId", {
       $or: [
         {
@@ -327,7 +267,6 @@ exports.getAvailableRooms = async (req, res) => {
   }
 };
 
-// Helper function to check room availability
 const checkRoomAvailability = async (roomId) => {
   const now = new Date();
   const overlappingBookings = await BookingDetail.find({

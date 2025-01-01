@@ -8,22 +8,18 @@ const QueryHelper = require('../utils/QueryHelper')
  */
 exports.getAllRoomTypes = async (req, res) => {
     try {
-        // Lấy tham số search từ query parameters
         const { search } = req.query;
-
-        // Tạo query cơ bản
         let roomTypeQuery = RoomType.find().sort('name');
 
-        // Nếu có tham số search, thêm điều kiện tìm kiếm
         if (search) {
-            const searchRegex = new RegExp(search, 'i'); // Case insensitive search
+            const searchRegex = new RegExp(search, 'i');
             roomTypeQuery = roomTypeQuery.or([
                 { name: searchRegex },
                 { maxOccupancy: searchRegex }
             ]);
         }
 
-        // Sử dụng QueryHelper để xử lý các tham số query khác (nếu có)
+
         const queryHelper = new QueryHelper(roomTypeQuery, req.query).executeQuery();
 
         // Thực thi query
@@ -155,37 +151,8 @@ exports.deleteRoomType = async (req, res) => {
 
         const roomType = await RoomType.findByIdAndDelete(req.params.id);
 
-        // <<<<<<< HEAD
-        //         if (!roomType) {
-        //             0
-        //             return res.status(404).json({
-        //                 success: false,
-        //                 error: 'Room type not found'
-        //             });
-        //         }
-
-        //         // Check if any rooms are using this room type
-        //         const hasRooms = await Room.exists({ roomTypeId: req.params.id });
-        //         if (hasRooms) {
-        //             return res.status(400).json({
-        //                 success: false,
-        //                 error: 'Cannot delete room type that has rooms'
-        //             });
-        //         }
-
-        //         res.status(200).json({
-        //             success: true,
-        //             message: 'Room type deleted successfully'
-        //         });
-        //     } catch (error) {
-        //         console.error('Delete room type error:', error);
-        //         res.status(500).json({
-        //             success: false,
-        //             error: 'Server Error'
-        //         });
-        //     }
-        // =======
         if (!roomType) {
+            0
             return res.status(404).json({
                 success: false,
                 error: 'Room type not found'

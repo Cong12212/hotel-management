@@ -325,7 +325,46 @@ const addBooking = async (data) => {
       error: error.response ? error.response.data : "Network error",
     };
   }
-}
+};
+
+const fetchMonthlyReport = async (month, year) => {
+  try {
+    const time = `${month}-${year}`; // Tạo format "MM-YYYY"
+    const response = await axios.get(`/api/reports/general-monthly?time=${time}`);
+    return {
+      success: true,
+      data: response.data.data, // Lấy `data` từ response
+    };
+  } catch (error) {
+    console.error("Error fetching room monthly report:", error);
+    throw error;
+  }
+};
+
+// Hàm fetch dữ liệu RoomType Monthly
+const fetchRoomTypeMonthlyReport = async (month, year) => {
+  try {
+    // Tạo đường dẫn với tham số tháng và năm
+    const time = `${month}-${year}`;
+    const response = await axios.get(`/api/reports/roomtype-monthly?time=${time}`);
+    return response.data; // Trả về dữ liệu từ API
+  } catch (error) {
+    console.error("Error fetching roomtype monthly report:", error);
+    throw error;
+  }
+};
+
+const fetchRoomDensityMonthlyReport = async (month, year) => {
+  try {
+    const response = await axios.get(
+      `/api/reports/room-density-monthly?time=${month}-${year}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching room density monthly report:", error);
+    throw error;
+  }
+};
 
 export {
   logIn,
@@ -348,4 +387,7 @@ export {
   getUncompletedBookings,
   addBooking,
   addInvoice,
+  fetchMonthlyReport,
+  fetchRoomTypeMonthlyReport,
+  fetchRoomDensityMonthlyReport
 };

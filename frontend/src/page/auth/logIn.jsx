@@ -28,9 +28,10 @@ const Login = () => {
 
     const result = await logIn({ username, password });
     localStorage.setItem('user', JSON.stringify(result.data));
-    if (result.data) {
+
+    if (result) {
       toast.success('Login successful!', { autoClose: 2000 });
-      userLogin(result.data);
+      userLogin(result.data); // Update user state
       setTimeout(() => {
         navigate('/dashboard');
       }, 1500);
