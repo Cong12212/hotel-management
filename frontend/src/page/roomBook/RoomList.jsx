@@ -4,7 +4,6 @@ import { Table, Button, Form, InputGroup, DropdownButton, Dropdown, Offcanvas } 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { getAllRooms, postAddRoom, patchUpdateRoom, delDeleteRoom, getAllRoomTypes } from '../../service/apiServices';
-import { getAllRooms, postAddRoom, patchUpdateRoom, delDeleteRoom, getAllRoomTypes } from '../../service/apiServices';
 
 function RoomList() {
     const [rooms, setRooms] = useState([]);

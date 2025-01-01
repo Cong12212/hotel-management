@@ -218,7 +218,7 @@ const getInvoices = async (queryParams) => {
 // Hàm gọi API lấy tất cả loại khách hàng
 const getAllCustomer = async () => {
   try {
-    const response = await axios.get("api/customer-types");
+    const response = await axios.get("api/customers");
     return {
       success: true,
       data: response.data,
@@ -233,6 +233,22 @@ const getAllCustomer = async () => {
 const postAddCustomer = async (data) => {
   try {
     const response = await axios.post("api/customers", data);
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response ? error.response.data : "Network error",
+    };
+  }
+};
+
+// Hàm gọi API cập nhật thông tin khách hàng
+const patchUpdateCustomer = async (customerId, data) => {
+  try {
+    const response = await axios.put(`api/customers/${customerId}`, data);
     return {
       success: true,
       data: response.data,
@@ -475,6 +491,7 @@ export {
   getInvoices,
   getAllCustomer,
   postAddCustomer,
+  patchUpdateCustomer,
   getAllCustomerTypes,
   updateCustomerType,
   createCustomerType,
