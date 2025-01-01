@@ -1,24 +1,32 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hook/useAuth';
-import { toast } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import { logOut } from '../service/apiServices';
 const Header = ({ toggleNavBar, isNavBarOpen }) => {
-    const { userLogout } = useAuth();
+    const { userLogout, user } = useAuth();
     const navigate = useNavigate();
-
     const handleLogOut = () => {
-        userLogout();
-        toast.success('Logout successful!', { autoClose: 2000 });
-        setTimeout(() => {
-            navigate('/'); // Redirect to dashboard or another page after a delay
-        }, 1500);
+        logOut()
+            .then((res) => {
+                console.log(res);
+                if (res.data.success) {
+                    userLogout();
+                    navigate('/');
+                }
+            })
+            .catch((err) => {
+                toast.error(err.response.data.message || 'Failed to logout');
+            });
 
     }
-
+    const handleLogIn = () => {
+        navigate('/');
+    }
     return (
         <div className=" w-full bg-gray-50 z-50 fixed  ">
+            <ToastContainer />
             <div className=" flex justify-start items-center py-2 ">
                 <div>
                     {/* Toggle NavBar Button */}
@@ -64,22 +72,27 @@ const Header = ({ toggleNavBar, isNavBarOpen }) => {
                     />
                 </div>
                 <div className="flex-1 flex items-center fixed right-0">
-                    <div className="px-4">
-                        <svg
-                            className="w-8 h-8"
-                            xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"></path><path d="M9 17v1a3 3 0 0 0 6 0v-1"></path><path d="M21 6.727a11.05 11.05 0 0 0 -2.794 -3.727"></path><path d="M3 6.727a11.05 11.05 0 0 1 2.792 -3.727"></path></svg>
-                    </div>
+
                     <div className="flex items-center gap-2 mr-4">
-                        <button className="focus:outline-dashed focus:outline-2 focus:outline-violet-500 cursor-pointer px-3 py-2 rounded-md text-white bg-gradient-to-r from-violet-500 to-pink-500 hover:bg-gradient-to-r hover:from-violet-700 hover:to-pink-700 "
-                            onClick={handleLogOut}>
-                            LogOut
-                        </button>
+                        {user ? (
+                            <button
+                                className="px-3 py-2 rounded-md text-white bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-700 hover:to-pink-700"
+                                onClick={handleLogOut}>
+                                LogOut
+                            </button>
+                        ) : (
+                            <button
+                                className="px-3 py-2 rounded-md text-white bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-700 hover:to-pink-700"
+                                onClick={handleLogIn}>
+                                LogIn
+                            </button>
+                        )}
                         <div className="w-10 h-10 ">
                             <img className="rounded-full hover:shadow-lg"
                                 src="https://hotelair-react.pixelwibes.in/static/media/profile_av.387360c31abf06d6cc50.png" alt="" />
                         </div>
                         <span className="text-gray-600 bg-clip-text hover:bg-gradient-to-r hover:from-violet-800 hover:to-pink-800 hover:text-transparent">
-                            Michelle
+                            {user && user.userInfo ? user.userInfo.fullName : 'Guest'}
                         </span>
                     </div>
                 </div>

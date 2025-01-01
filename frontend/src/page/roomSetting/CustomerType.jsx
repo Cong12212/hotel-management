@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Table, Button, Form, Offcanvas, Alert } from "react-bootstrap";
+import { Table, Button, Form, Offcanvas } from "react-bootstrap";
 import { getAllCustomerTypes, createCustomerType, updateCustomerType, deleteCustomerType } from "../../service/apiServices";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function CustomerType() {
   const [customers, setCustomers] = useState([]);
   const [show, setShow] = useState(false);
   const [editData, setEditData] = useState(null);
   const [error, setError] = useState(null);
-  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     const fetchCustomerTypes = async () => {
       try {
         const response = await getAllCustomerTypes();
-        if (response.data.success) {
+        console.log(response);
+        if (response.success) {
           const formattedData = response.data.data.map((item) => ({
             id: item._id,
             type: item.name,
@@ -22,8 +24,11 @@ function CustomerType() {
           }));
           setCustomers(formattedData);
         }
+        else {
+          setError(response.error.error);
+        }
       } catch (error) {
-        console.error("Failed to fetch customer types:", error);
+        console.error("Error fetching customer types:", error);
       }
     };
 
@@ -48,17 +53,19 @@ function CustomerType() {
   };
 
   const handleDelete = async (id) => {
-    try {
-      const response = await deleteCustomerType(id);
-      if (response.success) {
-        setCustomers(customers.filter((customer) => customer.id !== id));
-        showNotification("Customer type deleted successfully!");
-      } else {
-        throw new Error(response.error || "Failed to delete customer type");
+    if (window.confirm("Are you sure you want to delete this customer type?")) {
+      try {
+        const response = await deleteCustomerType(id);
+        if (response.success) {
+          setCustomers(customers.filter((customer) => customer.id !== id));
+          toast.success("Customer type deleted successfully!");
+        } else {
+          throw new Error(response.error || "Failed to delete customer type");
+        }
+      } catch (error) {
+        const errorMessage = error.response?.data?.error || "You do not have permission";
+        toast.error(errorMessage);
       }
-    } catch (error) {
-      const errorMessage = error.response?.data?.error || "You do not have permission";
-      setError(errorMessage);
     }
   };
 
@@ -72,7 +79,6 @@ function CustomerType() {
 
     try {
       if (editData) {
-        // Update existing customer type
         const response = await updateCustomerType(editData.id, newCustomer);
         if (response.data.success) {
           setCustomers((prevCustomers) =>
@@ -82,10 +88,9 @@ function CustomerType() {
                 : customer
             )
           );
-          showNotification("Customer type updated successfully!");
+          toast.success("Customer type updated successfully!");
         }
       } else {
-        // Create new customer type
         const response = await createCustomerType(newCustomer);
         if (response.data.success) {
           const newCustomerData = {
@@ -94,36 +99,25 @@ function CustomerType() {
             coefficient: response.data.data.coefficient,
           };
           setCustomers((prevCustomers) => [...prevCustomers, newCustomerData]);
-          showNotification("Customer type added successfully!");
+          toast.success("Customer type added successfully!");
         }
       }
       handleClose();
     } catch (error) {
-      setError(error.response?.data?.error || "Failed to save customer type. You do not have permission");
+      const errorMessage = error.response?.data?.error || "You do not have permission";
+      toast.error(errorMessage);
     }
-  };
-
-  const showNotification = (message) => {
-    setNotification(message);
-    setTimeout(() => setNotification(null), 3000); // Hide notification after 3 seconds
   };
 
   return (
     <div className="pt-16 pb-8 pr-8 mt-2">
+      <ToastContainer />
       <div className="flex items-center mb-3 justify-between">
         <h2 className="font-bold text-3xl font-sans">Customer Configure</h2>
         <Button variant="dark" onClick={handleAddCustomer} className="text-white">
-          Add Customer
+          Add Customer Type
         </Button>
       </div>
-
-      {notification && (
-        <Alert variant="success" onClose={() => setNotification(null)} dismissible>
-          {notification}
-        </Alert>
-      )}
-
-      {error && <Alert variant="danger">{error}</Alert>}
 
       <div className="bg-white font-dm-sans rounded-md shadow-sm p-3">
         <Table bordered-y="true" hover>
@@ -160,6 +154,8 @@ function CustomerType() {
           </tbody>
         </Table>
       </div>
+      {error && <div className="alert alert-danger mt-4">{error}</div>}
+
 
       <Offcanvas show={show} onHide={handleClose} placement="end">
         <Offcanvas.Header closeButton>

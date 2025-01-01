@@ -66,7 +66,14 @@ const NavBar = ({ isOpen }) => {
                     ref: '/customertypes'
                 }
             ]
-        }
+        },
+        {
+            title: 'Users',
+            icon: '/user.svg',
+            redirect: '/users',
+            subItems: []
+        }  
+
     ]);
 
     const [selectedItem, setSelectedItem] = useState(null);

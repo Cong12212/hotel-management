@@ -11,6 +11,7 @@ const QueryHelper = require("../utils/QueryHelper");
  */
 exports.getAllRooms = async (req, res) => {
   try {
+
     const { sort, search, page = 1, limit = 10 } = req.query;
 
     const filter = {};
@@ -34,8 +35,8 @@ exports.getAllRooms = async (req, res) => {
     }
 
     const total = await Room.countDocuments(filter);
-    const skip = (page - 1) * limit;
 
+    const skip = (page - 1) * limit;
     const rooms = await Room.find(filter)
       .populate('roomTypeId')
       .sort(sortOption)
@@ -63,24 +64,24 @@ exports.getAllRooms = async (req, res) => {
  */
 exports.getRoom = async (req, res) => {
   try {
-    const room = await Room.findById(req.params.id).populate("roomTypeId");
+    const room = await Room.findById(req.params.id).populate('roomTypeId');
 
     if (!room) {
       return res.status(404).json({
         success: false,
-        error: "Room not found",
+        error: 'Room not found'
       });
     }
 
     res.status(200).json({
       success: true,
-      data: room,
+      data: room
     });
   } catch (error) {
-    console.error("Get room error:", error);
+    console.error('Get room error:', error);
     res.status(500).json({
       success: false,
-      error: "Server Error",
+      error: 'Server Error'
     });
   }
 };
@@ -94,11 +95,12 @@ exports.createRoom = async (req, res) => {
   try {
     const { roomTypeId, roomName, status, notes } = req.body;
 
+    // Verify room type exists
     const roomType = await RoomType.findById(roomTypeId);
     if (!roomType) {
       return res.status(404).json({
         success: false,
-        error: "Room type not found",
+        error: 'Room type not found'
       });
     }
 
@@ -106,24 +108,24 @@ exports.createRoom = async (req, res) => {
       roomTypeId,
       roomName,
       status,
-      notes,
+      notes
     });
 
     res.status(201).json({
       success: true,
-      data: await room.populate("roomTypeId"),
+      data: await room.populate('roomTypeId')
     });
   } catch (error) {
-    console.error("Create room error:", error);
+    console.error('Create room error:', error);
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
-        error: "Room name already exists",
+        error: 'Room name already exists'
       });
     }
     res.status(500).json({
       success: false,
-      error: "Server Error",
+      error: 'Server Error'
     });
   }
 };
@@ -136,12 +138,13 @@ exports.updateRoom = async (req, res) => {
   try {
     const { roomTypeId, roomName, status, notes } = req.body;
 
+    // If roomTypeId is provided, verify it exists
     if (roomTypeId) {
       const roomType = await RoomType.findById(roomTypeId);
       if (!roomType) {
         return res.status(404).json({
           success: false,
-          error: "Room type not found",
+          error: 'Room type not found'
         });
       }
     }
@@ -151,32 +154,32 @@ exports.updateRoom = async (req, res) => {
       { roomTypeId, roomName, status, notes },
       {
         new: true,
-        runValidators: true,
+        runValidators: true
       }
-    ).populate("roomTypeId");
+    ).populate('roomTypeId');
 
     if (!room) {
       return res.status(404).json({
         success: false,
-        error: "Room not found",
+        error: 'Room not found'
       });
     }
 
     res.status(200).json({
       success: true,
-      data: room,
+      data: room
     });
   } catch (error) {
-    console.error("Update room error:", error);
+    console.error('Update room error:', error);
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
-        error: "Room name already exists",
+        error: 'Room name already exists'
       });
     }
     res.status(500).json({
       success: false,
-      error: "Server Error",
+      error: 'Server Error'
     });
   }
 };
@@ -193,14 +196,14 @@ exports.deleteRoom = async (req, res) => {
     if (!room) {
       return res.status(404).json({
         success: false,
-        error: "Room not found"
+        error: 'Room not found'
       });
     }
 
     if (!checkRoomAvailability(room._id)) {
       return res.status(400).json({
         success: false,
-        error: "Cannot delete occupied room",
+        error: 'Cannot delete occupied room'
       });
     }
 
@@ -208,13 +211,13 @@ exports.deleteRoom = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Room deleted successfully",
+      message: 'Room deleted successfully'
     });
   } catch (error) {
-    console.error("Delete room error:", error);
+    console.error('Delete room error:', error);
     res.status(500).json({
       success: false,
-      error: "Server Error",
+      error: 'Server Error'
     });
   }
 };
@@ -228,50 +231,50 @@ exports.getAvailableRooms = async (req, res) => {
     const { checkIn, checkOut } = req.query;
 
     if (!checkIn || !checkOut) {
-      const rooms = await Room.find({ status: "available" }).populate(
-        "roomTypeId"
-      );
+      const rooms = await Room.find({ status: 'available' })
+        .populate('roomTypeId');
 
       return res.status(200).json({
         success: true,
         count: rooms.length,
-        data: rooms,
+        data: rooms
       });
     }
 
-    const bookedRoomIds = await BookingDetail.distinct("roomId", {
+    // Find rooms not booked in the date range
+    const bookedRoomIds = await BookingDetail.distinct('roomId', {
       $or: [
         {
           checkInDate: { $lte: new Date(checkOut) },
-          checkOutDate: { $gte: new Date(checkIn) },
-        },
-      ],
+          checkOutDate: { $gte: new Date(checkIn) }
+        }
+      ]
     });
 
     const availableRooms = await Room.find({
       _id: { $nin: bookedRoomIds },
-      status: "available",
-    }).populate("roomTypeId");
+      status: 'available'
+    }).populate('roomTypeId');
 
     res.status(200).json({
       success: true,
       count: availableRooms.length,
-      data: availableRooms,
+      data: availableRooms
     });
   } catch (error) {
-    console.error("Get available rooms error:", error);
+    console.error('Get available rooms error:', error);
     res.status(500).json({
       success: false,
-      error: "Server Error",
+      error: 'Server Error'
     });
   }
 };
 
 const checkRoomAvailability = async (roomId) => {
-  const now = new Date();
+  const now = new Date()
   const overlappingBookings = await BookingDetail.find({
     roomId,
-    checkOutDate: { $gte: now },
+    checkOutDate: { $gte: now }
   });
 
   return overlappingBookings.length === 0;

@@ -17,12 +17,17 @@ const RoomDensityMonthly = () => {
 
         try {
             const response = await fetchRoomDensityMonthlyReport(month, year);
-
+            
             if (response.success && response.data && Array.isArray(response.data.report)) {
                 setData(response.data.report); // Lấy dữ liệu từ API
-            } else {
-                throw new Error(response.error || "Invalid response structure");
+                
+            } 
+          
+            else {
+                
+                setError(response.error.error || "Invalid response structure");
             }
+            
         } catch (err) {
             if (err.response && err.response.status === 403) {
                 setError("You do not have permission to access this resource");
@@ -100,7 +105,7 @@ const RoomDensityMonthly = () => {
                     />
                 </div>
                 <div className="col-md-4 d-flex align-items-end">
-                    <button className="btn btn-primary w-100" onClick={fetchReportData}>
+                    <button className="btn btn-dark w-100" onClick={fetchReportData}>
                         Fetch Report
                     </button>
                 </div>
@@ -108,7 +113,7 @@ const RoomDensityMonthly = () => {
 
             {/* Phần hiển thị báo cáo */}
             {loading && <p>Loading...</p>}
-            {error && <p className="text-danger">{error}</p>}
+            {error && <div className="alert alert-danger">{error}</div>}
             {data && Array.isArray(data) && data.length > 0 ? (
                 <div>
                     <h4 className="mt-4">Room Usage Density Data:</h4>

@@ -14,8 +14,8 @@ const Transaction = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageInput, setPageInput] = useState(currentPage);
     const [totalPages, setTotalPages] = useState(1);
-    const [totalData, setTotalData] = useState(0);
-
+    const [totalData, setTotalData] = useState(NaN);
+    const [error, setError] = useState("");
     const handlePagination = useCallback((totalData) => {
         setTotalData(totalData);
         setTotalPages(Math.ceil(totalData / rowsPerPage));
@@ -60,6 +60,7 @@ const Transaction = () => {
                 };
 
                 const response = await getInvoices(params);
+                if(response.success) {
                 const invoicesData = response.data.data;
                 const combinedData = invoicesData.map((invoice, index) => ({
                     id: (currentPage - 1) * rowsPerPage + index + 1, // Sequential ID
@@ -71,9 +72,12 @@ const Transaction = () => {
                         roomPrice: detail.roomPrice || 0,
                     })),
                 }));
-
                 setData(combinedData);
                 handlePagination(response.data.total);
+            }else{
+                setError(response.error.error || "No data available.");
+            }
+               
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -246,6 +250,7 @@ const Transaction = () => {
                     </Button>
                 </div>
             </div>
+            {error && <div className="alert alert-danger mt-4">{error}</div>}
         </div>
     );
 };

@@ -12,7 +12,7 @@ const customerRoutes = require('./src/routes/customerRoutes');
 const customerTypeRoutes = require('./src/routes/customerTypeRoutes');
 const invoiceRoutes = require('./src/routes/invoiceRoutes')
 const reportRoutes = require('./src/routes/reportRoutes')
-
+const roleRoutes = require('./src/routes/roleRoutes')
 // Connect to database
 connectDB();
 
@@ -32,7 +32,7 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/customer-types', customerTypeRoutes);
 app.use('/api/invoices',invoiceRoutes)
 app.use('/api/reports',reportRoutes)
-
+app.use('/api/roles',roleRoutes)
 // Base route
 app.get('/', (req, res) => {
     res.json({ message: 'Welcome to Hotel Management API' });

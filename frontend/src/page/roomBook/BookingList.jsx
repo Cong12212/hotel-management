@@ -1,4 +1,3 @@
-// <<<<<<< HEAD
 import React, { useState, useEffect, useCallback } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Table, Button, InputGroup, DropdownButton, Dropdown } from 'react-bootstrap';
@@ -12,13 +11,14 @@ const BookingList = () => {
     const [expandedRow, setExpandedRow] = useState(null);
 
     const [bookings, setBookings] = useState([]);
-    const [totalBookings, setTotalBookings] = useState(0);
-    const [totalPages, setTotalPages] = useState(0);
+    const [totalBookings, setTotalBookings] = useState(NaN);
+    const [totalPages, setTotalPages] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
     const [sortField, setSortField] = useState(null); //
     const [pageInput, setPageInput] = useState(currentPage); // Input để người dùng nhập
+    const [errors, setErrors] = useState({});
 
     const toggleDetails = (id) => {
         setExpandedRow(expandedRow === id ? null : id);
@@ -38,9 +38,10 @@ const BookingList = () => {
             };
 
             const res = await getAllBookings(queryParams);
-
+            console.log(res);
             if (res && res.data && res.data.data) {
                 const data = res.data.data;
+                console.log(data);
                 const combinedData = data.map((booking, index) => ({
                     id: booking._id,
                     index: index + 1,
@@ -49,11 +50,15 @@ const BookingList = () => {
                         ? booking.customerIds.map(c => c.fullName).join('\n')
                         : null,
                     bookingDetails: booking.bookingDetails,
-                    employee: booking.userId?.username || 'N/A',
+                    employee: booking.userId?.fullName || "N/A",
                     date: new Date(booking.createdAt).toLocaleString('vi-VN', { timeZone: 'UTC' }),
                 }));
                 setBookings(combinedData);
                 handlePagination(res.data.total);
+            }
+            else {
+                setErrors({ err: res.error.error });
+                return;
             }
         } catch (error) {
             console.error("Error fetching bookings:", error);
@@ -81,10 +86,6 @@ const BookingList = () => {
         }
     };
 
-    const handleSort = (field, order) => {
-        setSortField(order === 'asc' ? field : `-${field}`);
-    };
-
     const handlePageInput = (e) => {
         setPageInput(e.target.value);
     };
@@ -102,100 +103,6 @@ const BookingList = () => {
     useEffect(() => {
         setPageInput(currentPage); // Đồng bộ input khi thay đổi trang
     }, [currentPage]);
-
-
-    // const handleInputChange = (e) => {
-    //     const { name, value } = e.target;
-    //     setNewRoom((prev) => ({
-    //         ...prev,
-    //         [name]: value,
-    //     }));
-    // };
-
-
-    // const handleAddRoom = async () => {
-
-    //     try {
-    //         const requiredFields = ['roomName', 'roomTypeId', 'status'];
-    //         const fieldsToCompare = ['roomName', 'status', 'notes'];
-
-    //         const fieldNamesMap = {
-    //             roomName: "Room Name",
-    //             status: "Status",
-    //             roomTypeId: "Room Type",
-    //         };
-
-    //         let isRoomChanged = true;
-    //         const emptyFields = requiredFields.filter((field) => !newRoom[field] || newRoom[field].trim() === '');
-
-    //         if (emptyFields.length > 0) {
-    //             const readableFieldNames = emptyFields.map((field) => fieldNamesMap[field]);
-    //             toast.error(`The following fields are required: ${readableFieldNames.join(', ')}`, { autoClose: 2000 });
-    //         }
-    //         let res;
-    //         if (editingRoom) {
-    //             isRoomChanged = fieldsToCompare.some(
-    //                 (field) => newRoom[field] !== editingRoom[field]
-    //             ) || newRoom.roomTypeId !== editingRoom.roomTypeId._id;
-    //             if (!isRoomChanged) {
-    //                 toast.info('No changes detected.', { autoClose: 2000 });
-
-    //             } else {
-    //                 res = await patchUpdateRoom({ ...newRoom, id: editingRoom._id });
-    //             }
-    //         } else {
-    //             res = await postAddRoom(newRoom);
-    //             if (res.error && res.error.error.toLowerCase().includes('already exists')) {
-    //                 toast.error('Room already exists. Please use a different name.', { autoClose: 2000 });
-    //             }
-    //         }
-    //         if (res.success) {
-    //             toast.success(`${editingRoom ? 'Room updated' : 'Room added'} successfully!`, { autoClose: 2000 });
-    //             fetchListBooking();
-    //             handleModalClose();
-
-    //         } else {
-    //             toast.error(res.error || 'Operation failed', { autoClose: 2000 });
-    //         }
-    //     } catch (error) {
-    //         toast.error('Error while saving room', { autoClose: 2000 });
-    //         console.error(error);
-    //     }
-    // };
-
-    // const handleEditClick = (room) => {
-    //     setEditingRoom(room);
-    //     setNewRoom({
-    //         roomName: room.roomName,
-    //         roomTypeId: room.roomTypeId,
-    //         status: room.roomTypeId,
-    //         notes: room.notes || '',
-    //     });
-    //     setShowModal(true);
-    // };
-
-    // const handleDelete = async (id) => {
-    //     if (window.confirm('Are you sure you want to delete this room?')) {
-    //         const res = await delDeleteRoom(id);
-    //         if (res.success) {
-    //             toast.success('Room deleted successfully!');
-    //             fetchListBooking();
-    //         } else {
-    //             toast.error(res.error || 'Failed to delete room');
-    //         }
-    //     }
-    // };
-
-
-    // const handleModalClose = () => {
-    //     setShowModal(false);
-    //     setEditingRoom(null);
-    //     setNewRoom({ roomName: '', roomTypeId: '', status: '', notes: '' });
-    //     setErrors({});
-    // };
-
-    // const handleModalShow = () => setShowModal(true);
-
 
     return (
         <div className="pt-16 pb-8 pr-8 mt-2 ">
@@ -337,15 +244,20 @@ const BookingList = () => {
                                                         </thead>
                                                         <tbody>
                                                             {booking.bookingDetails.map((detail, index) => (
-                                                                <tr key={detail._id}>
+                                                                <tr key={detail._id || index}>
                                                                     <td className="py-3">{index + 1}</td>
-                                                                    <td className="py-3">{detail.roomId.roomName}</td>
-                                                                    <td className="py-3">{detail.roomPrice.toLocaleString("en-US")} VND</td>
-                                                                    <td className="py-3">{detail.numberOfGuests}</td>
-                                                                    <td className="py-3">{new Date(detail.checkInDate).toLocaleString('vi-VN', { timeZone: 'UTC' })}</td>
-                                                                    <td className="py-3">{new Date(detail.checkOutDate).toLocaleString('vi-VN', { timeZone: 'UTC' })}</td>
+                                                                    <td className="py-3">{detail.roomId?.roomName || "N/A"}</td>
+                                                                    <td className="py-3">{detail.roomPrice ? detail.roomPrice.toLocaleString("en-US") + " VND" : "N/A"}</td>
+                                                                    <td className="py-3">{detail.numberOfGuests ?? "N/A"}</td>
+                                                                    <td className="py-3">
+                                                                        {detail.checkInDate ? new Date(detail.checkInDate).toLocaleString("vi-VN", { timeZone: "UTC" }) : "N/A"}
+                                                                    </td>
+                                                                    <td className="py-3">
+                                                                        {detail.checkOutDate ? new Date(detail.checkOutDate).toLocaleString("vi-VN", { timeZone: "UTC" }) : "N/A"}
+                                                                    </td>
                                                                 </tr>
                                                             ))}
+
                                                         </tbody>
                                                     </Table>
                                                 </div>
@@ -382,7 +294,11 @@ const BookingList = () => {
                     </Button>
                 </div>
             </div>
+            <div className="mt-4">
+                {errors.err && <div className="alert alert-danger">{errors.err}</div>}
+            </div>
         </div>
+
     );
 }
 
