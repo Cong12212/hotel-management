@@ -24,7 +24,11 @@ const RoomTypeMonthly = () => {
                 throw new Error(response.error || "Invalid response structure");
             }
         } catch (err) {
-            setError(err.message || "Network error");
+            if (err.response && err.response.status === 403) {
+                setError("You do not have permission to access this resource");
+            } else {
+                setError(err.message || "Network error");
+            }
             setData(null);
         } finally {
             setLoading(false);
