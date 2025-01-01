@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Role = require('../models/Role');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const QueryHelper = require('../utils/QueryHelper')
 // Login user
 exports.login = async (req, res) => {
     const { username, password } = req.body;
@@ -146,10 +147,24 @@ exports.logout = async (req, res) => {
 // Get all users
 exports.getAllUsers = async (req, res) => {
     try {
-        const users = await User.find().populate('role').select('-password');
+        
+        const userQuery = User.find()
+            .populate({
+                path: 'role',
+                select: '_id name'
+            })
+            .select('-password');
+
+        const queryHelper = new QueryHelper(userQuery,req.query).executeQuery()
+        
+        const users = await queryHelper.query
+        const total = await User.countDocuments()
         res.status(200).json({
             success: true,
+            count: users.length,
+            total,
             data: users
+
         });
     } catch (error) {
         console.error('Get all users error:', error);
@@ -184,11 +199,16 @@ exports.getUser = async (req, res) => {
     }
 };
 
-// Update user
+/**
+ * API endpoint : 
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
 exports.updateUser = async (req, res) => {
     try {
-        const { password, fullName, phone, address } = req.body;
-        const updateData = { fullName, phone, address };
+        const { password, fullName, phone, address, role } = req.body;
+        const updateData = { fullName, phone, address, role };
 
         // If password is provided, hash it
         if (password) {

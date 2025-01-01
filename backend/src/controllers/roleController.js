@@ -7,7 +7,7 @@ const QueryHelper = require('../utils/QueryHelper')
  */
 exports.getAllRoles = async (req, res) => {
     try {
-        const queryHelper = new QueryHelper(Role.find(),req.query)
+        const queryHelper = new QueryHelper(Role.find(),req.query).executeQuery()
 
         const roles = await queryHelper.query 
 
