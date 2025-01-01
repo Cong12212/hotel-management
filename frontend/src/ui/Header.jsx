@@ -3,19 +3,27 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hook/useAuth';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import { logOut } from '../service/apiServices';
 const Header = ({ toggleNavBar, isNavBarOpen }) => {
     const { userLogout, user } = useAuth();
     const navigate = useNavigate();
     const handleLogOut = () => {
-        userLogout();
-        toast.success('Logout successful!', { autoClose: 2000 });
-        setTimeout(() => {
-            navigate('/'); // Redirect to dashboard or another page after a delay
-        }, 1500);
+        logOut()
+            .then((res) => {
+                console.log(res);
+                if (res.data.success) {
+                    userLogout();
+                    navigate('/');
+                }
+            })
+            .catch((err) => {
+                toast.error(err.response.data.message || 'Failed to logout');
+            });
 
     }
-
+    const handleLogIn = () => {
+        navigate('/');
+    }
     return (
         <div className=" w-full bg-gray-50 z-50 fixed  ">
             <ToastContainer />
@@ -64,12 +72,21 @@ const Header = ({ toggleNavBar, isNavBarOpen }) => {
                     />
                 </div>
                 <div className="flex-1 flex items-center fixed right-0">
-                    
+
                     <div className="flex items-center gap-2 mr-4">
-                        <button className="focus:outline-dashed focus:outline-2 focus:outline-violet-500 cursor-pointer px-3 py-2 rounded-md text-white bg-gradient-to-r from-violet-500 to-pink-500 hover:bg-gradient-to-r hover:from-violet-700 hover:to-pink-700 "
-                            onClick={handleLogOut}>
-                            LogOut
-                        </button>
+                        {user ? (
+                            <button
+                                className="px-3 py-2 rounded-md text-white bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-700 hover:to-pink-700"
+                                onClick={handleLogOut}>
+                                LogOut
+                            </button>
+                        ) : (
+                            <button
+                                className="px-3 py-2 rounded-md text-white bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-700 hover:to-pink-700"
+                                onClick={handleLogIn}>
+                                LogIn
+                            </button>
+                        )}
                         <div className="w-10 h-10 ">
                             <img className="rounded-full hover:shadow-lg"
                                 src="https://hotelair-react.pixelwibes.in/static/media/profile_av.387360c31abf06d6cc50.png" alt="" />

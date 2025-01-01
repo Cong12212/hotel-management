@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrap
 import { getUncompletedBookings, addInvoice } from "../../service/apiServices";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const RoomCheckout = () => {
     const [roomID, setRoomID] = useState("");
@@ -25,15 +27,17 @@ const RoomCheckout = () => {
                 limit: 10,
             });
 
-            const bookings = response.data.data;
-
-            if (bookings.length > 0) {
+            if (response.success === true) {
+                const bookings = response.data.data;
                 setFoundBills(bookings);
-            } else {
-                setError("Room not found.");
+            }
+            else {
+               
+                setError(response.error.error);
+                return;
             }
         } catch (err) {
-            setError("Failed to fetch bookings. Please try again later.");
+            console.error("Error fetching roomtypes:", error);
         }
     };
 
@@ -44,10 +48,11 @@ const RoomCheckout = () => {
                 setSuccessMessage(`Checkout successful for booking ID: ${id}`);
                 setFoundBills(foundBills.filter((bill) => bill._id !== id));
             } else {
-                setError("Failed to checkout. Please try again later.");
+                setError(response.data.error.error);
+
             }
         } catch (err) {
-            setError("Failed to checkout. Please try again later.");
+            console.error("Error fetching roomtypes:", error);
         }
     };
 
@@ -59,11 +64,12 @@ const RoomCheckout = () => {
 
     return (
         <div className="pt-16 pb-8 pr-8 mt-2">
+            <ToastContainer />
             <div className="flex items-center mb-3 justify-between">
                 <h2 className="font-bold text-3xl font-sans">Room Checkout</h2>
             </div>
             {successMessage && (
-                <div className="alert alert-success">{successMessage}</div>
+                toast.success({ successMessage }, { autoClose: 2000 })
             )}
             <div className="card mb-4 shadow">
                 <div className="card-header bg-white">
@@ -83,7 +89,7 @@ const RoomCheckout = () => {
                             onKeyDown={handleKeyDown}
                         />
                     </div>
-                    <button className="btn btn-primary" onClick={handleSearch}>
+                    <button className="btn btn-dark" onClick={handleSearch}>
                         Search
                     </button>
                 </div>
@@ -165,13 +171,14 @@ const RoomCheckout = () => {
                             </div>
                             <div className="text-end mt-3">
                                 <button
-                                    className="btn btn-primary me-3 mb-3"
+                                    className="btn btn-dark me-3 mb-3"
                                     onClick={() => handleCheckout(foundBill._id)}
                                 >
                                     Checkout
                                 </button>
                             </div>
                         </div>
+
                     ))}
                 </>
             )}

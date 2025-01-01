@@ -8,9 +8,9 @@ import { getAllRooms, postAddRoom, patchUpdateRoom, delDeleteRoom, getAllRoomTyp
 function RoomList() {
     const [rooms, setRooms] = useState([]);
     const [roomtypes, setRoomTypes] = useState([]);
-    const [totalRooms, setTotalRooms] = useState(0);
+    const [totalRooms, setTotalRooms] = useState(NaN);
     const [totalRoomTypes, setTotalRoomTypes] = useState(0);
-    const [totalPages, setTotalPages] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
@@ -41,7 +41,13 @@ function RoomList() {
                 handlePagination(res.data.total);
 
             }
+            else {
+
+                setErrors({ err: res.error.error });
+                return;
+            }
         } catch (error) {
+
             console.error("Error fetching rooms:", error);
         }
 
@@ -166,7 +172,7 @@ function RoomList() {
             } else {
                 toast.error(res.error.error || 'Operation failed', { autoClose: 2000 });
             }
-        } catch (error) {
+        } catch (err) {
             toast.error('Error while saving room', { autoClose: 2000 });
         }
     };
@@ -341,6 +347,11 @@ function RoomList() {
                         Next
                     </Button>
                 </div>
+
+
+            </div>
+            <div className="mt-4">
+                {errors.err && <div className="alert alert-danger">{errors.err}</div>}
             </div>
             {/* Modal for adding room */}
             <Offcanvas show={showModal} onHide={handleModalClose} placement="end">
@@ -400,7 +411,7 @@ function RoomList() {
                                 onChange={handleInputChange}
                                 isInvalid={!!errors.status}
                                 className="mb-3"
-                            >   
+                            >
                                 <option value="">Select room status</option>
                                 <option value="available">Available</option>
                                 <option value="occupied">Occupied</option>
@@ -441,6 +452,7 @@ function RoomList() {
                 </div>
             </Offcanvas>
         </div>
+
     );
 }
 

@@ -13,6 +13,8 @@ import RoomStatus from "./page/roomBook/RoomStatus";
 import RoomType from "./page/roomSetting/RoomType";
 import CustomerType from "./page/roomSetting/CustomerType";
 import LogIn from "./page/auth/LogIn";
+import SignUp from "./page/auth/SignUp";
+import User from "./page/user/UserManagement";
 import RoomBookingForm from "./ui/BookingForm";
 import { AuthProvider } from "./hook/useAuth";
 
@@ -88,6 +90,7 @@ function App() {
           <Routes>
             {/* Trang login không có NavBar */}
             <Route path="/" element={<LogIn />} />
+            <Route path="/signup" element={<SignUp />} />
             {/* <Route path="/forgot-password" element={<ForgotPass/>} />
           <Route path="/signup" element={<SignUp />} /> */}
 
@@ -103,6 +106,8 @@ function App() {
               <Route path="/room-status" element={<RoomStatus />} />
               <Route path="/roomtypes" element={<RoomType />} />
               <Route path="/customertypes" element={<CustomerType />} />
+              <Route path="/users" element={<User/>} />
+             
             </Route>
           </Routes>
         </NavBarItemProvider>

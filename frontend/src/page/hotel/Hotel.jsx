@@ -49,6 +49,13 @@ const Hotel = () => {
           <h2 className="font-semibold">Customer Types</h2>
           <p>Manage customer types available</p>
         </Link>
+        <Link
+          to="/users" // Đường dẫn đến CustomerType
+          className="bg-white shadow-md rounded-lg p-6 hover:bg-purple-100 hover:scale-105 transition-transform duration-200"
+        >
+          <h2 className="font-semibold">User Management</h2>
+          <p>Manage user account</p>
+        </Link>
       </div>
     </div>
   );

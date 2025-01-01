@@ -84,14 +84,14 @@ const MonthlyRevenueReport = () => {
                     />
                 </div>
                 <div className="col-md-4 d-flex align-items-end">
-                    <button className="btn btn-primary w-100" onClick={fetchReportData}>
+                    <button className="btn btn-dark w-100" onClick={fetchReportData}>
                         Fetch Report
                     </button>
                 </div>
             </div>
 
             {loading && <p>Loading...</p>}
-            {error && <p className="text-danger">{error}</p>}
+            {error && <div className="alert alert-danger">{error}</div>}
 
             {data && (
                 <div>

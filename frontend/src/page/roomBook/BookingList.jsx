@@ -12,13 +12,14 @@ const BookingList = () => {
     const [expandedRow, setExpandedRow] = useState(null);
 
     const [bookings, setBookings] = useState([]);
-    const [totalBookings, setTotalBookings] = useState(0);
-    const [totalPages, setTotalPages] = useState(0);
+    const [totalBookings, setTotalBookings] = useState(NaN);
+    const [totalPages, setTotalPages] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
     const [sortField, setSortField] = useState(null); //
     const [pageInput, setPageInput] = useState(currentPage); // Input để người dùng nhập
+    const [errors, setErrors] = useState({});
 
     const toggleDetails = (id) => {
         setExpandedRow(expandedRow === id ? null : id);
@@ -38,7 +39,7 @@ const BookingList = () => {
             };
 
             const res = await getAllBookings(queryParams);
-
+            console.log(res);
             if (res && res.data && res.data.data) {
                 const data = res.data.data;
                 console.log(data);
@@ -54,6 +55,10 @@ const BookingList = () => {
                 setBookings(combinedData);
                 handlePagination(res.data.total);
 
+            }
+            else {
+                setErrors({ err: res.error.error });
+                return;
             }
         } catch (error) {
             console.error("Error fetching bookings:", error);
@@ -280,7 +285,11 @@ const BookingList = () => {
                     </Button>
                 </div>
             </div>
+            <div className="mt-4">
+                {errors.err && <div className="alert alert-danger">{errors.err}</div>}
+            </div>
         </div>
+
     );
 }
 

@@ -3,18 +3,18 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Table, Button, InputGroup, DropdownButton, Dropdown } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { getAllRooms} from '../../service/apiServices';
+import { getAllRooms } from '../../service/apiServices';
 
 function RoomStatus() {
     const [rooms, setRooms] = useState([]);
-    const [totalRooms, setTotalRooms] = useState(0);
-    const [totalPages, setTotalPages] = useState(0);
+    const [totalRooms, setTotalRooms] = useState(NaN);
+    const [totalPages, setTotalPages] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
     const [sortField, setSortField] = useState(null); //
     const [pageInput, setPageInput] = useState(currentPage); // Input để người dùng nhập
-
+    const [errors, setErrors] = useState({});
 
     const handlePagination = useCallback((totalRooms) => {
         setTotalRooms(totalRooms);
@@ -35,6 +35,10 @@ function RoomStatus() {
                 setRooms(res.data.data);
                 handlePagination(res.data.total);
 
+            }
+            else {
+                setErrors({ err: res.error.error });
+                return;
             }
         } catch (error) {
             console.error("Error fetching rooms:", error);
@@ -209,7 +213,11 @@ function RoomStatus() {
                         onClick={() => handlePageChange('next')}>
                         Next
                     </Button>
+
                 </div>
+            </div>
+            <div className="mt-4">
+                {errors.err && <div className="alert alert-danger">{errors.err}</div>}
             </div>
         </div>
     );

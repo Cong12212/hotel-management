@@ -14,7 +14,7 @@ const Transaction = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageInput, setPageInput] = useState(currentPage);
     const [totalPages, setTotalPages] = useState(1);
-    const [totalData, setTotalData] = useState(0);
+    const [totalData, setTotalData] = useState(NaN);
 
     const handlePagination = useCallback((totalData) => {
         setTotalData(totalData);
