@@ -12,7 +12,7 @@ import RoomCheckout from "./page/roomBook/RoomCheckout";
 import RoomStatus from "./page/roomBook/RoomStatus";
 import RoomType from "./page/roomSetting/RoomType";
 import CustomerType from "./page/roomSetting/CustomerType";
-import LogIn from "./page/auth/LogIn";
+import LogIn from "./page/auth/logIn";
 import SignUp from "./page/auth/SignUp";
 import User from "./page/user/UserManagement";
 import RoomBookingForm from "./ui/BookingForm";

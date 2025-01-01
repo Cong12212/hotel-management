@@ -54,9 +54,11 @@ const signUp = async (userData) => {
   }
 };
 
-const getAllUsers = async () => {
+const getAllUsers = async (queryParams) => {
   try {
-    const response = await axios.get("api/users");
+    const response = await axios.get("api/users",{
+      params: queryParams,
+    });
     return {
       success: true,
       data: response.data,
@@ -71,7 +73,7 @@ const getAllUsers = async () => {
 
 const getAllRoles = async () => {
   try {
-    const response = await axios.get("api/users/roles");
+    const response = await axios.get("api/roles");
     return {
       success: true,
       data: response.data,
@@ -87,6 +89,7 @@ const getAllRoles = async () => {
 const updateUser = async (id, data) => {
   try {
     const response = await axios.patch(`api/users/${id}`, data);
+    console.log('update',response);
     return {
       success: true,
       data: response.data,
@@ -102,6 +105,7 @@ const updateUser = async (id, data) => {
 const deleteUser = async (id) => {
   try {
     const response = await axios.delete(`api/users/${id}`);
+    console.log('del',response);
     return {
       success: true,
       data: response.data,
@@ -113,6 +117,7 @@ const deleteUser = async (id) => {
     };
   }
 };
+
 // Hàm gọi API lấy tất cả phòng
 const getAllRooms = async (queryParams) => {
   try {

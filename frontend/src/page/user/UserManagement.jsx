@@ -1,36 +1,65 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Table, Button, Form, Offcanvas, ToastContainer, InputGroup, FormControl } from "react-bootstrap";
-import { toast } from "react-toastify";
+import { Table, Button, Form, Offcanvas, InputGroup, FormControl, DropdownButton, Dropdown } from "react-bootstrap";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getAllUsers, updateUser, deleteUser, signUp } from "../../service/apiServices";
+import { getAllUsers, updateUser, deleteUser, signUp, getAllRoles } from "../../service/apiServices";
 
 function UserManagement() {
     const [users, setUsers] = useState([]);
+    const [roles, setRoles] = useState([]);
+    const [chosenRole, setChosenRole] = useState([]);
     const [showModal, setShowModal] = useState(false);
-    const [editData, setEditData] = useState(null);
-    const [formData, setFormData] = useState({ username: "", password: "", role: "" });
+    const [editData, setEditData] = useState({});
+    const [formData, setFormData] = useState({});
     const [showDetails, setShowDetails] = useState(null);
     const [username, setUserName] = useState('');
     const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
     const [phone, setPhone] = useState('');
     const [fullName, setFullName] = useState('');
     const [address, setAddress] = useState('');
-    const [cfpassword, setCfPassword] = useState('');
-    const [showCfPassword, setShowCfPassword] = useState(false);
     const [errors, setErrors] = useState("");
+    const [totalPages, setTotalPages] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalUsers, setTotalUsers] = useState(NaN);
+    const [pageInput, setPageInput] = useState(currentPage); // Input để người dùng nhập
+
+    const handlePagination = useCallback((total) => {
+        setTotalUsers(total);
+        setTotalPages(Math.ceil(total / rowsPerPage));
+    }, [rowsPerPage]);
 
     useEffect(() => {
         fetchUsers();
+    }, [currentPage, rowsPerPage, handlePagination]);
+    useEffect(() => {
+        fetchRoles();
     }, []);
+    const fetchRoles = async () => {
+        try {
+            const response = await getAllRoles();
+            console.log('role', response);
+            if (response.success) {
+                setRoles(response.data.data);
+            } else {
+                setErrors(response.error.error);
+            }
+        } catch (err) {
+            console.error(err.message || "Error fetching roles", err);
+        }
+    };
 
     const fetchUsers = async () => {
         try {
-            const response = await getAllUsers();
-            console.log(response);
+            const response = await getAllUsers({
+                limit: rowsPerPage,
+                page: currentPage,
+            })
+            console.log('user', response);
             if (response.success) {
                 setUsers(response.data.data);
+                handlePagination(response.data.total);
             } else {
                 setErrors(response.error.error);
             }
@@ -47,7 +76,7 @@ function UserManagement() {
                     setUsers(users.filter((user) => user._id !== id));
                     toast.success("User deleted successfully");
                 } else {
-                    throw new Error(response.message);
+                    toast.error(response.error.error, { autoClose: 2000 });
                 }
             } catch (error) {
                 toast.error(error.message || "Error deleting user");
@@ -57,72 +86,110 @@ function UserManagement() {
 
     const handleEditClick = (user) => {
         setEditData(user);
-        setFormData({
-            username: user.username,
-            password: "", // Reset password for security reasons
-            role: user.role && user.role.length > 0 ? user.role[0].name : ""
-        });
+        console.log('useredit', user);
+
+        setFullName(user.fullName);
+        setPhone(user.phone);
+        setAddress(user.address);
+        setUserName(user.username);
+        setPassword(user.password);
+        setFormData({ role: user.role.map((role) => role._id) });
         setShowModal(true);
     };
+    const handleRowsPerPageChange = (value) => {
+        setRowsPerPage(Number(value));
+        setCurrentPage(1); // Reset về trang 1 khi thay đổi số dòng trên 1 trang
+    };
+    const handlePageChange = (type) => {
+        if (type === 'prev') {
+            setCurrentPage((prev) => prev - 1);
+        } else {
+            setCurrentPage((prev) => prev + 1);
+        }
+    };
+    const handlePageInput = (e) => {
+        setPageInput(e.target.value);
+    };
+    const handleGoToPage = () => {
+        const page = parseInt(pageInput, 10);
+        if (!isNaN(page) && page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        } else {
+            toast.error("Invalid page number!", { autoClose: 2000 });
+            setPageInput(currentPage); // Reset input về trang hiện tại nếu không hợp lệ
+        }
+    };
+
+    useEffect(() => {
+        setPageInput(currentPage); // Đồng bộ input khi thay đổi trang
+
+    }, [currentPage]);
+
 
     const handleModalClose = () => {
         setShowModal(false);
-        setFormData({ username: "", password: "", role: "" });
         setEditData(null);
     };
 
     const handleSave = async (e) => {
         e.preventDefault();
         try {
+
             if (editData) {
                 const response = await updateUser(editData._id, {
-                    username: formData.username,
-                    password: formData.password,
-                    role: formData.role
+                    username: username,
+                    password: password,
+                    fullName: fullName,
+                    phone: phone,
+                    address: address,
+                    role: formData.role, // Gửi danh sách role
                 });
-                if (response.success) {
+                console.log('update', response);
+                if (response.success === true) {
                     setUsers(users.map((user) => (user._id === editData._id ? response.data : user)));
-                    toast.success("User details updated successfully", { autoClose: 2000 });
+                    toast.success(response.data.message, { autoClose: 2000 });
+                    fetchUsers();
+                    handleModalClose();
                 }
-            } else {
-                const response = await signUp(formData);
-                if (response.success) {
-                    setUsers([...users, response.data.user]);
-                    toast.success("User registered successfully");
+                else {
+                    console.log('update', response);
+                    toast.error(response.error.message, { autoClose: 2000 });
                 }
             }
-            setShowModal(false);
-            setFormData({ username: "", password: "", role: "" });
-            setEditData(null);
         } catch (error) {
             toast.error(error.message || "Error saving user", { autoClose: 2000 });
         }
     };
 
-    const handleShowDetails = (user) => {
-        setShowDetails(user);
-    };
-
-    const handleCloseDetails = () => {
-        setShowDetails(null);
-    };
 
     return (
         <div className="pt-16 pb-8 pr-8 mt-2">
             <ToastContainer />
             <div className="flex items-center mb-3 justify-between">
                 <h2 className="font-bold text-3xl font-sans">User Management</h2>
-                <Button variant="dark" onClick={() => setShowModal(true)} className="mb-3">
-                    Add User
-                </Button>
             </div>
             <div className="bg-white font-dm-sans rounded-md shadow-sm p-3">
+                <div className="flex justify-end items-center mb-3">
+                    {/* Rows Per Page Dropdown */}
+                    <DropdownButton
+                        id="dropdownRowsPerPage"
+                        title={`${rowsPerPage} rows`}
+                        onSelect={handleRowsPerPageChange}
+                        variant="outline-secondary"
+                    >
+                        {[5, 10, 25, 50].map((value) => (
+                            <Dropdown.Item eventKey={value} key={value}>
+                                {value} rows
+                            </Dropdown.Item>
+                        ))}
+                    </DropdownButton>
+                </div>
                 <Table className="text-center align-middle" bordered-y="true" hover>
                     <colgroup>
                         <col style={{ width: '5%' }} />
-                        <col style={{ width: '15%' }} />
-                        <col style={{ width: '20%' }} />
                         <col style={{ width: '25%' }} />
+                        <col style={{ width: '25%' }} />
+                        <col style={{ width: '10%' }} />
                         <col style={{ width: '25%' }} />
                     </colgroup>
                     <thead>
@@ -152,12 +219,6 @@ function UserManagement() {
                                             onClick={() => handleEditClick(user)}
                                         >
                                             ✎
-                                        </button>
-                                        <button
-                                            className="hover:text-red-800 text-red-500 font-bold text-xl"
-                                            onClick={() => handleDelete(user._id)}
-                                        >
-                                            🗑
                                         </button>
                                     </td>
                                     <td>
@@ -215,70 +276,37 @@ function UserManagement() {
                         ))}
                     </tbody>
                 </Table>
-              
+                <div className="flex items-center justify-end gap-3">
+                    <Button variant="dark"
+                        disabled={currentPage === 1}
+                        onClick={() => handlePageChange('prev')}>
+                        Previous
+                    </Button>
+
+                    <span>Page </span>
+                    <input
+                        type="number"
+                        value={pageInput}
+                        onChange={handlePageInput}
+                        className="text-center px-1 py-2 text-sm rounded-md border border-gray-500 w-12"
+                        onKeyPress={(e) => e.key === "Enter" && handleGoToPage()}
+                        onBlur={handleGoToPage}
+                    />
+                    <span> of {Math.ceil(totalUsers / rowsPerPage)}</span>
+
+                    <Button variant="dark"
+                        disabled={currentPage === totalPages}
+                        onClick={() => handlePageChange('next')}>
+                        Next
+                    </Button>
+                </div>
+
                 <Offcanvas show={showModal} onHide={handleModalClose} placement="end">
                     <Offcanvas.Header closeButton>
-                        <Offcanvas.Title>{editData ? "Edit User" : "Add User"}</Offcanvas.Title>
+                        <Offcanvas.Title>Edit User</Offcanvas.Title>
                     </Offcanvas.Header>
                     <Offcanvas.Body>
                         <Form onSubmit={handleSave}>
-                            <div className="mb-3">
-                                <label htmlFor="username" className="form-label ">Username <span style={{ color: 'red' }}>*</span></label>
-                                <FormControl
-                                    type="text"
-                                    id="username"
-                                    value={username}
-                                    onChange={(e) => setUserName(e.target.value)}
-                                    placeholder="Enter your username"
-                                    className="shadow-sm"
-                                />
-                            </div>
-
-                            {/* Ô nhập Password */}
-
-                            <div className="mb-3">
-                                <label htmlFor="password" className="form-label ">Password <span style={{ color: 'red' }}>*</span></label>
-                                <InputGroup>
-                                    <FormControl
-                                        type={showPassword ? 'text' : 'password'}
-                                        id="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="Enter your password"
-                                        className="shadow-sm "
-
-                                    />
-                                    <Button
-                                        variant="outline-secondary"
-                                        onClick={() => setShowPassword((prev) => !prev)}
-                                        className="border border-transparent outline-none hover:bg-gray-100 shadow-sm"
-                                    >
-                                        <i className={`bi ${showPassword ? 'bi-eye-slash-fill' : 'bi-eye-fill'} ${showPassword ? '' : ''}`}></i>
-                                    </Button>
-                                </InputGroup>
-                            </div>
-                            <div className="mb-3">
-                                <label htmlFor="cfpassword" className="form-label ">Confirm Password <span style={{ color: 'red' }}>*</span></label>
-                                <InputGroup>
-                                    <FormControl
-                                        type={showCfPassword ? 'text' : 'password'}
-                                        id="password"
-                                        value={cfpassword}
-                                        onChange={(e) => setCfPassword(e.target.value)}
-                                        placeholder="Enter your password again"
-                                        className="shadow-sm"
-                                    />
-                                    <Button
-                                        variant="outline-secondary"
-                                        onClick={() => setShowCfPassword((prev) => !prev)}
-                                        className="border border-transparent outline-none hover:bg-gray-100 shadow-sm"
-                                    >
-                                        <i className={`bi ${showCfPassword ? 'bi-eye-slash-fill' : 'bi-eye-fill'} ${showCfPassword ? '' : ''}`}></i>
-                                    </Button>
-                                </InputGroup>
-                            </div>
-
-
                             <div className="mb-3 mt-3">
                                 <label htmlFor="fullName" className="form-label ">Full Name <span style={{ color: 'red' }}>*</span></label>
                                 <InputGroup>
@@ -315,18 +343,22 @@ function UserManagement() {
                             </div>
                             <Form.Group className="mb-3">
                                 <Form.Label>Role</Form.Label>
-                                <Form.Control
+                                <Form.Select
+                                    multiple
                                     as="select"
-                                    value={formData.role}
-                                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-
+                                    value={Array.isArray(formData.role) ? formData.role : []}
+                                    onChange={(e) => {
+                                        const options = Array.from(e.target.selectedOptions, (option) => option.value);
+                                        setFormData({ ...formData, role: options });
+                                    }}
                                 >
                                     <option value="">Select role</option>
-                                    <option value="Admin">Admin</option>
-                                    <option value="User">User</option>
-                                    <option value="Moderator">Moderator</option>
-                                </Form.Control>
-
+                                    {roles.map((role) => (
+                                        <option key={role._id} value={role._id}>
+                                            {role.name}
+                                        </option>
+                                    ))}
+                                </Form.Select>
                             </Form.Group>
                             <div className="flex justify-between gap-8 p-3">
                                 <Button variant="secondary" onClick={handleModalClose}>

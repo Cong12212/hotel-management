@@ -183,7 +183,7 @@ function RoomStatus() {
                                                     : 'bg-black'
                                             }`}
                                     >
-                                        {room.status}
+                                        {room.status || "N/A"}
                                     </span>
                                 </td>
                             </tr>

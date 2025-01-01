@@ -14,12 +14,9 @@ exports.getAllRoomTypes = async (req, res) => {
 
         const roomTypes = await queryHelper.query
 
-        const total = await RoomType.countDocuments()
-
         res.status(200).json({
             success: true,
             count: roomTypes.length,
-            total: total,
             data: roomTypes
         });
     } catch (error) {
