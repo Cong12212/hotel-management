@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrap
 import { getUncompletedBookings, addInvoice } from "../../service/apiServices";
 
@@ -8,30 +8,29 @@ const RoomCheckout = () => {
     const [foundBills, setFoundBills] = useState([]);
     const [successMessage, setSuccessMessage] = useState("");
 
-    const handleSearch = async () => {
+    // Tải dữ liệu khi trang load
+    useEffect(() => {
+        fetchBookings();
+    }, [roomID]);
+
+    const fetchBookings = async () => {
         setError("");
         setFoundBills([]);
         setSuccessMessage("");
-        /*
-        if (!roomID.trim()) {
-            setError("Please enter the room name");
-            return;
-        }
-        */
         try {
-            // Gọi API để lấy danh sách bookings
             const response = await getUncompletedBookings({ search: roomID });
-    
             if (response.success) {
                 const bookings = response.data.data;
-    
-                // Lọc kết quả để chỉ lấy các phòng khớp với roomID
+
+                // Lọc kết quả để chỉ lấy các phòng khớp với roomID (nếu có)
                 const filteredBookings = bookings.filter((booking) =>
                     booking.bookingDetails.some((detail) =>
-                        detail.roomId.roomName.toLowerCase().includes(roomID.toLowerCase())
+                        detail.roomId.roomName
+                            .toLowerCase()
+                            .includes(roomID.toLowerCase())
                     )
                 );
-    
+
                 if (filteredBookings.length > 0) {
                     setFoundBills(filteredBookings);
                 } else {
@@ -61,7 +60,7 @@ const RoomCheckout = () => {
 
     const handleKeyDown = (e) => {
         if (e.key === "Enter") {
-            handleSearch();
+            fetchBookings();
         }
     };
 
@@ -84,6 +83,7 @@ const RoomCheckout = () => {
                         </label>
                         <input
                             type="text"
+                            placeholder="Enter room name"
                             id="roomID"
                             className="form-control"
                             value={roomID}
@@ -91,9 +91,6 @@ const RoomCheckout = () => {
                             onKeyDown={handleKeyDown}
                         />
                     </div>
-                    <button className="btn btn-dark" onClick={handleSearch}>
-                        Search
-                    </button>
                 </div>
             </div>
             {error && <div className="alert alert-danger">{error}</div>}
