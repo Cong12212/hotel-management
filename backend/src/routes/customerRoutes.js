@@ -16,7 +16,7 @@ router.post('/',authorize(Permission.CREATE_CUSTOMERS),createCustomer);
 router.get('/:id',authorize(Permission.VIEW_CUSTOMERS),getCustomer);
 
 router.get('/',authorize(Permission.VIEW_CUSTOMERS), getAllCustomers);
-router.put('/:id',authorize(Permission.UPDATE_CUSTOMERS), updateCustomer);
+router.patch('/:id',authorize(Permission.UPDATE_CUSTOMERS), updateCustomer);
 router.delete('/:id',authorize(Permission.DELETE_CUSTOMERS), deleteCustomer);
 
 module.exports = router;

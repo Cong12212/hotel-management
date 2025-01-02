@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
 import { Button, Form, FormControl } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
-import { getAllRooms, getAllRoomTypes, getAllCustomerTypes, addBooking, postAddCustomer, getAllCustomer } from '../service/apiServices';
+import { getAllRooms, getAllRoomTypes, getAllCustomerTypes, addBooking, postAddCustomer, getAllCustomer, patchUpdateCustomer } from '../service/apiServices';
 
 const RoomBookingForm = () => {
 
@@ -90,6 +90,7 @@ const RoomBookingForm = () => {
             if (res && res.data && res.data.data) {
                 setListCustomer(res.data.data);
                 setTotalCustomers(res.data.total);
+               
             }
         } catch (error) {
             console.error("Error fetching customers:", error);
@@ -146,44 +147,48 @@ const RoomBookingForm = () => {
         try {
             // Kiểm tra dữ liệu khách hàng trước khi thêm
             const customerIds = [];
-           
+
             for (const customer of customers) {
-
-                const existingCustomer = listCustomer.find(
-                    (c) => c.idNumber === listCustomer.idNumber && c.phone === listCustomer.phone
-                );
-
+                
+                const existingCustomer = listCustomer.find(c => c.idNumber === customer.idNumber.trim());
+                console.log('exist',existingCustomer);
                 let customerId;
-            
+                const customerData = {
+                    fullName: customer.fullName || "Default Name",
+                    idNumber: customer.idNumber || "000000000",
+                    customerTypeId: customer.customerTypeId,
+                    phone: customer.phone,
+                    address: customer.address || "Unknown",
+                };
+                
                 if (existingCustomer) {
                     // Khách hàng đã tồn tại
-                    customerId = existingCustomer._id; // Hoặc dùng field phù hợp
+                    const response = await patchUpdateCustomer(existingCustomer._id, customerData);
+                    console.log('response',response);
+                    if (response.success) {
+                        console.log('Customer updated successfully:', response.data);
+                        customerId = existingCustomer._id;
+                    } else {
+                        throw new Error(response.error?.error || 'Failed to update customer');
+                    }
+
                 } else {
-                    // Thêm mới khách hàng
-                    const customerData = {
-                        fullName: customer.fullName || "Default Name",
-                        idNumber: customer.idNumber || "000000000",
-                        customerTypeId: customer.customerTypeId,
-                        phone: customer.phone,
-                        address: customer.address || "Unknown",
-                    };
-                   
                     const response = await postAddCustomer(customerData);
-                    
+                    console.log(response);
                     if (response && response.data && response.data._id) {
-                 
+
                         customerId = response.data._id;
-                     
+
                     } else {
                         console.error("Failed to add customer:", response);
                     }
                 }
-               
+
                 if (customerId) {
                     customerIds.push(customerId);
                 }
             }
-
+            console.log('customerIds',customerIds);
             // Xử lý thông tin đặt phòng sau khi thêm khách hàng
             const bookingDetails = [
                 {
@@ -199,8 +204,8 @@ const RoomBookingForm = () => {
                 toast.error("Please fill all required fields for booking.", { autoClose: 2000 });
                 return;
             }
-           
-            const payload = {customerIds, bookingDetails };
+            console.log('customerIds',customerIds);
+            const payload = { customerIds, bookingDetails };
 
             // Gọi API thêm đặt phòng
             const bookingResponse = await addBooking(payload);
@@ -314,7 +319,7 @@ const RoomBookingForm = () => {
                     </div>
                     <div>
                         <Form.Group controlId="children">
-                            <Form.Label>Price</Form.Label>
+                            <Form.Label>Price </Form.Label>
                             <FormControl
                                 type="text"
                                 value={`${price.toLocaleString("en-US")} VND`}
@@ -371,7 +376,7 @@ const RoomBookingForm = () => {
                         </div>
                         <div>
                             <Form.Group controlId={`customerIdNumber-${index}`}>
-                                <Form.Label>ID-Number</Form.Label>
+                                <Form.Label>ID-Number <span className="text-red-500">*</span></Form.Label>
                                 <FormControl
                                     type="text"
                                     value={customer.idNumber}
@@ -382,7 +387,7 @@ const RoomBookingForm = () => {
                         </div>
                         <div>
                             <Form.Group controlId={`customerAddress-${index}`}>
-                                <Form.Label>Address</Form.Label>
+                                <Form.Label>Address <span className="text-red-500">*</span></Form.Label>
                                 <FormControl
                                     type="text"
                                     value={customer.address}
@@ -393,7 +398,7 @@ const RoomBookingForm = () => {
                         </div>
                         <div>
                             <Form.Group controlId={`customerAddress-${index}`}>
-                                <Form.Label>Phone</Form.Label>
+                                <Form.Label>Phone <span className="text-red-500">*</span></Form.Label>
                                 <FormControl
                                     type="text"
                                     value={customer.phone}

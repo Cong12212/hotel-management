@@ -27,7 +27,7 @@ const logIn = async (data) => {
 const logOut = async () => {
   try {
     const response = await axios.post("api/users/logout");
-
+    console.log(response);
     return {
       success: true,
       data: response.data,
@@ -56,7 +56,7 @@ const signUp = async (userData) => {
 
 const getAllUsers = async (queryParams) => {
   try {
-    const response = await axios.get("api/users",{
+    const response = await axios.get("api/users", {
       params: queryParams,
     });
     return {
@@ -89,7 +89,7 @@ const getAllRoles = async () => {
 const updateUser = async (id, data) => {
   try {
     const response = await axios.patch(`api/users/${id}`, data);
-
+    console.log('update', response);
     return {
       success: true,
       data: response.data,
@@ -105,7 +105,7 @@ const updateUser = async (id, data) => {
 const deleteUser = async (id) => {
   try {
     const response = await axios.delete(`api/users/${id}`);
- 
+    console.log('del', response);
     return {
       success: true,
       data: response.data,
@@ -218,7 +218,7 @@ const getInvoices = async (queryParams) => {
 // Hàm gọi API lấy tất cả loại khách hàng
 const getAllCustomer = async () => {
   try {
-    const response = await axios.get("api/customer-types");
+    const response = await axios.get("api/customers");
     return {
       success: true,
       data: response.data,
@@ -233,6 +233,22 @@ const getAllCustomer = async () => {
 const postAddCustomer = async (data) => {
   try {
     const response = await axios.post("api/customers", data);
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response ? error.response.data : "Network error",
+    };
+  }
+};
+
+// Hàm gọi API cập nhật thông tin khách hàng
+const patchUpdateCustomer = async (customerId, data) => {
+  try {
+    const response = await axios.patch(`api/customers/${customerId}`, data);
     return {
       success: true,
       data: response.data,
@@ -423,18 +439,14 @@ const addBooking = async (data) => {
 const fetchMonthlyReport = async (month, year) => {
   try {
     const time = `${month}-${year}`; // Tạo format "MM-YYYY"
-    const response = await axios.get(
-      `http://localhost:4000/api/reports/general-monthly?time=${time}`
-    );
+    const response = await axios.get(`/api/reports/general-monthly?time=${time}`);
     return {
       success: true,
       data: response.data.data, // Lấy `data` từ response
     };
   } catch (error) {
-    return {
-      success: false,
-      error: error.response ? error.response.data : "Network error",
-    };
+    console.error("Error fetching room monthly report:", error);
+    throw error;
   }
 };
 
@@ -443,29 +455,23 @@ const fetchRoomTypeMonthlyReport = async (month, year) => {
   try {
     // Tạo đường dẫn với tham số tháng và năm
     const time = `${month}-${year}`;
-    const response = await axios.get(
-      `http://localhost:4000/api/reports/roomtype-monthly?time=${time}`
-    );
+    const response = await axios.get(`/api/reports/roomtype-monthly?time=${time}`);
     return response.data; // Trả về dữ liệu từ API
   } catch (error) {
-    return {
-      success: false,
-      error: error.response.data || "Failed to fetch data",
-    };
+    console.error("Error fetching roomtype monthly report:", error);
+    throw error;
   }
 };
 
 const fetchRoomDensityMonthlyReport = async (month, year) => {
   try {
     const response = await axios.get(
-      `http://localhost:4000/api/reports/room-density-monthly?time=${month}-${year}`
+      `/api/reports/room-density-monthly?time=${month}-${year}`
     );
     return response.data;
   } catch (error) {
-    return {
-      success: false,
-      error: error.response.data || "Failed to fetch data",
-    };
+    console.error("Error fetching room density monthly report:", error);
+    throw error;
   }
 };
 
@@ -485,6 +491,7 @@ export {
   getInvoices,
   getAllCustomer,
   postAddCustomer,
+  patchUpdateCustomer,
   getAllCustomerTypes,
   updateCustomerType,
   createCustomerType,
@@ -498,6 +505,5 @@ export {
   addInvoice,
   fetchMonthlyReport,
   fetchRoomTypeMonthlyReport,
-  fetchRoomDensityMonthlyReport,
-  
+  fetchRoomDensityMonthlyReport
 };

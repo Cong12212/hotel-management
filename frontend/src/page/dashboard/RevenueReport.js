@@ -20,12 +20,8 @@ const MonthlyRevenueReport = () => {
             if (response.success && response.data) {
                 setData(response.data);
             } 
-            else {
-                setError(response.error.error || "No data available.");
-                setData(null);
-            }
         } catch (err) {
-            setError(err.message || "Network error");
+            setError(err.response.data.error || "Network error");
             setData(null);
         } finally {
             setLoading(false);

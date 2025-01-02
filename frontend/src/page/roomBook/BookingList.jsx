@@ -44,10 +44,12 @@ const BookingList = () => {
                 const data = res.data.data;
         
                 const combinedData = data.map((booking, index) => ({
-                    id: booking._id, // Sequential ID
+                    id: booking._id,
                     index: index + 1,
                     status: booking.status,
-                    customers: booking.customerIds.map(c => c.fullName).join('\n'),
+                    customers: booking.customerIds && booking.customerIds.length > 0
+                        ? booking.customerIds.map(c => c.fullName).join('\n')
+                        : null,
                     bookingDetails: booking.bookingDetails,
                     employee: booking.userId?.fullName || "N/A",
                     date: new Date(booking.createdAt).toLocaleString('vi-VN', { timeZone: 'UTC' }),

@@ -21,11 +21,8 @@ const RoomTypeMonthly = () => {
             if (response.success && response.data && Array.isArray(response.data.report)) {
                 setData(response.data.report); // Lấy dữ liệu từ API
             } 
-            else {
-                setError(response.error.error || "Invalid response structure");
-            }
         } catch (err) {
-            setError(err.message || "Network error");
+            setError(err.response.data.error  || "Network error");
             setData(null);
         } finally {
             setLoading(false);
