@@ -241,7 +241,6 @@ exports.getAvailableRooms = async (req, res) => {
       });
     }
 
-    // Find rooms not booked in the date range
     const bookedRoomIds = await BookingDetail.distinct('roomId', {
       $or: [
         {

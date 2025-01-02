@@ -475,6 +475,15 @@ const fetchRoomDensityMonthlyReport = async (month, year) => {
   }
 };
 
+const getUserRole = async (userId) => {
+  try {
+    const response = await axios.get(`/api/users/${userId}/role`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export {
   logIn,
   logOut,
@@ -505,5 +514,6 @@ export {
   addInvoice,
   fetchMonthlyReport,
   fetchRoomTypeMonthlyReport,
-  fetchRoomDensityMonthlyReport
+  fetchRoomDensityMonthlyReport,
+  getUserRole
 };

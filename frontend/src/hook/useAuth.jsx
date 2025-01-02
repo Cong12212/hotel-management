@@ -1,15 +1,56 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
-function AuthProvider({ children }) {
+const ROLES = {
+    ADMIN: 'admin',
+    MANAGER: 'manager',
+    RECEPTIONIST: 'receptionist',
+    USER: 'user'
+};
+
+// Protected Route Component
+const ProtectedRoute = ({ children, allowedRoles }) => {
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!user) {
+            navigate('/', { replace: true });
+        } else if (allowedRoles && !allowedRoles.includes(user.role)) {
+            navigate(user.role === 'user' ? '/user-dashboard' : '/dashboard', { replace: true });
+        }
+    }, [user, allowedRoles, navigate]);
+
+    return children;
+};
+
+// Custom hook để dễ dàng sử dụng context
+const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
+};
+
+const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem('user');
-        return savedUser ? JSON.parse(savedUser) : null;
+        console.log("Initial user from localStorage:", savedUser);
+        if (savedUser) {
+            const parsed = JSON.parse(savedUser);
+            return {
+                ...parsed,
+                role: parsed.role || 'user'
+            };
+        }
+        return null;
     });
 
     useEffect(() => {
-        // Đồng bộ user state với localStorage mỗi khi user thay đổi
+        console.log("User state changed:", user);
         if (user) {
             localStorage.setItem('user', JSON.stringify(user));
         } else {
@@ -17,37 +58,36 @@ function AuthProvider({ children }) {
         }
     }, [user]);
 
-    const getUser = () => {
-        return user ? user.user : null;
-    };
-
-    const userLogin = (newUser) => {
-        setUser(newUser);
+    const userLogin = (userData) => {
+        console.log("Setting user in context:", userData);
+        setUser(userData);
     };
 
     const userLogout = () => {
         setUser(null);
+        localStorage.removeItem('user');
     };
 
-    const getToken = () => {
-        return user ? user.token : null;
+    const isStaff = () => {
+        return user?.role === ROLES.ADMIN ||
+            user?.role === ROLES.MANAGER ||
+            user?.role === ROLES.RECEPTIONIST;
+    };
+
+    const hasPermission = (allowedRoles) => {
+        return allowedRoles.includes(user?.role);
     };
 
     const contextValue = {
         user,
-        getUser,
-        getToken,
         userLogin,
         userLogout,
+        isStaff,
+        hasPermission,
+        ROLES
     };
 
     return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
-}
+};
 
-export default AuthContext;
-
-export function useAuth() {
-    return useContext(AuthContext);
-}
-
-export { AuthProvider };
+export { AuthProvider, ROLES, ProtectedRoute, useAuth };

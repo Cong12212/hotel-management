@@ -5,7 +5,7 @@ import { Button, InputGroup, FormControl } from 'react-bootstrap';
 import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import {signUp} from '../../service/apiServices';
+import { signUp } from '../../service/apiServices';
 import { useAuth } from '../../hook/useAuth';
 
 const SignUp = () => {
@@ -23,8 +23,7 @@ const SignUp = () => {
 
     const handleSignUp = async (event) => {
         event.preventDefault();
-    
-        // Dữ liệu đầu vào
+
         const userData = {
             username,
             password,
@@ -32,9 +31,7 @@ const SignUp = () => {
             phone,
             address,
         };
-    
-        // Kiểm tra trước khi gửi
-     
+
         if (password !== cfpassword) {
             toast.error('Password does not match confirm password!');
             return;
@@ -42,21 +39,21 @@ const SignUp = () => {
         try {
             const result = await signUp(userData);
             if (result.data) {
-                toast.success(result.data.message,{ autoClose: 2000 });
+                toast.success(result.data.message, { autoClose: 2000 });
                 setTimeout(() => {
-                    navigate('/'); // Redirect to dashboard or another page after a delay
-                  }, 1500);
+                    navigate('/');
+                }, 1500);
             }
             else {
-                toast.error(result.error.message,{ autoClose: 2000 });
+                toast.error(result.error.message, { autoClose: 2000 });
             }
-          
-            
+
+
         } catch (error) {
             toast.error(error.message || 'Signup failed!');
         }
     };
-    
+
 
     return (
         <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center font-dm-sans font-medium bg-gradient-to-r from-violet-300 to-pink-300 ">
@@ -91,7 +88,7 @@ const SignUp = () => {
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Enter your password"
                                     className="shadow-sm "
-                                  
+
                                 />
                                 <Button
                                     variant="outline-secondary"
