@@ -17,20 +17,16 @@ const RoomTypeMonthly = () => {
 
         try {
             const response = await fetchRoomTypeMonthlyReport(month, year);
-         
+
             if (response.success && response.data && Array.isArray(response.data.report)) {
                 setData(response.data.report); // Lấy dữ liệu từ API
-            } 
+            }
         } catch (err) {
-<<<<<<< HEAD:frontend/src/page/dashboard/RoomTypeMonthly.jsx
             if (err.response && err.response.status === 403) {
                 setError("You do not have permission to access this resource");
             } else {
                 setError(err.message || "Network error");
             }
-=======
-            setError(err.response.data.error  || "Network error");
->>>>>>> 1039ec24d5fedf1d4ce45cf164683cfc87731b68:frontend/src/page/dashboard/RoomTypeMonthly.js
             setData(null);
         } finally {
             setLoading(false);

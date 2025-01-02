@@ -22,17 +22,8 @@ const Login = () => {
       return;
     }
 
-<<<<<<< HEAD
     try {
       const result = await logIn({ username, password });
-=======
-    const result = await logIn({ username, password });
-
-    localStorage.setItem('user', JSON.stringify(result.data));
-    if (result.data) {
-      toast.success('Login successful!', { autoClose: 2000 });
-      userLogin(result.data); // Update user state
->>>>>>> 1039ec24d5fedf1d4ce45cf164683cfc87731b68
 
       if (result && result.data) {
         const userWithRole = {

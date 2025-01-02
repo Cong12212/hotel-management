@@ -19,17 +19,11 @@ function RoomConfigure() {
   const [editingRoomType, setEditingRoomType] = useState(null);
   const [errors, setErrors] = useState({});
 
-<<<<<<< HEAD
-  const handlePagination = useCallback((total) => {
-    setTotalRooms(total);
-    setTotalPages(Math.ceil(total / rowsPerPage));
-=======
 
   const handlePagination = useCallback((totalRooms) => {
     setTotalRooms(totalRooms);
     setTotalPages(Math.ceil(totalRooms / rowsPerPage));
-   
->>>>>>> 1039ec24d5fedf1d4ce45cf164683cfc87731b68
+
   }, [rowsPerPage]);
 
   const fetchListRoomTypes = useCallback(async () => {
@@ -43,10 +37,6 @@ function RoomConfigure() {
       const res = await getAllRoomTypes(queryParams);
       if (res && res.data && res.data.data) {
         setRoomTypes(res.data.data);
-<<<<<<< HEAD
-=======
-   
->>>>>>> 1039ec24d5fedf1d4ce45cf164683cfc87731b68
         handlePagination(res.data.total);
       } else {
         setErrors({ err: res.error.error });
