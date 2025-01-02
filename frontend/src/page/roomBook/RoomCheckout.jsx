@@ -7,21 +7,22 @@ const RoomCheckout = () => {
     const [error, setError] = useState("");
     const [foundBills, setFoundBills] = useState([]);
     const [successMessage, setSuccessMessage] = useState("");
+    const [totalBookings, setTotalBookings] = useState(0);
 
     // Tải dữ liệu khi trang load
     useEffect(() => {
         fetchBookings();
-    }, [roomID]);
+    }, [roomID, totalBookings]);
 
     const fetchBookings = async () => {
         setError("");
         setFoundBills([]);
         setSuccessMessage("");
         try {
-            const response = await getUncompletedBookings({ search: roomID });
+            const response = await getUncompletedBookings({ search: roomID, limit: totalBookings });
             if (response.success) {
                 const bookings = response.data.data;
-
+                setTotalBookings(response.data.total);
                 // Lọc kết quả để chỉ lấy các phòng khớp với roomID (nếu có)
                 const filteredBookings = bookings.filter((booking) =>
                     booking.bookingDetails.some((detail) =>
@@ -30,11 +31,13 @@ const RoomCheckout = () => {
                             .includes(roomID.toLowerCase())
                     )
                 );
-
+                console.log(filteredBookings);
                 if (filteredBookings.length > 0) {
                     setFoundBills(filteredBookings);
-                } else {
-                    setError("Room in booking not found.");
+                    console.log(foundBills);
+                }
+                if (roomID && filteredBookings.length === 0) {
+                    setError("No bookings found for this room.");
                 }
             } else {
                 setError("Failed to fetch bookings. Please try again later.");
@@ -83,8 +86,8 @@ const RoomCheckout = () => {
                         </label>
                         <input
                             type="text"
-                            placeholder="Enter room name"
                             id="roomID"
+                            placeholder="Enter room name"
                             className="form-control"
                             value={roomID}
                             onChange={(e) => setRoomID(e.target.value)}

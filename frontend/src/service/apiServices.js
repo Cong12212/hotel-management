@@ -390,9 +390,11 @@ const delDeleteRoomType = async (id) => {
 };
 
 // Hàm gọi API lấy danh sách đặt phòng chưa hoàn thành
-const getUncompletedBookings = async () => {
+const getUncompletedBookings = async (queryParams) => {
   try {
-    const response = await axios.get("api/bookings/uncompleted");
+    const response = await axios.get("api/bookings/uncompleted",{
+      params: queryParams,
+    });
     return {
       success: true,
       data: response.data,
