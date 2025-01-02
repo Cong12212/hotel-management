@@ -2,10 +2,12 @@ import NavBarItem from '../feature/NavBar/NavBarItem';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useAuth } from '../hook/useAuth';
+
 
 const NavBar = ({ isOpen }) => {
     const navigate = useNavigate();
-
+    const {user } = useAuth();
     const [navState, setNavState] = useState([
         {
             title: 'Dashboard',
@@ -66,7 +68,14 @@ const NavBar = ({ isOpen }) => {
                     ref: '/customertypes'
                 }
             ]
-        }
+        },
+        {
+            title: 'Users',
+            icon: '/user.svg',
+            redirect: '/users',
+            subItems: []
+        }  
+
     ]);
 
     const [selectedItem, setSelectedItem] = useState(null);
@@ -97,9 +106,10 @@ const NavBar = ({ isOpen }) => {
                     {isOpen && (
                         <div className="flex flex-col">
                             <div className="text-lg text-transparent bg-clip-text bg-gradient-to-r from-violet-800 to-pink-800">
-                                Anny Glover
+                            {user && user.userInfo ? user.userInfo.fullName : 'Guest'}
                             </div>
-                            <span className="text-base text-gray-500"> Super Admin</span>
+                            
+                            <span className="text-base text-gray-500"> {user && user.userInfo ? user.userInfo.username : 'Guest'}</span>
                         </div>
                     )}
                 </div>

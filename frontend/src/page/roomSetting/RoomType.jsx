@@ -7,13 +7,13 @@ import { getAllRoomTypes, postAddRoomType, patchUpdateRoomType, delDeleteRoomTyp
 
 function RoomConfigure() {
   const [roomtypes, setRoomTypes] = useState([]);
-  const [totalRooms, setTotalRooms] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [totalRooms, setTotalRooms] = useState(NaN);
+  const [totalPages, setTotalPages] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [sortField, setSortField] = useState(null); //
-  const [pageInput, setPageInput] = useState(currentPage); // Input để người dùng nhập
+  const [sortField, setSortField] = useState(null);
+  const [pageInput, setPageInput] = useState(currentPage);
   const [showModal, setShowModal] = useState(false);
   const [newRoomType, setNewRoomType] = useState({ name: '', maxOccupancy: '', surchargeRate: '', price: '' });
   const [editingRoomType, setEditingRoomType] = useState(null);
@@ -23,8 +23,8 @@ function RoomConfigure() {
   const handlePagination = useCallback((totalRooms) => {
     setTotalRooms(totalRooms);
     setTotalPages(Math.ceil(totalRooms / rowsPerPage));
-  }, [rowsPerPage]);
 
+  }, [rowsPerPage]);
 
   const fetchListRoomTypes = useCallback(async () => {
     try {
@@ -37,8 +37,9 @@ function RoomConfigure() {
       const res = await getAllRoomTypes(queryParams);
       if (res && res.data && res.data.data) {
         setRoomTypes(res.data.data);
-        
         handlePagination(res.data.total);
+      } else {
+        setErrors({ err: res.error.error });
       }
     } catch (error) {
       console.error("Error fetching roomtypes:", error);
@@ -47,8 +48,11 @@ function RoomConfigure() {
 
   useEffect(() => {
     fetchListRoomTypes();
-
   }, [fetchListRoomTypes]);
+
+  useEffect(() => {
+    setPageInput(currentPage);
+  }, [currentPage]);
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
@@ -57,7 +61,7 @@ function RoomConfigure() {
 
   const handleRowsPerPageChange = (value) => {
     setRowsPerPage(Number(value));
-    setCurrentPage(1); // Reset về trang 1 khi thay đổi số dòng trên 1 trang
+    setCurrentPage(1);
   };
 
   const handlePageChange = (type) => {
@@ -82,14 +86,9 @@ function RoomConfigure() {
       setCurrentPage(page);
     } else {
       toast.error("Invalid page number!", { autoClose: 2000 });
-      setPageInput(currentPage); // Reset input về trang hiện tại nếu không hợp lệ
+      setPageInput(currentPage);
     }
   };
-
-  useEffect(() => {
-    setPageInput(currentPage); // Đồng bộ input khi thay đổi trang
-  }, [currentPage]);
-
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -99,53 +98,57 @@ function RoomConfigure() {
     }));
   };
 
-
   const handleAddRoomType = async () => {
     try {
       const requiredFields = ['name', 'maxOccupancy', 'surchargeRate', 'price'];
       const fieldsToCompare = ['name', 'maxOccupancy', 'surchargeRate', 'price'];
-
       const fieldNamesMap = {
         name: 'Type Name',
         maxOccupancy: 'Max Occupancy',
         surchargeRate: 'Surcharge Rate',
         price: 'Price',
       };
+
       const emptyFields = requiredFields.filter((field) => {
         const fieldValue = newRoomType[field];
         return fieldValue == null || (typeof fieldValue === 'string' && fieldValue.trim() === '');
-    });
+      });
+
       if (emptyFields.length > 0) {
         const readableFieldNames = emptyFields.map((field) => fieldNamesMap[field]);
         toast.error(`The following fields are required: ${readableFieldNames.join(', ')}`, { autoClose: 2000 });
+        return;
       }
-      let isRoomChanged = false;
 
+      let isRoomChanged = false;
       let res;
+
       if (editingRoomType) {
         isRoomChanged = fieldsToCompare.some(
           (field) => newRoomType[field] !== editingRoomType[field]
-        ) 
+        );
         if (!isRoomChanged) {
           toast.info('No changes detected.', { autoClose: 2000 });
-        } else {
-          res = await patchUpdateRoomType( editingRoomType._id, newRoomType);
+          return;
         }
+        res = await patchUpdateRoomType(editingRoomType._id, newRoomType);
       } else {
         res = await postAddRoomType(newRoomType);
       }
+
       if (res.error && res.error.error.toLowerCase().includes('already exists')) {
         toast.error('Type name already exists. Please use a different type name.', { autoClose: 2000 });
+        return;
       }
+
       if (res.success) {
-        toast.success(`${editingRoomType ? 'RoomType updated' : 'RoomType added'} successfully! `, { autoClose: 2000 });
+        toast.success(`${editingRoomType ? 'RoomType updated' : 'RoomType added'} successfully!`, { autoClose: 2000 });
         fetchListRoomTypes();
         handleModalClose();
       } else {
-        toast.error(res.error || 'Operation failed', { autoClose: 2000 });
+        toast.error(res.error.error || 'Operation failed', { autoClose: 2000 });
       }
     } catch (error) {
-      
       toast.error('Error while saving room type', { autoClose: 2000 });
       console.error(error);
     }
@@ -169,11 +172,10 @@ function RoomConfigure() {
         toast.success('Room type deleted successfully!', { autoClose: 2000 });
         fetchListRoomTypes();
       } else {
-        toast.error(res.error || 'Failed to delete room' , { autoClose: 2000 });
+        toast.error(res.error.error || 'Failed to delete room', { autoClose: 2000 });
       }
     }
   };
-
 
   const handleModalClose = () => {
     setShowModal(false);
@@ -183,7 +185,6 @@ function RoomConfigure() {
   };
 
   const handleModalShow = () => setShowModal(true);
-
   return (
     <div className="pt-16 pb-8 pr-8 mt-2">
       <ToastContainer />
@@ -196,14 +197,6 @@ function RoomConfigure() {
           <div className="d-flex">
             {/* Search Input */}
 
-            <InputGroup>
-              <input
-                placeholder="Search"
-                className="outline-none focus:outline-dashed focus:outline-2 focus:outline-violet-500 border border-gray-300 rounded-md p-2"
-                value={search}
-                onChange={handleSearch}
-              />
-            </InputGroup>
           </div>
           <div className="flex ">
             {/* Rows Per Page Dropdown */}
@@ -315,6 +308,7 @@ function RoomConfigure() {
             </Button>
           </div>
         </div>
+
         {/* Offcanvas for Edit */}
         <Offcanvas show={showModal} onHide={handleModalClose} placement="end">
           <Offcanvas.Header closeButton>
@@ -362,7 +356,7 @@ function RoomConfigure() {
                 </Form.Label>
                 <Form.Control
                   type="number"
-                  placeholder="Entet surcharge rate"
+                  placeholder="Enter surcharge rate"
                   name="surchargeRate"
                   value={newRoomType.surchargeRate}
                   onChange={handleInputChange}
@@ -407,8 +401,10 @@ function RoomConfigure() {
           </div>
         </Offcanvas>
       </div>
+      <div className="mt-4">
+        {errors.err && <div className="alert alert-danger">{errors.err}</div>}
+      </div>
     </div>
   );
 }
-
 export default RoomConfigure;

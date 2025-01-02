@@ -17,32 +17,36 @@ const Login = () => {
 
   const handleLogin = async (event) => {
     event.preventDefault();
-    if (!username.trim()) {
-      toast.error("Username cannot be empty!", { autoClose: 2000 });
-      return;
-    }
-    if (!password.trim()) {
-      toast.error("Password cannot be empty!", { autoClose: 2000 });
+    if (!username.trim() || !password.trim()) {
+      toast.error("Username and password cannot be empty!", { autoClose: 2000 });
       return;
     }
 
-    const result = await logIn({ username, password });
-    localStorage.setItem('user', JSON.stringify(result.data));
-    if (result.data) {
-      toast.success('Login successful!', { autoClose: 2000 });
-      userLogin(result.data); // Update user state
-      setTimeout(() => {
-        navigate('/dashboard'); // Redirect to dashboard or another page after a delay
-      }, 1500); // Delay for 2 seconds (adjust if needed)
-    } else {
-      if (result.err.status === 401) {
-        toast.error('Username or password is incorrect!', { autoClose: 2000 });
-      } else {
-        toast.error(result.error || 'Login failed!', { autoClose: 2000 });
+    try {
+      const result = await logIn({ username, password });
+
+      if (result && result.data) {
+        const userWithRole = {
+          ...result.data,
+          role: username === 'admin1' || username === 'admin2' ? 'admin' : 'user'
+        };
+
+        localStorage.setItem('user', JSON.stringify(userWithRole));
+        userLogin(userWithRole);
+
+        toast.success('Login successful!', { autoClose: 2000 });
+
+        if (userWithRole.role === 'admin') {
+          navigate('/dashboard');
+        } else {
+          navigate('/user-dashboard');
+        }
       }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error(error.response?.data?.message || 'Login failed!', { autoClose: 2000 });
     }
   };
-
 
   return (
     <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center font-dm-sans font-medium bg-gradient-to-r from-violet-300 to-pink-300 ">
@@ -52,7 +56,6 @@ const Login = () => {
           Welcome to HotelAir
         </h3>
         <form onSubmit={handleLogin}>
-          {/* Ô nhập Username */}
           <div className="mb-3">
             <label htmlFor="username" className="form-label text-transparent bg-clip-text bg-gradient-to-b from-violet-700 to-pink-700">Username <span style={{ color: 'red' }}>*</span></label>
             <FormControl
@@ -65,7 +68,6 @@ const Login = () => {
             />
           </div>
 
-          {/* Ô nhập Password */}
           <div className="mb-3">
             <label htmlFor="password" className="form-label text-transparent bg-clip-text bg-gradient-to-b from-violet-700 to-pink-700">Password <span style={{ color: 'red' }}>*</span></label>
             <InputGroup>
@@ -85,24 +87,15 @@ const Login = () => {
                 <i className={`bi ${showPassword ? 'bi-eye-slash-fill' : 'bi-eye-fill'} ${showPassword ? 'text-transparent bg-clip-text bg-gradient-to-b from-violet-700 to-pink-700' : 'text-transparent bg-clip-text bg-gradient-to-b from-violet-700 to-pink-700'}`}></i>
               </Button>
             </InputGroup>
-            <a
-              href="/forgot-password"
-              className="d-block mt-2 text-end text-decoration-none small text-transparent bg-clip-text bg-gradient-to-b from-violet-700 to-pink-700"
-            >
-              Forgot Password?
-            </a>
-            {/* Checkbox Remember Me */}
           </div>
-          {/* Nút SIGN IN */}
           <button
             type="submit"
-            className="w-100 py-2 text-white font-semibold bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-700 hover:to-pink-700 rounded-md"
+            className="w-100 py-2 text-white font-semibold bg-gradient-to-r from-violet-500 to-pink-500 hover:from-violet-700 hover:to-pink-700 rounded-md mt-4"
           >
             SIGN IN
           </button>
         </form>
 
-        {/* Footer */}
         <div className="text-center mt-3 small">
           <span>New to HotelAir? </span>
           <a href="/signup" className="text-decoration-none text-transparent bg-clip-text bg-gradient-to-b from-violet-700 to-pink-700">
@@ -116,5 +109,4 @@ const Login = () => {
     </div>
   );
 };
-
 export default Login;

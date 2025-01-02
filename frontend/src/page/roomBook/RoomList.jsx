@@ -8,15 +8,16 @@ import { getAllRooms, postAddRoom, patchUpdateRoom, delDeleteRoom, getAllRoomTyp
 function RoomList() {
     const [rooms, setRooms] = useState([]);
     const [roomtypes, setRoomTypes] = useState([]);
-    const [totalRooms, setTotalRooms] = useState(0);
-    const [totalPages, setTotalPages] = useState(0);
+    const [totalRooms, setTotalRooms] = useState(NaN);
+    const [totalRoomTypes, setTotalRoomTypes] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState('');
     const [sortField, setSortField] = useState(null); //
     const [pageInput, setPageInput] = useState(currentPage); // Input để người dùng nhập
     const [showModal, setShowModal] = useState(false);
-    const [newRoom, setNewRoom] = useState({ roomName: '', roomTypeId: '', status: '', notes: '' });
+    const [newRoom, setNewRoom] = useState({ roomName: '', roomTypeId: '', status: "available", notes: '' });
     const [editingRoom, setEditingRoom] = useState(null);
     const [errors, setErrors] = useState({});
 
@@ -40,7 +41,13 @@ function RoomList() {
                 handlePagination(res.data.total);
 
             }
+            else {
+
+                setErrors({ err: res.error.error });
+                return;
+            }
         } catch (error) {
+
             console.error("Error fetching rooms:", error);
         }
 
@@ -49,22 +56,20 @@ function RoomList() {
     const fetchListRoomTypes = useCallback(async () => {
         try {
             const queryParams = {
-                search: search.trim(),
-                sort: sortField,
-                limit: rowsPerPage,
-                page: currentPage,
+                limit: totalRoomTypes,
+                page: 1,
 
             };
             const res = await getAllRoomTypes(queryParams);
             if (res && res.data && res.data.data) {
                 setRoomTypes(res.data.data);
-                handlePagination(res.data.count);
+                setTotalRoomTypes(res.data.count);
 
             }
         } catch (error) {
             console.error("Error fetching roomtypes:", error);
         }
-    }, [search, sortField, rowsPerPage, currentPage, handlePagination]);
+    }, [totalRoomTypes]);
 
 
     useEffect(() => {
@@ -140,35 +145,21 @@ function RoomList() {
             if (emptyFields.length > 0) {
                 const readableFieldNames = emptyFields.map((field) => fieldNamesMap[field]);
                 toast.error(`The following fields are required: ${readableFieldNames.join(', ')}`, { autoClose: 2000 });
+                return;
             }
             let res;
             if (editingRoom) {
-                isRoomChanged = fieldsToCompare.some(
-                    (field) => newRoom[field] !== editingRoom[field]
-                ) || newRoom.roomTypeId !== editingRoom.roomTypeId._id;
-                if (!isRoomChanged) {
-                    toast.info('No changes detected.', { autoClose: 2000 });
-
-                } else {
-                    res = await patchUpdateRoom({ ...newRoom, id: editingRoom._id });
-                }
+                setRooms(
+                    rooms.map((room) =>
+                        room.id === editingRoom.id ? { ...editingRoom, ...newRoom, price: Number(newRoom.price) } : room
+                    )
+                );
+                toast.success('Room updated successfully', { autoClose: 1000 });
             } else {
-                res = await postAddRoom(newRoom);
-                if (res.error && res.error.error.toLowerCase().includes('already exists')) {
-                    toast.error('Room already exists. Please use a different name.', { autoClose: 2000 });
-                }
+                toast.error(res.error.error || 'Operation failed', { autoClose: 2000 });
             }
-            if (res.success) {
-                toast.success(`${editingRoom ? 'Room updated' : 'Room added'} successfully!`, { autoClose: 2000 });
-                fetchListRoom();
-                handleModalClose();
-
-            } else {
-                toast.error(res.error || 'Operation failed', { autoClose: 2000 });
-            }
-        } catch (error) {
+        } catch (err) {
             toast.error('Error while saving room', { autoClose: 2000 });
-            console.error(error);
         }
     };
 
@@ -177,7 +168,7 @@ function RoomList() {
         setNewRoom({
             roomName: room.roomName,
             roomTypeId: room.roomTypeId,
-            status: room.roomTypeId,
+            status: room.status,
             notes: room.notes || '',
         });
         setShowModal(true);
@@ -190,7 +181,7 @@ function RoomList() {
                 toast.success('Room deleted successfully!');
                 fetchListRoom();
             } else {
-                toast.error(res.error || 'Failed to delete room');
+                toast.error(res.error.error || 'Failed to delete room');
             }
         }
     };
@@ -206,7 +197,7 @@ function RoomList() {
     const handleModalShow = () => setShowModal(true);
 
     // Other unchanged functions: handleSearch, handleSort, etc.
-   
+
     return (
         <div className="pt-16 pb-8 pr-8 mt-2 ">
             <ToastContainer />
@@ -241,7 +232,7 @@ function RoomList() {
                         </DropdownButton> */}
                         <InputGroup>
                             <input
-                                placeholder= "Search" //{/*`Enter ${searchField ? (searchField === 'roomName' ? 'Room Name' : 'Room Type') : ''}`*/}
+                                placeholder="Search"
                                 className="outline-none focus:outline-dashed focus:outline-2 focus:outline-violet-500 border border-gray-300 rounded-md p-2"
                                 value={search}
                                 onChange={handleSearch}
@@ -297,18 +288,6 @@ function RoomList() {
                             <th>Room Type</th>
                             <th>
                                 Room Price
-                                <button
-                                    onClick={() => handleSort('roomTypeId.price', 'asc')}
-                                    className="ml-1 text-l"
-                                >
-                                    ▲
-                                </button>
-                                <button
-                                    onClick={() => handleSort('roomTypeId.price', 'desc')}
-                                    className=" text-l"
-                                >
-                                    ▼
-                                </button>
                             </th>
                             <th>Note</th>
                             <th>Actions</th>
@@ -319,8 +298,8 @@ function RoomList() {
                             <tr key={room._id}>
                                 <td >{index + 1}</td>
                                 <td >{room.roomName}</td>
-                                <td >{room.roomTypeId.name}</td>
-                                <td >{room.roomTypeId.price}</td>
+                                <td>{room.roomTypeId ? room.roomTypeId.name : 'N/A'}</td>
+                                <td>{room.roomTypeId ? room.roomTypeId.price : 'N/A'}</td>
                                 <td >{room.notes}</td>
                                 <td className="flex justify-center gap-2 p-3">
                                     <button className="hover:text-blue-800 text-blue-500 text-xl" onClick={() => handleEditClick(room)}>✎</button>
@@ -354,6 +333,11 @@ function RoomList() {
                         Next
                     </Button>
                 </div>
+
+
+            </div>
+            <div className="mt-4">
+                {errors.err && <div className="alert alert-danger">{errors.err}</div>}
             </div>
             {/* Modal for adding room */}
             <Offcanvas show={showModal} onHide={handleModalClose} placement="end">
@@ -408,7 +392,6 @@ function RoomList() {
                                 Status <span style={{ color: 'red' }}>*</span>
                             </Form.Label>
                             <Form.Select
-                                placeholder="Select room status"
                                 name="status"
                                 value={newRoom.status}
                                 onChange={handleInputChange}
@@ -416,17 +399,10 @@ function RoomList() {
                                 className="mb-3"
                             >
                                 <option value="">Select room status</option>
-                                <>
-                                    <option>
-                                        available
-                                    </option>
-                                    <option>
-                                        occupied
-                                    </option>
-                                    <option>
-                                        maintenance
-                                    </option>
-                                </>
+                                <option value="available">Available</option>
+                                <option value="occupied">Occupied</option>
+                                <option value="maintenance">Maintenance</option>
+
                             </Form.Select>
                             <Form.Control.Feedback type="invalid">
                                 {errors.status}
@@ -462,6 +438,7 @@ function RoomList() {
                 </div>
             </Offcanvas>
         </div>
+
     );
 }
 

@@ -8,10 +8,12 @@ const logIn = async (data) => {
     .then((response) => {
       const token = response.data.data.token;
       const user = jwtDecode(token);
+      const userInfo = response.data.data.user;
       return {
         data: {
           user,
           token,
+          userInfo,
         },
       };
     })
@@ -21,6 +23,99 @@ const logIn = async (data) => {
         err,
       };
     });
+};
+const logOut = async () => {
+  try {
+    const response = await axios.post("api/users/logout");
+    console.log(response);
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response ? error.response.data : "Network error",
+    };
+  }
+};
+const signUp = async (userData) => {
+  try {
+    const response = await axios.post("api/users/register", userData);
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response ? error.response.data : "Network error",
+    };
+  }
+};
+
+const getAllUsers = async (queryParams) => {
+  try {
+    const response = await axios.get("api/users", {
+      params: queryParams,
+    });
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response ? error.response.data : "Network error",
+    };
+  }
+};
+
+const getAllRoles = async () => {
+  try {
+    const response = await axios.get("api/roles");
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response ? error.response.data : "Network error",
+    };
+  }
+};
+
+const updateUser = async (id, data) => {
+  try {
+    const response = await axios.patch(`api/users/${id}`, data);
+    console.log('update', response);
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response ? error.response.data : "Network error",
+    };
+  }
+};
+
+const deleteUser = async (id) => {
+  try {
+    const response = await axios.delete(`api/users/${id}`);
+    console.log('del', response);
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response ? error.response.data : "Network error",
+    };
+  }
 };
 
 // Hàm gọi API lấy tất cả phòng
@@ -44,7 +139,6 @@ const getAllRooms = async (queryParams) => {
 const postAddRoom = async (data) => {
   try {
     const response = await axios.post("api/rooms", data);
-    console.log(response.data);
     return {
       success: true,
       data: response.data,
@@ -124,7 +218,7 @@ const getInvoices = async (queryParams) => {
 // Hàm gọi API lấy tất cả loại khách hàng
 const getAllCustomer = async () => {
   try {
-    const response = await axios.get("api/customer-types");
+    const response = await axios.get("api/customers");
     return {
       success: true,
       data: response.data,
@@ -135,11 +229,10 @@ const getAllCustomer = async () => {
       error: error.response ? error.response.data : "Network error",
     };
   }
-}
+};
 const postAddCustomer = async (data) => {
   try {
     const response = await axios.post("api/customers", data);
-    console.log(response.data);
     return {
       success: true,
       data: response.data,
@@ -150,7 +243,23 @@ const postAddCustomer = async (data) => {
       error: error.response ? error.response.data : "Network error",
     };
   }
-}
+};
+
+// Hàm gọi API cập nhật thông tin khách hàng
+const patchUpdateCustomer = async (customerId, data) => {
+  try {
+    const response = await axios.patch(`api/customers/${customerId}`, data);
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response ? error.response.data : "Network error",
+    };
+  }
+};
 
 const getAllCustomerTypes = async () => {
   try {
@@ -329,53 +438,60 @@ const addBooking = async (data) => {
 
 const fetchMonthlyReport = async (month, year) => {
   try {
-      const time = `${month}-${year}`; // Tạo format "MM-YYYY"
-      const response = await axios.get(`http://localhost:4000/api/reports/general-monthly?time=${time}`);
-      return {
-          success: true,
-          data: response.data.data, // Lấy `data` từ response
-      };
+    const time = `${month}-${year}`; // Tạo format "MM-YYYY"
+    const response = await axios.get(`/api/reports/general-monthly?time=${time}`);
+    return {
+      success: true,
+      data: response.data.data, // Lấy `data` từ response
+    };
   } catch (error) {
-      return {
-          success: false,
-          error: error.response ? error.response.data : "Network error",
-      };
+    console.error("Error fetching room monthly report:", error);
+    throw error;
   }
 };
-  
-
 
 // Hàm fetch dữ liệu RoomType Monthly
 const fetchRoomTypeMonthlyReport = async (month, year) => {
   try {
-      // Tạo đường dẫn với tham số tháng và năm
-      const time = `${month}-${year}`;
-      const response = await axios.get(`http://localhost:4000/api/reports/roomtype-monthly?time=${time}`);
-      return response.data; // Trả về dữ liệu từ API
+    // Tạo đường dẫn với tham số tháng và năm
+    const time = `${month}-${year}`;
+    const response = await axios.get(`/api/reports/roomtype-monthly?time=${time}`);
+    return response.data; // Trả về dữ liệu từ API
   } catch (error) {
-      console.error("Error fetching RoomTypeMonthlyReport:", error);
-      return {
-          success: false,
-          error: error.message || "Failed to fetch data",
-      };
-  }
-};
-  
-const fetchRoomDensityMonthlyReport = async (month, year) => {
-  try {
-      const response = await axios.get(
-          `http://localhost:4000/api/reports/room-density-monthly?time=${month}-${year}`
-      );
-      return response.data;
-  } catch (error) {
-      console.error("Error fetching room density monthly report:", error);
-      throw error;
+    console.error("Error fetching roomtype monthly report:", error);
+    throw error;
   }
 };
 
+const fetchRoomDensityMonthlyReport = async (month, year) => {
+  try {
+    const response = await axios.get(
+      `/api/reports/room-density-monthly?time=${month}-${year}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching room density monthly report:", error);
+    throw error;
+  }
+};
+
+const getUserRole = async (userId) => {
+  try {
+    const response = await axios.get(`/api/users/${userId}/role`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
 
 export {
   logIn,
+  logOut,
+  signUp,
+  getAllUsers,
+  getAllRoles,
+  updateUser,
+  deleteUser,
   getAllRooms,
   postAddRoom,
   patchUpdateRoom,
@@ -384,6 +500,7 @@ export {
   getInvoices,
   getAllCustomer,
   postAddCustomer,
+  patchUpdateCustomer,
   getAllCustomerTypes,
   updateCustomerType,
   createCustomerType,
@@ -397,5 +514,7 @@ export {
   addInvoice,
   fetchMonthlyReport,
   fetchRoomTypeMonthlyReport,
-  fetchRoomDensityMonthlyReport
+  fetchRoomDensityMonthlyReport,
+  getUserRole
+
 };
