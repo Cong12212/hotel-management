@@ -19,9 +19,17 @@ function RoomConfigure() {
   const [editingRoomType, setEditingRoomType] = useState(null);
   const [errors, setErrors] = useState({});
 
+<<<<<<< HEAD
   const handlePagination = useCallback((total) => {
     setTotalRooms(total);
     setTotalPages(Math.ceil(total / rowsPerPage));
+=======
+
+  const handlePagination = useCallback((totalRooms) => {
+    setTotalRooms(totalRooms);
+    setTotalPages(Math.ceil(totalRooms / rowsPerPage));
+   
+>>>>>>> 1039ec24d5fedf1d4ce45cf164683cfc87731b68
   }, [rowsPerPage]);
 
   const fetchListRoomTypes = useCallback(async () => {
@@ -35,6 +43,10 @@ function RoomConfigure() {
       const res = await getAllRoomTypes(queryParams);
       if (res && res.data && res.data.data) {
         setRoomTypes(res.data.data);
+<<<<<<< HEAD
+=======
+   
+>>>>>>> 1039ec24d5fedf1d4ce45cf164683cfc87731b68
         handlePagination(res.data.total);
       } else {
         setErrors({ err: res.error.error });
@@ -195,14 +207,6 @@ function RoomConfigure() {
           <div className="d-flex">
             {/* Search Input */}
 
-            <InputGroup>
-              <input
-                placeholder="Search"
-                className="outline-none focus:outline-dashed focus:outline-2 focus:outline-violet-500 border border-gray-300 rounded-md p-2"
-                value={search}
-                onChange={handleSearch}
-              />
-            </InputGroup>
           </div>
           <div className="flex ">
             {/* Rows Per Page Dropdown */}
@@ -362,7 +366,7 @@ function RoomConfigure() {
                 </Form.Label>
                 <Form.Control
                   type="number"
-                  placeholder="Entet surcharge rate"
+                  placeholder="Enter surcharge rate"
                   name="surchargeRate"
                   value={newRoomType.surchargeRate}
                   onChange={handleInputChange}

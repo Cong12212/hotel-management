@@ -15,7 +15,7 @@ function CustomerType() {
     const fetchCustomerTypes = async () => {
       try {
         const response = await getAllCustomerTypes();
-        console.log(response);
+      
         if (response.success) {
           const formattedData = response.data.data.map((item) => ({
             id: item._id,

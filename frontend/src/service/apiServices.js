@@ -248,7 +248,11 @@ const postAddCustomer = async (data) => {
 // Hàm gọi API cập nhật thông tin khách hàng
 const patchUpdateCustomer = async (customerId, data) => {
   try {
+<<<<<<< HEAD
     const response = await axios.put(`api/customers/${customerId}`, data);
+=======
+    const response = await axios.patch(`api/customers/${customerId}`, data);
+>>>>>>> 1039ec24d5fedf1d4ce45cf164683cfc87731b68
     return {
       success: true,
       data: response.data,
@@ -472,6 +476,7 @@ const fetchRoomDensityMonthlyReport = async (month, year) => {
   } catch (error) {
     console.error("Error fetching room density monthly report:", error);
     throw error;
+<<<<<<< HEAD
   }
 };
 
@@ -481,6 +486,8 @@ const getUserRole = async (userId) => {
     return response.data;
   } catch (error) {
     throw error;
+=======
+>>>>>>> 1039ec24d5fedf1d4ce45cf164683cfc87731b68
   }
 };
 
@@ -514,6 +521,10 @@ export {
   addInvoice,
   fetchMonthlyReport,
   fetchRoomTypeMonthlyReport,
+<<<<<<< HEAD
   fetchRoomDensityMonthlyReport,
   getUserRole
+=======
+  fetchRoomDensityMonthlyReport
+>>>>>>> 1039ec24d5fedf1d4ce45cf164683cfc87731b68
 };

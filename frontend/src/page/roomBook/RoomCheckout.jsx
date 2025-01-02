@@ -1,8 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrap
 import { getUncompletedBookings, addInvoice } from "../../service/apiServices";
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 const RoomCheckout = () => {
     const [roomID, setRoomID] = useState("");
@@ -10,34 +8,39 @@ const RoomCheckout = () => {
     const [foundBills, setFoundBills] = useState([]);
     const [successMessage, setSuccessMessage] = useState("");
 
-    const handleSearch = async () => {
+    // Tải dữ liệu khi trang load
+    useEffect(() => {
+        fetchBookings();
+    }, [roomID]);
+
+    const fetchBookings = async () => {
         setError("");
         setFoundBills([]);
         setSuccessMessage("");
-        if (!roomID.trim()) {
-            setError("Please enter the room name");
-            return;
-        }
-
         try {
-            const response = await getUncompletedBookings({
-                search: roomID,
-                sort: "roomName",
-                page: 1,
-                limit: 10,
-            });
-
-            if (response.success === true) {
+            const response = await getUncompletedBookings({ search: roomID });
+            if (response.success) {
                 const bookings = response.data.data;
-                setFoundBills(bookings);
-            }
-            else {
-               
-                setError(response.error.error);
-                return;
+
+                // Lọc kết quả để chỉ lấy các phòng khớp với roomID (nếu có)
+                const filteredBookings = bookings.filter((booking) =>
+                    booking.bookingDetails.some((detail) =>
+                        detail.roomId.roomName
+                            .toLowerCase()
+                            .includes(roomID.toLowerCase())
+                    )
+                );
+
+                if (filteredBookings.length > 0) {
+                    setFoundBills(filteredBookings);
+                } else {
+                    setError("Room in booking not found.");
+                }
+            } else {
+                setError("Failed to fetch bookings. Please try again later.");
             }
         } catch (err) {
-            console.error("Error fetching roomtypes:", error);
+            setError("Failed to fetch bookings. Please try again later.");
         }
     };
 
@@ -48,28 +51,26 @@ const RoomCheckout = () => {
                 setSuccessMessage(`Checkout successful for booking ID: ${id}`);
                 setFoundBills(foundBills.filter((bill) => bill._id !== id));
             } else {
-                setError(response.data.error.error);
-
+                setError("Failed to checkout. Please try again later.");
             }
         } catch (err) {
-            console.error("Error fetching roomtypes:", error);
+            setError("Failed to checkout. Please try again later.");
         }
     };
 
     const handleKeyDown = (e) => {
         if (e.key === "Enter") {
-            handleSearch();
+            fetchBookings();
         }
     };
 
     return (
         <div className="pt-16 pb-8 pr-8 mt-2">
-            <ToastContainer />
             <div className="flex items-center mb-3 justify-between">
                 <h2 className="font-bold text-3xl font-sans">Room Checkout</h2>
             </div>
             {successMessage && (
-                toast.success({ successMessage }, { autoClose: 2000 })
+                <div className="alert alert-success">{successMessage}</div>
             )}
             <div className="card mb-4 shadow">
                 <div className="card-header bg-white">
@@ -82,6 +83,7 @@ const RoomCheckout = () => {
                         </label>
                         <input
                             type="text"
+                            placeholder="Enter room name"
                             id="roomID"
                             className="form-control"
                             value={roomID}
@@ -89,9 +91,6 @@ const RoomCheckout = () => {
                             onKeyDown={handleKeyDown}
                         />
                     </div>
-                    <button className="btn btn-dark" onClick={handleSearch}>
-                        Search
-                    </button>
                 </div>
             </div>
             {error && <div className="alert alert-danger">{error}</div>}
@@ -178,7 +177,6 @@ const RoomCheckout = () => {
                                 </button>
                             </div>
                         </div>
-
                     ))}
                 </>
             )}

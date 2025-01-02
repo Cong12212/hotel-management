@@ -19,6 +19,7 @@ exports.getAllRoomTypes = async (req, res) => {
             ]);
         }
 
+<<<<<<< HEAD
         const queryHelper = new QueryHelper(roomTypeQuery, req.query).executeQuery();
 
         // Thực thi query
@@ -29,8 +30,15 @@ exports.getAllRoomTypes = async (req, res) => {
 
         // Trả về kết quả
         return res.status(200).json({
+=======
+        const roomTypes = await queryHelper.query
+        const total = await RoomType.countDocuments();
+  
+        res.status(200).json({
+>>>>>>> 1039ec24d5fedf1d4ce45cf164683cfc87731b68
             success: true,
             count: roomTypes.length,
+            total,
             data: roomTypes
         });
 

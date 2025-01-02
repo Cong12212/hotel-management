@@ -3,12 +3,11 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Table, Button, Form, Offcanvas, InputGroup, FormControl, DropdownButton, Dropdown } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getAllUsers, updateUser, deleteUser, signUp, getAllRoles } from "../../service/apiServices";
+import { getAllUsers, updateUser, deleteUser, getAllRoles } from "../../service/apiServices";
 
 function UserManagement() {
     const [users, setUsers] = useState([]);
     const [roles, setRoles] = useState([]);
-    const [chosenRole, setChosenRole] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [editData, setEditData] = useState({});
     const [formData, setFormData] = useState({});
@@ -39,7 +38,7 @@ function UserManagement() {
     const fetchRoles = async () => {
         try {
             const response = await getAllRoles();
-            console.log('role', response);
+       
             if (response.success) {
                 setRoles(response.data.data);
             } else {
@@ -56,7 +55,7 @@ function UserManagement() {
                 limit: rowsPerPage,
                 page: currentPage,
             })
-            console.log('user', response);
+      
             if (response.success) {
                 setUsers(response.data.data);
                 handlePagination(response.data.total);
@@ -86,7 +85,7 @@ function UserManagement() {
 
     const handleEditClick = (user) => {
         setEditData(user);
-        console.log('useredit', user);
+   
 
         setFullName(user.fullName);
         setPhone(user.phone);
@@ -144,7 +143,7 @@ function UserManagement() {
                     address: address,
                     role: formData.role, // Gửi danh sách role
                 });
-                console.log('update', response);
+          
                 if (response.success === true) {
                     setUsers(users.map((user) => (user._id === editData._id ? response.data : user)));
                     toast.success(response.data.message, { autoClose: 2000 });
@@ -152,7 +151,7 @@ function UserManagement() {
                     handleModalClose();
                 }
                 else {
-                    console.log('update', response);
+           
                     toast.error(response.error.message, { autoClose: 2000 });
                 }
             }
@@ -240,13 +239,13 @@ function UserManagement() {
                                                     <colgroup>
                                                         <col style={{ width: '20%' }} />
                                                         <col style={{ width: '30%' }} />
-                                                        <col style={{ width: '20%' }} />
-                                                        <col style={{ width: '30%' }} />
+                                                        <col style={{ width: '50%' }} />
+                                                    
                                                     </colgroup>
                                                     <thead>
                                                         <tr>
                                                             <th>Username</th>
-                                                            <th>Password</th>
+                                                            
 
                                                             <th>Phone</th>
                                                             <th>Address</th>
@@ -257,7 +256,7 @@ function UserManagement() {
                                                         <tr>
 
                                                             <td>{user.username}</td>
-                                                            <td>{user.password}</td>
+                                                          
 
 
                                                             <td>{user.phone || "N/A"}</td>
