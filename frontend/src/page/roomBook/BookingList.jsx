@@ -39,7 +39,7 @@ const BookingList = () => {
             };
 
             const res = await getAllBookings(queryParams);
-            console.log(res);
+         
             if (res && res.data && res.data.data) {
                 const data = res.data.data;
         

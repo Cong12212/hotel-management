@@ -6,6 +6,7 @@ const logIn = async (data) => {
   return await axios
     .post("api/users/login", data)
     .then((response) => {
+      console.log('a',response);
       const token = response.data.data.token;
       const user = jwtDecode(token);
       const userInfo = response.data.data.user;
@@ -27,7 +28,6 @@ const logIn = async (data) => {
 const logOut = async () => {
   try {
     const response = await axios.post("api/users/logout");
-    console.log(response);
     return {
       success: true,
       data: response.data,

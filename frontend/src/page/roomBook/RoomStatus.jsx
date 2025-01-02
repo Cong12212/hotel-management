@@ -178,8 +178,6 @@ function RoomStatus() {
                                             ? 'bg-green-600'
                                             : room.status === 'maintenance'
                                                 ? 'bg-amber-600'
-                                                : room.status === 'occupied'
-                                                    ? 'bg-red-600'
                                                     : 'bg-black'
                                             }`}
                                     >

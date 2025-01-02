@@ -273,11 +273,12 @@ function RoomList() {
 
                 <Table className="text-center align-middle" bordered-y="true" hover>
                     <colgroup>
-                        <col style={{ width: '10%' }} />
+                        <col style={{ width: '5%' }} />
                         <col style={{ width: '20%' }} />
                         <col style={{ width: '20%' }} />
                         <col style={{ width: '20%' }} />
-                        <col style={{ width: '25%' }} />
+                        <col style={{ width: '20%' }} />
+                        <col style={{ width: '20%' }} />
                         <col style={{ width: '5%' }} />
                     </colgroup>
                     <thead>
@@ -303,6 +304,7 @@ function RoomList() {
                             <th>
                                 Room Price
                             </th>
+                            <th>Status</th>
                             <th>Note</th>
                             <th>Actions</th>
                         </tr>
@@ -314,6 +316,18 @@ function RoomList() {
                                 <td >{room.roomName}</td>
                                 <td>{room.roomTypeId ? room.roomTypeId.name : 'N/A'}</td>
                                 <td>{room.roomTypeId ? room.roomTypeId.price : 'N/A'}</td>
+                                <td className="align-middle py-3">
+                                    <span
+                                        className={`px-2 py-2 font-medium rounded-lg text-white ${room.status === 'available'
+                                            ? 'bg-green-600'
+                                            : room.status === 'maintenance'
+                                                ? 'bg-amber-600'
+                                                    : 'bg-black'
+                                            }`}
+                                    >
+                                        {room.status || "N/A"}
+                                    </span>
+                                </td>
                                 <td >{room.notes}</td>
                                 <td className="flex justify-center gap-2 p-3">
                                     <button className="hover:text-blue-800 text-blue-500 text-xl" onClick={() => handleEditClick(room)}>✎</button>
@@ -414,7 +428,7 @@ function RoomList() {
                             >
                                 <option value="">Select room status</option>
                                 <option value="available">Available</option>
-                                <option value="occupied">Occupied</option>
+                               
                                 <option value="maintenance">Maintenance</option>
 
                             </Form.Select>

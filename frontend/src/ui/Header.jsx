@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hook/useAuth';
 import { ToastContainer, toast } from 'react-toastify';
@@ -6,23 +6,27 @@ import 'react-toastify/dist/ReactToastify.css';
 import { logOut, getAllUsers } from '../service/apiServices';
 
 const Header = ({ toggleNavBar, isNavBarOpen }) => {
+    
     const [users, setUsers] = useState([]);
     const [currentUser, setCurrentUser] = useState({});
-    const [totalUsers, setTotalUsers] = useState(NaN);
+    const [totalUsers, setTotalUsers] = useState(0);   
     const [errors, setErrors] = useState({});
     const { userLogout, user } = useAuth();
     const navigate = useNavigate();
     const [showUserInfo, setShowUserInfo] = useState(false);
+
+
     const fetchUsers = async () => {
         try {
             const response = await getAllUsers({
                 limit: totalUsers,
                 page: 1,
             })
-          
             if (response.success) {
                 setUsers(response.data.data);
-                setTotalUsers(response.data.total);
+                if(totalUsers !== response.data.total) {
+                    setTotalUsers(response.data.total);
+                }
             } else {
                 setErrors(response.error.error);
             }
@@ -30,9 +34,10 @@ const Header = ({ toggleNavBar, isNavBarOpen }) => {
             console.error(err.message || "Error fetching users", err);
         }
     };
+
     useEffect(() => {
         fetchUsers();
-    }, []);
+    }, [totalUsers]);
     
     const handleLogOut = () => {
         logOut()

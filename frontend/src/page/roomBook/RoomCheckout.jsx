@@ -31,10 +31,10 @@ const RoomCheckout = () => {
                             .includes(roomID.toLowerCase())
                     )
                 );
-                console.log(filteredBookings);
+   
                 if (filteredBookings.length > 0) {
                     setFoundBills(filteredBookings);
-                    console.log(foundBills);
+          
                 }
                 if (roomID && filteredBookings.length === 0) {
                     setError("No bookings found for this room.");

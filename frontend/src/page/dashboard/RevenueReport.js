@@ -79,11 +79,7 @@ const MonthlyRevenueReport = () => {
                         max="2100"
                     />
                 </div>
-                <div className="col-md-4 d-flex align-items-end">
-                    <button className="btn btn-dark w-100" onClick={fetchReportData}>
-                        Fetch Report
-                    </button>
-                </div>
+                
             </div>
 
             {loading && <p>Loading...</p>}

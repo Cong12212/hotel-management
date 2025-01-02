@@ -1,12 +1,25 @@
 import React, { useState, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
 import { Button, Form, FormControl } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
-import { getAllRooms, getAllRoomTypes, getAllCustomerTypes, addBooking, postAddCustomer, getAllCustomer, patchUpdateCustomer } from '../service/apiServices';
+import { getAllRooms, getAllRoomTypes, getAllCustomerTypes, addBooking, postAddCustomer, getAllCustomer, patchUpdateCustomer, getAllBookings } from '../service/apiServices';
 
 const RoomBookingForm = () => {
 
+    const [bookings, setBookings] = useState([]);
+    const [totalBookings, setTotalBookings] = useState(NaN);
+    const [totalPages, setTotalPages] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [search, setSearch] = useState('');
+    const [sortField, setSortField] = useState(null); //
+    const [pageInput, setPageInput] = useState(currentPage); // Input để người dùng nhập
+    
+
+    
+    const navigate = useNavigate();
     const [rooms, setRooms] = useState([]);
     const [roomTypes, setRoomTypes] = useState([]);
     const [roomAvailable, setRoomAvailable] = useState([]);
@@ -21,6 +34,48 @@ const RoomBookingForm = () => {
     const [customerTypes, setCustomerTypes] = useState([]);
     const [listCustomer, setListCustomer] = useState([]);
     const [totalCustomers, setTotalCustomers] = useState(0);
+
+    const handlePagination = useCallback((totalBookings) => {
+        setTotalBookings(totalBookings);
+        setTotalPages(Math.ceil(totalBookings / rowsPerPage));
+    }, [rowsPerPage]);
+
+    const fetchListBooking = useCallback(async () => {
+        try {
+            const queryParams = {
+                limit: totalBookings,
+                page: 1,
+            };
+
+            const res = await getAllBookings(queryParams);
+            if (res && res.data && res.data.data) {
+                const data = res.data.data;
+        
+                const combinedData = data.map((booking, index) => ({
+                    id: booking._id,
+                    index: index + 1,
+                    status: booking.status,
+                    customers: booking.customerIds && booking.customerIds.length > 0
+                        ? booking.customerIds.map(c => c.fullName).join('\n')
+                        : null,
+                    bookingDetails: booking.bookingDetails,
+                    employee: booking.userId?.fullName || "N/A",
+                    date: new Date(booking.createdAt).toLocaleString('vi-VN', { timeZone: 'UTC' }),
+                }));
+                setBookings(combinedData);
+                
+                handlePagination(res.data.total);
+            }
+            else {
+                setErrors({ err: res.error.error });
+                return;
+            }
+        } catch (error) {
+            console.error("Error fetching bookings:", error);
+        }
+    }, [totalBookings, handlePagination]);
+
+
 
     useEffect(() => {
         const fetchCustomerTypes = async () => {
@@ -101,7 +156,8 @@ const RoomBookingForm = () => {
         fetchListRoom();
         fetchListRoomTypes();
         fetchListCustomer();
-    }, [fetchListRoom, fetchListRoomTypes, fetchListCustomer]);
+        fetchListBooking();
+    }, [fetchListRoom, fetchListRoomTypes, fetchListCustomer, fetchListBooking]);
 
 
 
@@ -111,17 +167,65 @@ const RoomBookingForm = () => {
         setCustomers(updatedCustomers);
     };
 
-    const handleRoomTypeChange = (event) => {
-        const selectedRoomType = event.target.value;
-        setRoomType(selectedRoomType);
-        // Tìm maxGuests dựa trên roomType đã chọn
-        const selectedType = roomTypes.find(type => type._id === selectedRoomType);
-        setRoomAvailable(rooms.filter(room => room.roomTypeId && room.roomTypeId._id === selectedRoomType));
-        if (selectedType) {
-            setMaxGuests(selectedType.maxOccupancy);
-            setPrice(selectedType.price);
-        }
-    };
+  const handleRoomTypeChange = (event) => {
+    const selectedRoomType = event.target.value;
+    setRoomType(selectedRoomType);
+
+    // Tìm thông tin loại phòng
+    const selectedType = roomTypes.find(type => type._id === selectedRoomType);
+    if (selectedType) {
+        setMaxGuests(selectedType.maxOccupancy);
+        setPrice(selectedType.price);
+
+        // Lọc danh sách phòng dựa trên loại phòng và trạng thái 'available'
+        const filteredRooms = rooms.filter(room =>
+            room.roomTypeId &&
+            room.roomTypeId._id === selectedRoomType &&
+            room.status === 'available'
+        );
+
+        console.log('FilteredRooms', filteredRooms);
+
+        // Lọc các phòng khả dụng bằng cách kiểm tra thời gian đặt chỗ
+        const checkIn = new Date(document.getElementById("checkIn").value);
+        const checkOut = new Date(document.getElementById("checkOut").value);
+        console.log('CheckIn', checkIn);
+        console.log('CheckOut', checkOut);
+        console.log('Bookings', bookings);
+        const availableRooms = filteredRooms.filter(room => {
+            const roomBookings = bookings.filter(booking =>
+                
+                booking.bookingDetails.filter(detail => detail.roomId === room._id)
+                
+            );
+           
+            console.log('RoomBookings', roomBookings);
+            if (roomBookings.length > 0) {
+                // Kiểm tra trùng thời gian
+                return roomBookings.every(booking =>
+                    booking.bookingDetails.every(detail => {
+                        const bookingCheckIn = new Date(detail.checkInDate);
+                        const bookingCheckOut = new Date(detail.checkOutDate);
+                        console.log('BookingCheckIn', bookingCheckIn);
+                        console.log('BookingCheckOut', bookingCheckOut);
+                        // Loại trừ phòng nếu có thời gian chồng chéo
+                        return (
+                            (checkOut <= bookingCheckIn) || 
+                            (checkIn >= bookingCheckOut)
+                        );
+                    })
+                );
+            }
+
+            // Nếu không có booking nào, phòng này có thể được thêm
+            return true;
+        });
+
+        console.log('AvailableRooms', availableRooms);
+        setRoomAvailable(availableRooms);
+    }
+};
+
 
     const handleAddCustomer = () => {
         if (customers.length >= maxGuests) {
@@ -175,9 +279,9 @@ const RoomBookingForm = () => {
                 } else {
                     const response = await postAddCustomer(customerData);
                     console.log(response);
-                    if (response && response.data && response.data._id) {
+                    if (response && response.data && response.data.data._id) {
 
-                        customerId = response.data._id;
+                        customerId = response.data.data._id;
 
                     } else {
                         console.error("Failed to add customer:", response);
@@ -211,6 +315,13 @@ const RoomBookingForm = () => {
             const bookingResponse = await addBooking(payload);
             if (bookingResponse?.data?.success) {
                 toast.success("Room booking added successfully!", { autoClose: 2000 });
+                setTimeout(() => {
+                    navigate("/bookings");
+                }, 2500);
+                // Reset form
+                setNewBooking([]);
+                setCustomers([]);
+
             } else {
                 const errorText = bookingResponse?.error?.error || "";
                 const errorMessage = errorText.includes("is not available")
@@ -387,7 +498,7 @@ const RoomBookingForm = () => {
                         </div>
                         <div>
                             <Form.Group controlId={`customerAddress-${index}`}>
-                                <Form.Label>Address <span className="text-red-500">*</span></Form.Label>
+                                <Form.Label>Address</Form.Label>
                                 <FormControl
                                     type="text"
                                     value={customer.address}

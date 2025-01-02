@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import { Button, InputGroup, FormControl } from 'react-bootstrap';
@@ -7,14 +7,40 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { logIn } from '../../service/apiServices';
 import { useAuth } from '../../hook/useAuth';
-
+import { getAllUsers } from '../../service/apiServices';
 const Login = () => {
   const [username, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { userLogin } = useAuth();
+  const [users, setUsers] = useState([]);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [errors, setErrors] = useState({});
+ 
+// const fetchUsers = async () => {
+//         try {
+//             const response = await getAllUsers({
+//                 limit: totalUsers,
+//                 page: 1,
+//             })
+//             if (response.success) {
+//                 setUsers(response.data.data);
+//                 if(totalUsers !== response.data.total) {
+//                     setTotalUsers(response.data.total);
+//                 }
+//             } else {
+//                 setErrors(response.error.error);
+//             }
+//         } catch (err) {
+//             console.error(err.message || "Error fetching users", err);
+//         }
+//     };
 
+//     useEffect(() => {
+//         fetchUsers();
+//     }, [totalUsers]);
+    
   const handleLogin = async (event) => {
     event.preventDefault();
     if (!username.trim()) {
@@ -30,6 +56,7 @@ const Login = () => {
 
     localStorage.setItem('user', JSON.stringify(result.data));
     if (result.data) {
+ 
       toast.success('Login successful!', { autoClose: 2000 });
       userLogin(result.data); // Update user state
 
@@ -37,7 +64,7 @@ const Login = () => {
         navigate('/dashboard'); // Redirect to dashboard or another page after a delay
       }, 1500); // Delay for 2 seconds (adjust if needed)
     } else {
-      console.log(result.err);
+   
       toast.error(result.err.response.data.message || 'Login failed!', { autoClose: 2000 });
     }
   }
