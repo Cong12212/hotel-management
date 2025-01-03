@@ -105,7 +105,7 @@ function RoomStatus() {
                     <div className="d-flex">
                         <InputGroup>
                             <input
-                                placeholder="Search"
+                                placeholder="Enter room name"
                                 className="outline-none focus:outline-dashed focus:outline-2 focus:outline-violet-500 border border-gray-300 rounded-md p-2"
                                 value={search}
                                 onChange={handleSearch}

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrap
 import { getUncompletedBookings, addInvoice } from "../../service/apiServices";
+import { toast } from "react-toastify";
+import { ToastContainer } from "react-bootstrap";
 
 const RoomCheckout = () => {
     const [roomID, setRoomID] = useState("");
@@ -50,8 +52,9 @@ const RoomCheckout = () => {
     const handleCheckout = async (id) => {
         try {
             const response = await addInvoice({ bookingId: id });
+            console.log(response); 
             if (response.success) {
-                setSuccessMessage(`Checkout successful for booking ID: ${id}`);
+                toast.success("Checkout successfully!",{autoClose: 2000});
                 setFoundBills(foundBills.filter((bill) => bill._id !== id));
             } else {
                 setError("Failed to checkout. Please try again later.");
@@ -69,6 +72,7 @@ const RoomCheckout = () => {
 
     return (
         <div className="pt-16 pb-8 pr-8 mt-2">
+            <ToastContainer />
             <div className="flex items-center mb-3 justify-between">
                 <h2 className="font-bold text-3xl font-sans">Room Checkout</h2>
             </div>

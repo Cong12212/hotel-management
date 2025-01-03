@@ -44,6 +44,7 @@ const Header = ({ toggleNavBar, isNavBarOpen }) => {
             .then((res) => {
                
                 if (res.data.success) {
+                    toast.success('Logged out successfully');
                     userLogout();
                     navigate('/');
                 }

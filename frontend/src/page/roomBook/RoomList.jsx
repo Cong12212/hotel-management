@@ -246,7 +246,7 @@ function RoomList() {
                         </DropdownButton> */}
                         <InputGroup>
                             <input
-                                placeholder="Search" //{/*`Enter ${searchField ? (searchField === 'roomName' ? 'Room Name' : 'Room Type') : ''}`*/}
+                                placeholder="Enter room name" //{/*`Enter ${searchField ? (searchField === 'roomName' ? 'Room Name' : 'Room Type') : ''}`*/}
                                 className="outline-none focus:outline-dashed focus:outline-2 focus:outline-violet-500 border border-gray-300 rounded-md p-2"
                                 value={search}
                                 onChange={handleSearch}

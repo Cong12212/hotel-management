@@ -315,12 +315,6 @@ const RoomBookingForm = () => {
             const bookingResponse = await addBooking(payload);
             if (bookingResponse?.data?.success) {
                 toast.success("Room booking added successfully!", { autoClose: 2000 });
-                setTimeout(() => {
-                    navigate("/bookings");
-                }, 2500);
-                // Reset form
-                setNewBooking([]);
-                setCustomers([]);
 
             } else {
                 const errorText = bookingResponse?.error?.error || "";
